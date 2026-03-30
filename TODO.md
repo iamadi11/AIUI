@@ -12,7 +12,6 @@
 
 ## Phase 1 — Builder MVP
 
-- [ ] Implement document model (nodes, ids, parent/child) aligned with DSL schema + Zustand stores
 - [ ] Component palette + drag-and-drop canvas (dnd-kit)
 - [ ] UI tree panel + basic properties inspector
 - [ ] Undo/redo for structural and prop edits
@@ -80,6 +79,7 @@
 
 ## Done
 
+- **2026-03-31** — Document model + Zustand: `AiuiDocument` as canonical shape; `lib/document/tree.ts` immutable helpers; `stores/document-store` + `stores/selection-store`; `BuilderDemo` on home exercises add/remove/select
 - **2026-03-31** — Monorepo (`pnpm` workspaces): `apps/web`, `packages/dsl-schema`, `packages/registry`; root `tsconfig.base.json`
 - **2026-03-31** — `@aiui/dsl-schema`: Zod `documentSchema` / recursive `uiNodeSchema`, `DSL_VERSION`, `parseDocument`
 - **2026-03-31** — `@aiui/registry`: primitives `Box`, `Stack` metadata
