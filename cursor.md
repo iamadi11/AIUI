@@ -1,0 +1,51 @@
+# Cursor / agent guide — AIUI
+
+This file is the **project handbook for AI assistants and humans** using Cursor. **Update it** when conventions change, major decisions land, or recurring pitfalls appear.
+
+## What this repo is building
+
+A **UI runtime platform**: visual builder → **Universal JSON DSL** + **JavaScript runtime bundle** (not primary codegen to React/Vue). See `PLAN.md` for architecture and phases; `core.md` for the original product brief.
+
+## Stack (target)
+
+- **Builder:** Next.js (App Router), React, TypeScript, Tailwind, shadcn/ui  
+- **DnD / graphs:** dnd-kit, React Flow  
+- **Validation / types:** Zod, shared `dsl-schema`  
+- **Builder state:** Zustand (default choice unless complexity justifies RTK)
+
+## Repository pointers
+
+| Path | Purpose |
+|------|---------|
+| `PLAN.md` | System design and phased plan |
+| `TODO.md` | Current backlog — **agents must keep this current** |
+| `core.md` | Source requirements / constraints |
+| `.cursor/skills/` | Project-specific skills (read when relevant) |
+| `.cursor/rules/` | Cursor rules (e.g. TODO maintenance) |
+
+## Agent workflow (expected)
+
+1. **Before sizeable work:** Read `TODO.md` and `PLAN.md` (relevant phase only if large).  
+2. **During work:** Follow patterns in existing code; prefer shared DSL types over ad-hoc shapes.  
+3. **After completing a task:** Update `TODO.md` — remove completed items, add newly discovered work, adjust priorities if needed.  
+4. **When learnings are durable:** Add a short note here under [Learnings](#learnings) or tighten `.cursor/skills/` so future sessions inherit them.
+
+## Principles
+
+- **Runtime core stays framework-agnostic**; React is an adapter.  
+- **No `eval`** for expressions; AST or safe evaluator only.  
+- **DSL is versioned**; breaking changes require version bumps and migration notes in `PLAN.md` or a `CHANGELOG.md` once the project exists.  
+- **Do not implement AI product flows** until explicitly scheduled (Phase 8 / future).  
+- **Minimal diffs:** Change only what the task requires; avoid drive-by refactors.
+
+## Skills to use
+
+- **`aiui-platform`** — architecture, DSL/runtime boundaries, stack, phase order.  
+- **`aiui-repo-upkeep`** — when to edit `TODO.md`, `cursor.md`, and `PLAN.md`.
+
+## Learnings
+
+_Add dated or milestone notes below as the project progresses._
+
+- **2026-03-31 — pnpm + Next in monorepo:** `create-next-app` can leave `apps/web/pnpm-lock.yaml` and a stray `apps/web/pnpm-workspace.yaml` (build-ignore only). Either breaks `workspace:*` resolution and `pnpm add` from `apps/web`. Use a single lockfile at the repo root and delete the nested `pnpm-workspace.yaml` under `apps/web` unless it intentionally defines workspace `packages`.
+- **2026-03-31 — Recursive Zod tree:** Annotate `uiNodeSchema` as `z.ZodType<UiNode>` with a hand-written `UiNode` type; avoid `.default({})` on `props` if you need the schema to satisfy `ZodType<UiNode>` under strict builds.

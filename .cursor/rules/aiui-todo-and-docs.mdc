@@ -1,0 +1,16 @@
+---
+description: Keep TODO.md and project docs in sync when completing AIUI work
+alwaysApply: true
+---
+
+# AIUI — TODO and documentation
+
+When you **finish** a user-requested task or a clear sub-milestone:
+
+1. **Update `TODO.md`:** remove completed items; add newly discovered tasks; keep phases aligned with `PLAN.md`.
+2. **If the change teaches a durable lesson** (architecture, pitfall, convention), add a short line under **Learnings** in `cursor.md`.
+3. **Do not** let `TODO.md` drift: if you claimed something was done, reflect it there before ending.
+
+For large architectural shifts, also update `PLAN.md` or note the decision in `cursor.md`.
+
+Read `.cursor/skills/aiui-repo-upkeep/SKILL.md` for full upkeep workflow.
