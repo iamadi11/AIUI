@@ -90,7 +90,7 @@ const EN_MESSAGES = {
   "logic.title": "Logic map",
   "logic.syncBadge": "Properties",
   "logic.intro":
-    "Flow for the selected layer. Arrows show step order per event. Edit in the Properties panel → Actions.",
+    "Flow for the selected layer. Arrows show step order per event. Edit in Properties → Actions. This panel is only shown when the builder is opened with ?dev=1.",
   "logic.selectNode": "Select a layer on the canvas or in the tree to see its logic.",
   "logic.inspectHint": "Tip: click a step to see its JSON payload.",
   "logic.inspectReadOnly":
@@ -100,7 +100,14 @@ const EN_MESSAGES = {
   "events.sectionTitle": "Events",
   "events.addEvent": "Add event",
   "events.intro":
-    "Use the dropdowns below to add steps. Switch to \"Edit as JSON\" only if you need sequences or nested conditions.",
+    "Add steps in order (Step 1 runs first). Use templates below for common flows. Switch to \"Edit as JSON\" only if you need nested conditions beyond one If.",
+  "events.templatesTitle": "Templates",
+  "events.templatesIntro":
+    "Apply a starter sequence for this component. If that event already exists, its steps are replaced.",
+  "events.stepBadge": "Step {n}",
+  "events.moveStepUp": "Move step up",
+  "events.moveStepDown": "Move step down",
+  "events.removeStep": "Remove step",
   "events.noneYet": "No events yet.",
   "events.editorLabel": "Editor",
   "events.modeVisual": "Steps",
@@ -108,6 +115,8 @@ const EN_MESSAGES = {
   "events.modeJsonShort": "JSON",
   "events.jsonActionsLabel": "Actions (JSON array)",
   "events.jsonFlowPreviewTitle": "Flow preview (read-only)",
+  "events.jsonFlowPreviewDevOnly":
+    "Open the builder with ?dev=1 to see a read-only flow diagram under the JSON editor.",
   "events.jsonFlowPreviewHint":
     "This preview updates when the JSON is valid. Edit the JSON above to change structure.",
   "events.fixJsonPreview": "Fix the JSON above to see a flow preview.",

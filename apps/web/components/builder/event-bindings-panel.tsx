@@ -17,6 +17,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from "@xyflow/react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +46,17 @@ const controlClass =
 
 const textareaClass =
   "min-h-[6rem] w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 font-mono text-xs leading-relaxed text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+function StepBadge(props: { stepNumber: number }) {
+  return (
+    <span
+      className="inline-flex min-w-13 shrink-0 items-center justify-center rounded-md border border-border/70 bg-muted/40 px-1.5 py-0.5 text-[0.6rem] font-semibold tabular-nums text-muted-foreground"
+      aria-hidden
+    >
+      {msg("events.stepBadge", { n: props.stepNumber })}
+    </span>
+  );
+}
 
 /** Switch branch action type without leaving the visual editor. */
 function SimpleStepTypeSelect(props: {
@@ -111,8 +123,13 @@ type EventBindingRow = {
   jsonText: string;
 };
 
-function AdvancedFlowPreview(props: { eventName: string; jsonText: string }) {
-  const { eventName, jsonText } = props;
+function AdvancedFlowPreview(props: {
+  eventName: string;
+  jsonText: string;
+  /** React Flow mini-graph is developer-only (?dev=1). */
+  enabled: boolean;
+}) {
+  const { eventName, jsonText, enabled } = props;
   const parsed = useMemo(() => {
     try {
       const raw = JSON.parse(jsonText);
@@ -127,6 +144,14 @@ function AdvancedFlowPreview(props: { eventName: string; jsonText: string }) {
     () => eventsToFlowElements(parsed ? { [eventName || "event"]: parsed } : undefined),
     [eventName, parsed],
   );
+
+  if (!enabled) {
+    return (
+      <p className="text-[0.65rem] text-muted-foreground">
+        {msg("events.jsonFlowPreviewDevOnly")}
+      </p>
+    );
+  }
 
   if (!parsed) {
     return (
@@ -634,20 +659,30 @@ function BranchActionFields(props: {
 function ConditionStepRow(props: {
   action: Extract<Action, { type: "condition" }>;
   index: number;
+  stepNumber: number;
   onChange: (next: Action) => void;
   onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   onBlurCommit: () => void;
   canRemove: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   documentNodeOptions?: readonly DocumentNodeOption[];
   screenOptions?: readonly ScreenOption[];
 }) {
   const {
     action,
     index,
+    stepNumber,
     onChange,
     onRemove,
+    onMoveUp,
+    onMoveDown,
     onBlurCommit,
     canRemove,
+    canMoveUp,
+    canMoveDown,
     documentNodeOptions,
     screenOptions,
   } = props;
@@ -655,22 +690,49 @@ function ConditionStepRow(props: {
 
   return (
     <div className="rounded-md border border-border/80 bg-background/60 p-2">
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
-          If condition
-        </span>
-        {canRemove ? (
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <StepBadge stepNumber={stepNumber} />
+          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+            {msg("events.kindCondition")}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="size-7 text-muted-foreground hover:text-destructive"
-            title="Remove step"
-            onClick={onRemove}
+            className="size-7 text-muted-foreground disabled:opacity-40"
+            title={msg("events.moveStepUp")}
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
           >
-            <Trash2 className="size-3.5" aria-hidden />
+            <ArrowUp className="size-3.5" aria-hidden />
           </Button>
-        ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground disabled:opacity-40"
+            title={msg("events.moveStepDown")}
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+          >
+            <ArrowDown className="size-3.5" aria-hidden />
+          </Button>
+          {canRemove ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:text-destructive"
+              title={msg("events.removeStep")}
+              onClick={onRemove}
+            >
+              <Trash2 className="size-3.5" aria-hidden />
+            </Button>
+          ) : null}
+        </div>
       </div>
       <div className="space-y-2">
         <div>
@@ -756,6 +818,7 @@ function ConditionStepRow(props: {
 function SimpleActionRow(props: {
   action: Action;
   index: number;
+  stepNumber: number;
   onChange: (next: Action) => void;
   onRemove: () => void;
   onMoveUp: () => void;
@@ -770,6 +833,7 @@ function SimpleActionRow(props: {
   const {
     action,
     index,
+    stepNumber,
     onChange,
     onRemove,
     onMoveUp,
@@ -787,10 +851,15 @@ function SimpleActionRow(props: {
       <ConditionStepRow
         action={action}
         index={index}
+        stepNumber={stepNumber}
         onChange={onChange}
         onRemove={onRemove}
+        onMoveUp={onMoveUp}
+        onMoveDown={onMoveDown}
         onBlurCommit={onBlurCommit}
         canRemove={canRemove}
+        canMoveUp={canMoveUp}
+        canMoveDown={canMoveDown}
         documentNodeOptions={documentNodeOptions}
         screenOptions={screenOptions}
       />
@@ -801,13 +870,16 @@ function SimpleActionRow(props: {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
         <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-[min(100%,12rem)] flex-1">
-            <SimpleStepTypeSelect
-              index={index}
-              action={action}
-              onChange={onChange}
-              onBlurCommit={onBlurCommit}
-            />
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <StepBadge stepNumber={stepNumber} />
+            <div className="min-w-[min(100%,12rem)] flex-1">
+              <SimpleStepTypeSelect
+                index={index}
+                action={action}
+                onChange={onChange}
+                onBlurCommit={onBlurCommit}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -815,7 +887,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step up"
+              title={msg("events.moveStepUp")}
               onClick={onMoveUp}
               disabled={!canMoveUp}
             >
@@ -826,7 +898,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step down"
+              title={msg("events.moveStepDown")}
               onClick={onMoveDown}
               disabled={!canMoveDown}
             >
@@ -838,7 +910,7 @@ function SimpleActionRow(props: {
                 variant="ghost"
                 size="icon"
                 className="size-7 text-muted-foreground hover:text-destructive"
-                title="Remove step"
+                title={msg("events.removeStep")}
                 onClick={onRemove}
               >
                 <Trash2 className="size-3.5" aria-hidden />
@@ -901,13 +973,16 @@ function SimpleActionRow(props: {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
         <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-[min(100%,12rem)] flex-1">
-            <SimpleStepTypeSelect
-              index={index}
-              action={action}
-              onChange={onChange}
-              onBlurCommit={onBlurCommit}
-            />
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <StepBadge stepNumber={stepNumber} />
+            <div className="min-w-[min(100%,12rem)] flex-1">
+              <SimpleStepTypeSelect
+                index={index}
+                action={action}
+                onChange={onChange}
+                onBlurCommit={onBlurCommit}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -915,7 +990,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step up"
+              title={msg("events.moveStepUp")}
               onClick={onMoveUp}
               disabled={!canMoveUp}
             >
@@ -926,7 +1001,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step down"
+              title={msg("events.moveStepDown")}
               onClick={onMoveDown}
               disabled={!canMoveDown}
             >
@@ -938,7 +1013,7 @@ function SimpleActionRow(props: {
                 variant="ghost"
                 size="icon"
                 className="size-7 text-muted-foreground hover:text-destructive"
-                title="Remove step"
+                title={msg("events.removeStep")}
                 onClick={onRemove}
               >
                 <Trash2 className="size-3.5" aria-hidden />
@@ -974,13 +1049,16 @@ function SimpleActionRow(props: {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
         <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-[min(100%,12rem)] flex-1">
-            <SimpleStepTypeSelect
-              index={index}
-              action={action}
-              onChange={onChange}
-              onBlurCommit={onBlurCommit}
-            />
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <StepBadge stepNumber={stepNumber} />
+            <div className="min-w-[min(100%,12rem)] flex-1">
+              <SimpleStepTypeSelect
+                index={index}
+                action={action}
+                onChange={onChange}
+                onBlurCommit={onBlurCommit}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -988,7 +1066,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step up"
+              title={msg("events.moveStepUp")}
               onClick={onMoveUp}
               disabled={!canMoveUp}
             >
@@ -999,7 +1077,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step down"
+              title={msg("events.moveStepDown")}
               onClick={onMoveDown}
               disabled={!canMoveDown}
             >
@@ -1011,7 +1089,7 @@ function SimpleActionRow(props: {
                 variant="ghost"
                 size="icon"
                 className="size-7 text-muted-foreground hover:text-destructive"
-                title="Remove step"
+                title={msg("events.removeStep")}
                 onClick={onRemove}
               >
                 <Trash2 className="size-3.5" aria-hidden />
@@ -1073,13 +1151,16 @@ function SimpleActionRow(props: {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
         <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-[min(100%,12rem)] flex-1">
-            <SimpleStepTypeSelect
-              index={index}
-              action={action}
-              onChange={onChange}
-              onBlurCommit={onBlurCommit}
-            />
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <StepBadge stepNumber={stepNumber} />
+            <div className="min-w-[min(100%,12rem)] flex-1">
+              <SimpleStepTypeSelect
+                index={index}
+                action={action}
+                onChange={onChange}
+                onBlurCommit={onBlurCommit}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -1087,7 +1168,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step up"
+              title={msg("events.moveStepUp")}
               onClick={onMoveUp}
               disabled={!canMoveUp}
             >
@@ -1098,7 +1179,7 @@ function SimpleActionRow(props: {
               variant="ghost"
               size="icon"
               className="size-7 text-muted-foreground disabled:opacity-40"
-              title="Move step down"
+              title={msg("events.moveStepDown")}
               onClick={onMoveDown}
               disabled={!canMoveDown}
             >
@@ -1110,7 +1191,7 @@ function SimpleActionRow(props: {
                 variant="ghost"
                 size="icon"
                 className="size-7 text-muted-foreground hover:text-destructive"
-                title="Remove step"
+                title={msg("events.removeStep")}
                 onClick={onRemove}
               >
                 <Trash2 className="size-3.5" aria-hidden />
@@ -1195,18 +1276,21 @@ function SimpleActionRow(props: {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
         <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-[min(100%,12rem)] flex-1">
-            <SimpleStepTypeSelect
-              index={index}
-              action={action}
-              onChange={onChange}
-              onBlurCommit={onBlurCommit}
-            />
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <StepBadge stepNumber={stepNumber} />
+            <div className="min-w-[min(100%,12rem)] flex-1">
+              <SimpleStepTypeSelect
+                index={index}
+                action={action}
+                onChange={onChange}
+                onBlurCommit={onBlurCommit}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step up" onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
-            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step down" onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
-            {canRemove ? <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" title="Remove step" onClick={onRemove}><Trash2 className="size-3.5" aria-hidden /></Button> : null}
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title={msg("events.moveStepUp")} onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title={msg("events.moveStepDown")} onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
+            {canRemove ? <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" title={msg("events.removeStep")} onClick={onRemove}><Trash2 className="size-3.5" aria-hidden /></Button> : null}
           </div>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -1231,18 +1315,21 @@ function SimpleActionRow(props: {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
         <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-[min(100%,12rem)] flex-1">
-            <SimpleStepTypeSelect
-              index={index}
-              action={action}
-              onChange={onChange}
-              onBlurCommit={onBlurCommit}
-            />
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <StepBadge stepNumber={stepNumber} />
+            <div className="min-w-[min(100%,12rem)] flex-1">
+              <SimpleStepTypeSelect
+                index={index}
+                action={action}
+                onChange={onChange}
+                onBlurCommit={onBlurCommit}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step up" onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
-            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step down" onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
-            {canRemove ? <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" title="Remove step" onClick={onRemove}><Trash2 className="size-3.5" aria-hidden /></Button> : null}
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title={msg("events.moveStepUp")} onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title={msg("events.moveStepDown")} onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
+            {canRemove ? <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" title={msg("events.removeStep")} onClick={onRemove}><Trash2 className="size-3.5" aria-hidden /></Button> : null}
           </div>
         </div>
         <BranchActionFields
@@ -1272,6 +1359,8 @@ export function EventBindingsPanel(props: {
 }) {
   const { nodeId, root, events, onApply, interactionPresets, screenOptions } =
     props;
+  const searchParams = useSearchParams();
+  const showDevJsonFlowPreview = searchParams.get("dev") === "1";
   const documentNodeOptions = useMemo(
     () => listDocumentNodesForPicker(root),
     [root],
@@ -1542,20 +1631,28 @@ export function EventBindingsPanel(props: {
         {msg("events.intro")}
       </p>
       {interactionPresets?.length ? (
-        <div className="mb-3 flex flex-wrap gap-2">
-          {interactionPresets.map((p) => (
-            <Button
-              key={p.id}
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="h-7 text-[0.65rem]"
-              title={p.description}
-              onClick={() => applyInteractionPreset(p)}
-            >
-              + {p.label}
-            </Button>
-          ))}
+        <div className="mb-3 rounded-lg border border-border/70 bg-muted/10 p-3">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+            {msg("events.templatesTitle")}
+          </p>
+          <p className="mt-1 text-[0.65rem] leading-snug text-muted-foreground">
+            {msg("events.templatesIntro")}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {interactionPresets.map((p) => (
+              <Button
+                key={p.id}
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="h-7 text-[0.65rem]"
+                title={p.description}
+                onClick={() => applyInteractionPreset(p)}
+              >
+                + {p.label}
+              </Button>
+            ))}
+          </div>
         </div>
       ) : null}
       {formError ? (
@@ -1701,6 +1798,7 @@ export function EventBindingsPanel(props: {
                             key={`${row.id}-a-${i}`}
                             action={action}
                             index={i}
+                            stepNumber={i + 1}
                             canRemove={row.simpleActions.length > 1}
                             canMoveUp={i > 0}
                             canMoveDown={i < row.simpleActions.length - 1}
@@ -1830,6 +1928,7 @@ export function EventBindingsPanel(props: {
                           <AdvancedFlowPreview
                             eventName={row.name.trim()}
                             jsonText={row.jsonText}
+                            enabled={showDevJsonFlowPreview}
                           />
                         </div>
                       </div>

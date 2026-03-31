@@ -45,8 +45,9 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 6 — Actions and CTAs
 
-- [ ] **Action templates** and step ordering in visual mode for non-technical users.
-- [ ] **Advanced** logic graph remains optional (`?dev=1` or equivalent).
+- [x] **Templates** block in Properties → Actions (registry `interactionPresets`); copy explains replace-on-duplicate-event behavior.
+- [x] **Step order** in visual mode: numbered steps (Step 1…n), reorder on every step type including **If**; move/remove control titles i18n.
+- [x] **Advanced** surfaces: full **Logic map** + JSON **Flow preview** under the editor require **`?dev=1`** (hint copy + gated mini-graph).
 
 ## Phase 7 — Hardening
 

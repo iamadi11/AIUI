@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-04-01 - Actions UX (Phase 6):** Keep **registry `interactionPresets`** as the template source; gate **React Flow** previews (**JSON flow** under Actions, **Logic map** in Diagnostics) behind **`?dev=1`** so default users see steps + ordering without graph chrome.
 - **2026-04-01 - Bindings panel:** Validate **`BindingDescriptor`** with **`safeParseBindingDescriptor`** before persisting; keep draft editors in a **keyed** sub-tree so form state syncs from the document without effects that trip `react-hooks/set-state-in-effect`.
 - **2026-04-01 - Data & state UX:** One **Sheet** from the navbar holds **initial state**, **sample data source ids** (for binding preview), and a **fetch→table state starter**; avoid a second copy under dev-only stacks so the story stays single-path.
 - **2026-04-01 - Drop defaults:** Registry **`defaultLayout`** (`UiLayout`) merges in **`createNodeFromType`** alongside **`defaultProps`**; keep palette components’ spacing/padding in the registry, not ad hoc in the app.
