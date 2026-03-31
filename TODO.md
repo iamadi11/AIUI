@@ -49,7 +49,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 - [ ] Enforce single renderer path across editor canvas, preview, and runtime output.
 - [x] Define parity test matrix: same DSL + viewport + data => same result.
-- [ ] Add high-priority visual regression snapshots.
+- [x] Add high-priority visual regression snapshots.
 - [ ] Ensure preview mode hides editor chrome while preserving behavior.
 - [ ] Add parity failure diagnostics surfaced in developer mode.
 
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 5 visual regression snapshots added:
+  - Added runtime visual snapshot tests for high-priority primitives/layouts (`Stack`, `Button`, `Card`, `Badge`) at desktop and mobile widths.
+  - Snapshot artifacts are committed under runtime-core test snapshots to catch style/layout drift in CI.
+  - Snapshot coverage complements parity matrix tests by locking expected rendered visual style output, not only state parity.
 - **2026-03-31** - Phase 5 parity test matrix defined and enforced:
   - Added runtime-core parity matrix test over desktop/tablet/mobile-like widths and multiple initial data states.
   - Test asserts deterministic parity for both initial render and post-interaction state transition when DSL, viewport, and initial data are identical.
