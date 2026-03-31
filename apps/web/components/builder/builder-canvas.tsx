@@ -312,6 +312,61 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
     };
   }, [selectedRect, selectedNode, resizeDraft, selectedId]);
 
+  const alignmentGuides = useMemo(() => {
+    if (!resizeDraft || !selectedRect || !selectedNode) {
+      return { x: null as number | null, y: null as number | null };
+    }
+    if (!isLeafNode(selectedNode) || resizeDraft.id !== selectedId) {
+      return { x: null as number | null, y: null as number | null };
+    }
+    if (!effectiveSelectedRect) {
+      return { x: null as number | null, y: null as number | null };
+    }
+
+    const threshold = 4; // px
+    const selLeft = effectiveSelectedRect.x;
+    const selRight = effectiveSelectedRect.x + effectiveSelectedRect.width;
+    const selTop = effectiveSelectedRect.y;
+    const selBottom =
+      effectiveSelectedRect.y + effectiveSelectedRect.height;
+
+    let bestX: { x: number; d: number } | null = null;
+    let bestY: { y: number; d: number } | null = null;
+
+    for (const [id, r] of rects) {
+      if (id === selectedId) continue;
+      const otherLeft = r.x;
+      const otherRight = r.x + r.width;
+      const otherTop = r.y;
+      const otherBottom = r.y + r.height;
+
+      const candidatesX = [
+        { x: otherLeft, d: Math.abs(selRight - otherLeft) },
+        { x: otherRight, d: Math.abs(selRight - otherRight) },
+        { x: otherLeft, d: Math.abs(selLeft - otherLeft) },
+        { x: otherRight, d: Math.abs(selLeft - otherRight) },
+      ];
+      for (const c of candidatesX) {
+        if (!bestX || c.d < bestX.d) bestX = c;
+      }
+
+      const candidatesY = [
+        { y: otherTop, d: Math.abs(selBottom - otherTop) },
+        { y: otherBottom, d: Math.abs(selBottom - otherBottom) },
+        { y: otherTop, d: Math.abs(selTop - otherTop) },
+        { y: otherBottom, d: Math.abs(selTop - otherBottom) },
+      ];
+      for (const c of candidatesY) {
+        if (!bestY || c.d < bestY.d) bestY = c;
+      }
+    }
+
+    return {
+      x: bestX && bestX.d <= threshold ? bestX.x : null,
+      y: bestY && bestY.d <= threshold ? bestY.y : null,
+    };
+  }, [resizeDraft, selectedRect, selectedNode, selectedId, rects, effectiveSelectedRect]);
+
   useEffect(() => {
     if (resizeSession === null) return;
     const { id, startX, startY, baseW, baseH } = resizeSession;
@@ -435,6 +490,19 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
                 })}
               </SortableContext>
             ))}
+
+            {alignmentGuides.x !== null ? (
+              <div
+                className="absolute z-[26] bg-primary/25"
+                style={{ left: alignmentGuides.x, top: 0, bottom: 0, width: 1 }}
+              />
+            ) : null}
+            {alignmentGuides.y !== null ? (
+              <div
+                className="absolute z-[26] bg-primary/25"
+                style={{ top: alignmentGuides.y, left: 0, right: 0, height: 1 }}
+              />
+            ) : null}
 
             {selectedNode && effectiveSelectedRect ? (
               <SelectionChrome
