@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Action } from "./actions";
 import { actionSchema } from "./actions";
+import { bindingsRecordSchema, type BindingDescriptor } from "./bindings";
 import { migrateDocument } from "./migrate";
 
 export type { Action };
@@ -53,6 +54,8 @@ export type UiNode = {
   id: string;
   type: string;
   props: Record<string, unknown>;
+  /** Property-key -> binding descriptor (`static`/`expression`/`state`/`query`). */
+  bindings?: Record<string, BindingDescriptor>;
   children?: UiNode[];
   layout?: UiLayout;
   style?: Record<string, unknown>;
@@ -116,6 +119,7 @@ export const uiNodeSchema: z.ZodType<UiNode> = z.lazy(() =>
     id: z.string().uuid(),
     type: z.string().min(1),
     props: z.record(z.string(), z.unknown()),
+    bindings: bindingsRecordSchema.optional(),
     children: z.array(uiNodeSchema).optional(),
     layout: uiLayoutSchema.optional(),
     style: z.record(z.string(), z.unknown()).optional(),

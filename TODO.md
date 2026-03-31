@@ -30,7 +30,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 3 - Universal properties and data binding
 
-- [ ] Define binding descriptor schema (static, expression, state path, query path).
+- [x] Define binding descriptor schema (static, expression, state path, query path).
 - [ ] Build non-technical data source picker and path browser.
 - [ ] Add sample-data aware binding preview.
 - [ ] Implement reusable property editor primitives for registry-driven UI.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 3 binding descriptor schema defined:
+  - Added discriminated binding descriptor schema in `@aiui/dsl-schema` (`static`, `expression`, `state`, `query`).
+  - Added optional `bindings` field on `UiNode` for property-key -> descriptor mapping.
+  - Added parser exports and schema tests covering valid/invalid descriptors and document integration.
 - **2026-03-31** - Phase 2 viewport parity validation added:
   - Added shared viewport parity validator over desktop/tablet/mobile widths.
   - Added diagnostics reporting for per-viewport validity/determinism checks.
