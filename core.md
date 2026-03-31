@@ -431,7 +431,7 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 ### Phase 8 — Power features (partial baseline)
 
 - **Shortcuts:** Delete / Backspace removes the selected layer (not root); ⌘/Ctrl+D duplicates the subtree as the next sibling (fresh ids); collapsible **Keyboard shortcuts** reference in the builder.
-- **Templates:** `BUILDER_DOCUMENT_TEMPLATES` + **Row + two boxes** inserts a row `Stack` with two `Box` children under the selected node (or root if none selected).
+- **Templates:** `BUILDER_DOCUMENT_TEMPLATES` includes **Row + two boxes**, **Header / content / footer**, and **Sidebar + content** layouts, each inserted under the selected node (or root if none selected).
 - **Store:** `duplicateNode` uses `cloneUiSubtreeWithNewIds`; `removeNode` clears selection when the selected id disappears.
 
-**Remaining:** Multi-select, richer template library, optional dedicated diagnostics panel. Layout follow-ups: `PLAN.md` §14 Product UX Phase 3.
+**Remaining:** Multi-select, optional dedicated diagnostics panel. Layout follow-ups: `PLAN.md` §14 Product UX Phase 3.

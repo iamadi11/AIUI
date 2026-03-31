@@ -242,18 +242,21 @@ export function BuilderDemo() {
                   </Button>
                 </>
               ) : null}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                title={BUILDER_DOCUMENT_TEMPLATES[0].description}
-                onClick={() => {
-                  const parentId = selectedNodeId ?? rootId;
-                  insertChild(parentId, BUILDER_DOCUMENT_TEMPLATES[0].create());
-                }}
-              >
-                {BUILDER_DOCUMENT_TEMPLATES[0].label}
-              </Button>
+              {BUILDER_DOCUMENT_TEMPLATES.map((tpl) => (
+                <Button
+                  key={tpl.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  title={tpl.description}
+                  onClick={() => {
+                    const parentId = selectedNodeId ?? rootId;
+                    insertChild(parentId, tpl.create());
+                  }}
+                >
+                  {tpl.label}
+                </Button>
+              ))}
             </div>
 
             <BuilderShortcutsHelp />
