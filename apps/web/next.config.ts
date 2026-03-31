@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     "@aiui/logic",
     "@aiui/registry",
     "@aiui/runtime-core",
+    "@aiui/runtime-react",
   ],
 };
 

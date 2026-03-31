@@ -38,9 +38,9 @@ _Baseline shipped — `@aiui/runtime-core` (`render` / `update` / `destroy`); se
 
 ## Phase 5 — Runtime bundle packaging
 
-- [ ] Vite/Rollup build with separate entries for core vs React adapter
-- [ ] Public API: `render`, `update`, `destroy`
-- [ ] CI bundle size budget or warning thresholds
+_Baseline shipped — see **Done**._
+
+- [ ] Publish flow: versioned npm `exports` (dist vs source), or document “app consumes source via `transpilePackages`”
 
 ---
 
@@ -69,6 +69,7 @@ _Baseline shipped — `@aiui/runtime-core` (`render` / `update` / `destroy`); se
 
 ## Done
 
+- **2026-03-31** — **Phase 5 — Runtime bundles:** Vite library builds — `packages/runtime-core` (`vite.lib.config.ts` → `dist/index.mjs` + d.ts), `packages/runtime-react` (peer: React; external `@aiui/runtime-core`); root `pnpm bundle:check` enforces size budgets; `AiuiRuntime` in `@aiui/runtime-react`; preview uses adapter
 - **2026-03-31** — **Preview `/preview`:** `RuntimePreview` mounts `@aiui/runtime-core` (ResizeObserver → `update` on width change); React `DslPreview` kept as labeled dev host; `transpilePackages` includes runtime-core, logic, expression
 - **2026-03-31** — **`@aiui/runtime-core`:** `render({ container, config })` → validate DSL, `layoutDocument`, nested absolute DOM from registry primitives, `events` → `runActions` with document `state`; `queueMicrotask` batch after actions; per-node mount error UI; Vitest + happy-dom
 - **2026-03-31** — **React Flow** (`@xyflow/react`): read-only **Logic graph** panel for selected node — `events` → Start → event name → action chain; `eventsToFlowElements`; styles in `globals.css`; `nodrag nopan` + DnD context; `hideAttribution`

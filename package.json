@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r run build",
+    "bundle:check": "pnpm --filter @aiui/runtime-core run bundle:check && pnpm --filter @aiui/runtime-react run bundle:check",
     "dev": "pnpm --filter web dev",
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r exec tsc --noEmit"

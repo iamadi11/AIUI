@@ -19,11 +19,14 @@
     "@types/node": "^20",
     "happy-dom": "^20.0.2",
     "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.2.4"
   },
   "scripts": {
     "lint": "echo \"no lint yet\"",
-    "build": "echo \"source-only package\"",
+    "build": "vite build --config vite.lib.config.ts",
+    "bundle:check": "pnpm run build && node ./scripts/check-bundle-size.mjs",
     "test": "vitest run"
   }
 }
