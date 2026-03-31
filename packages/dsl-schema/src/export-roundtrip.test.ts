@@ -46,6 +46,37 @@ describe("migrateDocument", () => {
     const r = safeParseDocument(m);
     expect(r.success).toBe(true);
   });
+
+  it("migrates version 0.1.0 to current DSL_VERSION", () => {
+    const raw = {
+      version: "0.1.0",
+      layoutVersion: LAYOUT_VERSION,
+      root: {
+        id: ROOT_ID,
+        type: "Box",
+        props: {},
+      },
+    };
+    const r = safeParseDocumentWithMigration(raw);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.version).toBe(DSL_VERSION);
+    }
+  });
+
+  it("leaves unknown version without migrator unchanged (parse may fail)", () => {
+    const raw = {
+      version: "0.0.1-unknown",
+      layoutVersion: LAYOUT_VERSION,
+      root: {
+        id: ROOT_ID,
+        type: "Box",
+        props: {},
+      },
+    };
+    const m = migrateDocument(raw) as { version: string };
+    expect(m.version).toBe("0.0.1-unknown");
+  });
 });
 
 describe("golden JSON", () => {

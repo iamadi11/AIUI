@@ -44,8 +44,6 @@ _Baseline shipped — see **Done**._
 
 _Baseline shipped — see **Done**._
 
-- [ ] Extend `migrateDocument` / `MIGRATION_REGISTRY` when `DSL_VERSION` bumps incompatibly
-
 ---
 
 ## Phase 7 — Adapters
@@ -64,6 +62,7 @@ _Baseline shipped — see **Done**._
 
 ## Done
 
+- **2026-03-31** — **Phase 6 — DSL migration chain:** `DSL_VERSION` `0.2.0`; `MIGRATION_REGISTRY["0.1.0"]` → `migrate_0_1_0_to_0_2_0`; `migrateDocument` loops `applyVersionMigrations` after layout/version normalization; Vitest for `0.1.0` → current and unknown version passthrough
 - **2026-03-31** — **Phase 4 — Structural DOM sync:** `prevDoc` + `syncNode` / `syncChildren` (match by `data-aiui-id`); `update()` with new object reuses nodes, adds/removes/reorders children; per-node listener map; layout-only path when `prevConfigRef === config && prevDoc` (no `replaceChildren`); Vitest reuse + reorder
 - **2026-03-31** — **Phase 4 — Runtime flush:** Layout-only path when `prevConfigRef === config` and `prevDoc` set → `patchSubtree`; `update()` / initial mount re-seed `state` from `doc.state`; action flush preserves `state`; full remount + `clearListenersAndDom` on errors; per-node error UI unchanged; Vitest DOM reuse after click
 - **2026-03-31** — **Phase 7 — Adapters:** `AiuiRuntime` uses `useLayoutEffect` for `render`/`update` on `document` (before paint), `ResizeObserver` in `useEffect`, `destroy` on unmount; `examples/vanilla-runtime` (Vite) + README; `pnpm-workspace.yaml` includes `examples/*`

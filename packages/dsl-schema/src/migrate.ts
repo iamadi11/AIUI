@@ -1,21 +1,49 @@
 import { DSL_VERSION, LAYOUT_VERSION } from "./versions";
 
+export type MigrationFn = (
+  raw: Record<string, unknown>,
+) => Record<string, unknown>;
+
 /**
- * Reserved for version-specific transforms (semver → migration function).
- * Empty until we ship a second incompatible DSL version.
+ * One step per **source** `version` string. Each function must set `version` to
+ * the next format (usually the current `DSL_VERSION` after the last hop).
+ * `migrateDocument` applies these in a loop until `version === DSL_VERSION` or
+ * no migrator exists (unknown / future version — left unchanged; parse may fail).
  */
-export const MIGRATION_REGISTRY: Record<
-  string,
-  (raw: Record<string, unknown>) => Record<string, unknown>
-> = {};
+export const MIGRATION_REGISTRY: Record<string, MigrationFn> = {
+  "0.1.0": migrate_0_1_0_to_0_2_0,
+};
+
+function migrate_0_1_0_to_0_2_0(
+  raw: Record<string, unknown>,
+): Record<string, unknown> {
+  // 0.2.0: migration chain in place; add breaking transforms here when the
+  // schema shape changes (rename fields, wrap nodes, etc.).
+  raw.version = "0.2.0";
+  return raw;
+}
 
 function deepCloneJson<T>(v: T): T {
   return JSON.parse(JSON.stringify(v)) as T;
 }
 
+const MIGRATION_MAX_STEPS = 32;
+
+function applyVersionMigrations(data: Record<string, unknown>): void {
+  for (let step = 0; step < MIGRATION_MAX_STEPS; step++) {
+    const v =
+      typeof data.version === "string" ? data.version.trim() : "";
+    if (v === DSL_VERSION) return;
+    const migrator = MIGRATION_REGISTRY[v];
+    if (!migrator) return;
+    migrator(data);
+  }
+}
+
 /**
  * Best-effort normalization before `safeParseDocument` (missing `layoutVersion`,
- * empty `version`, etc.). Does not repair invalid trees.
+ * empty `version`, etc.). Applies `MIGRATION_REGISTRY` until `version` matches
+ * `DSL_VERSION` when a migrator exists. Does not repair invalid trees.
  */
 export function migrateDocument(raw: unknown): unknown {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
@@ -24,6 +52,8 @@ export function migrateDocument(raw: unknown): unknown {
   const data = deepCloneJson(raw) as Record<string, unknown>;
   if (typeof data.version !== "string" || data.version.trim() === "") {
     data.version = DSL_VERSION;
+  } else {
+    data.version = data.version.trim();
   }
   if (data.layoutVersion === undefined && data.root !== undefined) {
     data.layoutVersion = LAYOUT_VERSION;
@@ -34,5 +64,6 @@ export function migrateDocument(raw: unknown): unknown {
   ) {
     data.layoutVersion = String(data.layoutVersion);
   }
+  applyVersionMigrations(data);
   return data;
 }

@@ -76,7 +76,9 @@ function findDirectChildByAiuiId(
 
 function getDirectAiuiChildren(parent: HTMLElement): HTMLElement[] {
   const out: HTMLElement[] = [];
-  for (const c of parent.children) {
+  const kids = parent.children;
+  for (let i = 0; i < kids.length; i++) {
+    const c = kids[i];
     if (c instanceof HTMLElement && c.dataset.aiuiId) out.push(c);
   }
   return out;
@@ -399,7 +401,7 @@ export function render(options: RenderOptions): RuntimeHandle {
       prevDoc.root.id === doc.root.id &&
       findDirectChildByAiuiId(container, doc.root.id) !== null;
 
-    if (canSync) {
+    if (canSync && prevDoc) {
       try {
         container.style.position = "relative";
         container.style.boxSizing = "border-box";
