@@ -41,6 +41,8 @@ export type ScreenFlowHandle = {
     x: number;
     y: number;
   };
+  /** Flow coordinates at the center of the visible graph pane (for template adds). */
+  centerFlowPosition: () => { x: number; y: number };
 };
 
 function ScreenNode(props: NodeProps) {
@@ -127,9 +129,33 @@ const ScreenFlowInner = forwardRef<ScreenFlowHandle | null, InnerProps>(
     const setFlowEdges = useDocumentStore((s) => s.setFlowEdges);
     const connectScreens = useDocumentStore((s) => s.connectScreens);
 
-    useImperativeHandle(ref, () => ({
-      screenToFlowPosition: (p) => screenToFlowPosition(p),
-    }));
+    useImperativeHandle(
+      ref,
+      () => ({
+        screenToFlowPosition: (p) => screenToFlowPosition(p),
+        centerFlowPosition: () => {
+          const pane = document.querySelector(
+            ".react-flow .react-flow__pane",
+          ) as HTMLElement | null;
+          if (pane) {
+            const r = pane.getBoundingClientRect();
+            return screenToFlowPosition({
+              x: r.left + r.width / 2,
+              y: r.top + r.height / 2,
+            });
+          }
+          const n = getNodes();
+          let maxX = 0;
+          let maxY = 0;
+          for (const node of n) {
+            maxX = Math.max(maxX, node.position.x);
+            maxY = Math.max(maxY, node.position.y);
+          }
+          return { x: maxX + 280, y: maxY };
+        },
+      }),
+      [getNodes, screenToFlowPosition],
+    );
 
     const builtNodes = useMemo(
       () => buildScreenNodes(doc, activeScreenId),

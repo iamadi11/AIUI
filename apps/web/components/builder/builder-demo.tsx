@@ -13,7 +13,12 @@ import {
 import type { PrototypeEdgeKind, UiNode } from "@aiui/dsl-schema";
 import { editorDocumentView } from "@aiui/dsl-schema";
 import type { RuntimeDiagnostic } from "@aiui/runtime-core";
-import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
+import {
+  BOX_TYPE,
+  SCREEN_TEMPLATE_LABELS,
+  type ScreenTemplateId,
+  STACK_TYPE,
+} from "@aiui/registry";
 import { Button } from "@/components/ui/button";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { analyzeDocumentPerformanceFromDoc } from "@/lib/builder/document-performance";
@@ -85,6 +90,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const activeScreenId = useDocumentStore((s) => s.activeScreenId);
   const setActiveScreenId = useDocumentStore((s) => s.setActiveScreenId);
   const addScreenFromPalette = useDocumentStore((s) => s.addScreenFromPalette);
+  const addScreenFromTemplate = useDocumentStore((s) => s.addScreenFromTemplate);
   const removeScreen = useDocumentStore((s) => s.removeScreen);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
@@ -115,6 +121,9 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   );
   const [nextEdgeKind, setNextEdgeKind] =
     useState<PrototypeEdgeKind>("navigate");
+  const [screenTemplateChoice, setScreenTemplateChoice] = useState<
+    "" | ScreenTemplateId
+  >("");
   const flowRef = useRef<ScreenFlowHandle | null>(null);
   const pointerRef = useRef({ x: 0, y: 0 });
 
@@ -379,6 +388,35 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                         {msg("builder.removeScreen")}
                       </Button>
                     ) : null}
+                    <select
+                      className="h-8 max-w-[min(100%,220px)] truncate rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground shadow-sm"
+                      aria-label={msg("builder.addScreenTemplateAriaLabel")}
+                      value={screenTemplateChoice}
+                      onChange={(e) => {
+                        const v = e.target.value as ScreenTemplateId | "";
+                        if (!v) return;
+                        const pos =
+                          flowRef.current?.centerFlowPosition() ?? {
+                            x: 200,
+                            y: 160,
+                          };
+                        addScreenFromTemplate(v, pos);
+                        setScreenTemplateChoice("");
+                      }}
+                    >
+                      <option value="">
+                        {msg("builder.addScreenTemplatePlaceholder")}
+                      </option>
+                      {(
+                        Object.keys(
+                          SCREEN_TEMPLATE_LABELS,
+                        ) as ScreenTemplateId[]
+                      ).map((id) => (
+                        <option key={id} value={id}>
+                          {SCREEN_TEMPLATE_LABELS[id]}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <ScreenFlowCanvas
                     ref={flowRef}

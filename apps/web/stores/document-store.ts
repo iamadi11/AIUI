@@ -24,7 +24,12 @@ import {
   updateNodeById,
 } from "@/lib/document/tree";
 import { useSelectionStore } from "@/stores/selection-store";
-import { STACK_TYPE } from "@aiui/registry";
+import {
+  SCREEN_TEMPLATE_LABELS,
+  type ScreenTemplateId,
+  STACK_TYPE,
+} from "@aiui/registry";
+import { buildScreenTemplateRoot } from "@/lib/builder/screen-template-builders";
 
 const MAX_HISTORY = 50;
 
@@ -85,6 +90,11 @@ type DocumentState = {
   /** New screen with stack + dropped component; becomes active. */
   addScreenFromPalette: (
     componentType: string,
+    flowPosition: { x: number; y: number },
+  ) => void;
+  /** New screen from a registry template; becomes active. */
+  addScreenFromTemplate: (
+    templateId: ScreenTemplateId,
     flowPosition: { x: number; y: number },
   ) => void;
   /** Remove a screen (not the last one). */
@@ -265,6 +275,38 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       screens: {
         ...document.screens,
         [screenId]: { title: "Screen", root },
+      },
+      flowLayout: {
+        positions,
+        edges: document.flowLayout?.edges ?? [],
+      },
+    };
+    set({
+      past: truncatePast([...past, cloneDocument(document)]),
+      future: [],
+      document: next,
+      activeScreenId: screenId,
+    });
+    useSelectionStore.getState().clearSelection();
+    sanitizeSelection(next, screenId);
+  },
+
+  addScreenFromTemplate: (templateId, flowPosition) => {
+    const screenId = `screen-${newNodeId()}`;
+    const { document, past } = get();
+    const root = buildScreenTemplateRoot(templateId);
+    const positions = {
+      ...(document.flowLayout?.positions ?? {}),
+      [screenId]: flowPosition,
+    };
+    const next: AiuiDocument = {
+      ...document,
+      screens: {
+        ...document.screens,
+        [screenId]: {
+          title: SCREEN_TEMPLATE_LABELS[templateId],
+          root,
+        },
       },
       flowLayout: {
         positions,

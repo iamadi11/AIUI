@@ -1,6 +1,6 @@
 /**
- * Screen graph templates (labels for future "Add screen from template" flows).
- * Multi-screen defaults stay centralized here for easy updates.
+ * Screen graph templates (labels for “Add screen from template” in the builder).
+ * Composed starter trees live in `apps/web/lib/builder/screen-template-builders.ts`.
  */
 export const SCREEN_TEMPLATE_LABELS = {
   dashboard: "Dashboard shell",

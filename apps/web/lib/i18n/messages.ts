@@ -12,6 +12,8 @@ const EN_MESSAGES = {
   "builder.edgeKindNavigate": "Next connection: navigate",
   "builder.edgeKindModal": "Next connection: modal",
   "builder.removeScreen": "Remove screen",
+  "builder.addScreenTemplatePlaceholder": "Add screen from template…",
+  "builder.addScreenTemplateAriaLabel": "Add a new screen from a template",
   "builder.actionsAriaLabel": "Builder actions",
   "builder.undo": "Undo",
   "builder.undoTitle": "Undo (⌘Z / Ctrl+Z)",

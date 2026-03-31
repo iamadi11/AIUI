@@ -18,6 +18,7 @@ All items below are done unless marked otherwise.
 
 ## Recently completed (2026-03-31)
 
+- **Add screen from template:** Builder screen graph toolbar includes a select fed by [`SCREEN_TEMPLATE_LABELS`](packages/registry/src/screen-templates.ts); [`screen-template-builders.ts`](apps/web/lib/builder/screen-template-builders.ts) composes starter trees (dashboard / stacked / table+modal); `addScreenFromTemplate` + `centerFlowPosition` on the flow ref place the new node near the graph center.
 - **Multi-screen DSL + screen graph:** Documents use `screens`, `initialScreenId`, and `flowLayout` (positions + prototype edges); migration wraps legacy `root`; builder adds **React Flow** screen nodes, palette drop to create screens, connect edges (navigate/modal) with actions synced via `applyPrototypeEdgeToDocument`; runtime supports `navigateScreen`, modal stack, and overlay; `navigateScreen` action + `editorDocumentView` for per-screen editing; registry [`screen-templates.ts`](packages/registry/src/screen-templates.ts) for future template labels.
 - Builder shell: **sidebar palette** (left), slim **navbar** (Preview + More); **`/?dev=1`** adds **Design / Logic** tabs (React Flow logic map + dev panels), tree, export, diagnostics, live JSON; **Advanced** → `/?dev=1` from default route.
 - **Preview** (`/preview`): download / copy / import JSON; **Edit** → `/`; optional **Developer preview** → `?dev=1`.
@@ -31,4 +32,3 @@ All items below are done unless marked otherwise.
 - [ ] Optional React shadcn renderer path if imperative DOM is not enough for visual parity.
 - [ ] Extend `interactionPresets` across more primitives and tune copy.
 - [ ] Visual events editor: `navigateScreen` step (screen picker) alongside URL navigate; edge inspector to pick trigger node when multiple buttons exist.
-- [ ] “Add screen from template” using [`SCREEN_TEMPLATE_LABELS`](packages/registry/src/screen-templates.ts) and composed starter trees.
