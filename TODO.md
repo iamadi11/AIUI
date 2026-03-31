@@ -30,9 +30,10 @@ _Logic graph shipped — see **Done**._
 
 ## Phase 4 — Runtime engine
 
-- [ ] `runtime-core`: load DSL, layout, render to DOM, bind events, run actions
-- [ ] State store + reactive updates with deterministic ordering
-- [ ] Error boundaries / per-node failure isolation
+_Baseline shipped — `@aiui/runtime-core` (`render` / `update` / `destroy`); see **Done**._
+
+- [ ] Partial re-layout / DOM diff after state changes (currently full rebuild microtask after actions)
+- [ ] Wire `runtime-core` into `/preview` or a dedicated demo route (optional; `DslPreview` remains React dev host)
 
 ---
 
@@ -69,6 +70,7 @@ _Logic graph shipped — see **Done**._
 
 ## Done
 
+- **2026-03-31** — **`@aiui/runtime-core`:** `render({ container, config })` → validate DSL, `layoutDocument`, nested absolute DOM from registry primitives, `events` → `runActions` with document `state`; `queueMicrotask` batch after actions; per-node mount error UI; Vitest + happy-dom
 - **2026-03-31** — **React Flow** (`@xyflow/react`): read-only **Logic graph** panel for selected node — `events` → Start → event name → action chain; `eventsToFlowElements`; styles in `globals.css`; `nodrag nopan` + DnD context; `hideAttribution`
 - **2026-03-31** — Builder **Properties** → **Events**: linear list of bindings (event name + JSON actions array), validated with `safeParseActionsArray`; blur / add / remove commits to `node.events`
 - **2026-03-31** — Logic DSL + executor: `Action` union + Zod `actionSchema`; document `state` + node `events`; `@aiui/logic` — `runAction` / `runActions`, `setPathImmutable`, `setState` / `navigate` / `http` / `sequence` / `condition` (expressions via `@aiui/expression`); Vitest

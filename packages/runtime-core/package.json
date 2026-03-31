@@ -1,0 +1,29 @@
+{
+  "name": "@aiui/runtime-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@aiui/dsl-schema": "workspace:*",
+    "@aiui/layout-engine": "workspace:*",
+    "@aiui/logic": "workspace:*",
+    "@aiui/registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "happy-dom": "^20.0.2",
+    "typescript": "~5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "scripts": {
+    "lint": "echo \"no lint yet\"",
+    "build": "echo \"source-only package\"",
+    "test": "vitest run"
+  }
+}
