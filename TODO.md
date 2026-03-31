@@ -16,7 +16,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 - [x] Define registry UX metadata standard for all shadcn components.
 - [x] Standardize drag-drop placement language and visual affordances.
-- [ ] Refactor inspector into beginner-first sections.
+- [x] Refactor inspector into beginner-first sections.
 - [ ] Add smart defaults/templates for table/button/card/filter/chart starter dashboard.
 - [ ] Run first-time-user walkthrough and capture friction points.
 
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 1 inspector refactor to beginner-first sections:
+  - Properties inspector now renders ordered sections from registry metadata (`Content`, `Data`, `Actions`, `Visibility`, `Layout`, etc.).
+  - Layout-scoped controls are grouped under `Layout`; prop fields default to `Content`.
+  - Event bindings are presented under `Actions` with section-level guidance and clearer empty-state messaging for upcoming Data/Visibility capabilities.
 - **2026-03-31** - Phase 1 drag-drop language + affordances standardized:
   - Added shared drag/drop copy constants for palette, canvas, and overlay states.
   - Unified action wording around add/nest/reorder for first-time-user clarity.

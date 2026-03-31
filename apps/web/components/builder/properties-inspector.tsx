@@ -3,7 +3,11 @@
 import type { Action, UiNode } from "@aiui/dsl-schema";
 import {
   getDefinition,
+  INSPECTOR_SECTION_LABELS,
+  INSPECTOR_SECTION_ORDER,
+  type InspectorSectionId,
   getInspectorFields,
+  getCapabilities,
   type InspectorField,
 } from "@aiui/registry";
 import { findNodeById } from "@/lib/document/tree";
@@ -113,6 +117,27 @@ function applyLayoutUpdate(node: UiNode, key: string, value: unknown): UiNode {
 
 function fieldScope(field: InspectorField): "props" | "layout" {
   return field.scope ?? "props";
+}
+
+function inferFieldSection(
+  field: InspectorField,
+  fallback: InspectorSectionId,
+): InspectorSectionId {
+  if (fieldScope(field) === "layout") return "layout";
+  return fallback;
+}
+
+function helperCopyForSection(section: InspectorSectionId): string | null {
+  if (section === "content") return "Primary labels and visible text.";
+  if (section === "actions")
+    return "What happens when users interact with this component.";
+  if (section === "layout")
+    return "Spacing and sizing rules that shape this component.";
+  if (section === "data")
+    return "Data source and binding controls appear here.";
+  if (section === "visibility")
+    return "Show/hide and enable/disable rules appear here.";
+  return null;
 }
 
 const controlClass =
@@ -333,7 +358,30 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
 
   const defaults = def?.defaultProps ?? {};
   const hasEditorFields = fields && fields.length > 0;
+  const capabilities = getCapabilities(node.type);
   const editingId = node.id;
+  const inspectorOrder =
+    def?.ux.inspector?.sectionOrder ?? INSPECTOR_SECTION_ORDER;
+  const defaultSection = def?.ux.inspector?.defaultSection ?? "content";
+  const fieldsBySection = new Map<InspectorSectionId, InspectorField[]>();
+  for (const section of inspectorOrder) {
+    fieldsBySection.set(section, []);
+  }
+  for (const field of fields ?? []) {
+    const target = inferFieldSection(field, defaultSection);
+    const list = fieldsBySection.get(target);
+    if (list) list.push(field);
+    else fieldsBySection.set(target, [field]);
+  }
+  const hasActions = Boolean(node.events && Object.keys(node.events).length > 0);
+  const canShowActionsSection = Boolean(
+    capabilities?.supportsActions || hasActions,
+  );
+  const hasSectionContent =
+    Boolean(hasEditorFields) ||
+    canShowActionsSection ||
+    inspectorOrder.includes("data") ||
+    inspectorOrder.includes("visibility");
 
   function applyField(field: InspectorField, value: unknown) {
     const scope = fieldScope(field);
@@ -379,28 +427,85 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
             <span className="mt-1 inline-block text-[0.65rem]">Root</span>
           ) : null}
         </div>
-        {!hasEditorFields ? (
+        {!hasSectionContent ? (
           <p className="text-sm text-muted-foreground">
             No editable properties for this component.
           </p>
         ) : (
-          <div className="space-y-3">
-            {fields.map((field) => (
-              <FieldEditor
-                key={`${fieldScope(field)}-${field.kind}-${field.key}`}
-                node={node}
-                field={field}
-                defaults={defaults}
-                onChange={applyField}
-              />
-            ))}
+          <div className="space-y-4">
+            {inspectorOrder.map((section) => {
+              const sectionFields = fieldsBySection.get(section) ?? [];
+              const showActions = section === "actions";
+              const showDataHint = section === "data";
+              const showVisibilityHint = section === "visibility";
+              const helper = helperCopyForSection(section);
+              const hasContent =
+                sectionFields.length > 0 ||
+                (showActions && canShowActionsSection) ||
+                showDataHint ||
+                showVisibilityHint;
+              if (!hasContent) return null;
+
+              return (
+                <section
+                  key={section}
+                  className="rounded-lg border border-border/70 bg-muted/10 p-3"
+                  aria-label={INSPECTOR_SECTION_LABELS[section]}
+                >
+                  <h3 className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {INSPECTOR_SECTION_LABELS[section]}
+                  </h3>
+                  {helper ? (
+                    <p className="mt-1 text-[0.65rem] leading-snug text-muted-foreground">
+                      {helper}
+                    </p>
+                  ) : null}
+
+                  {sectionFields.length > 0 ? (
+                    <div className="mt-3 space-y-3">
+                      {sectionFields.map((field) => (
+                        <FieldEditor
+                          key={`${section}-${fieldScope(field)}-${field.kind}-${field.key}`}
+                          node={node}
+                          field={field}
+                          defaults={defaults}
+                          onChange={applyField}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {showActions && canShowActionsSection ? (
+                    <div className="mt-3">
+                      {!capabilities?.supportsActions && !hasActions ? (
+                        <p className="text-xs text-muted-foreground">
+                          This component does not currently expose action triggers.
+                        </p>
+                      ) : null}
+                      <EventBindingsPanel
+                        nodeId={editingId}
+                        events={node.events}
+                        onApply={applyEvents}
+                      />
+                    </div>
+                  ) : null}
+
+                  {showDataHint && sectionFields.length === 0 ? (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Data bindings are not configured for this component yet.
+                    </p>
+                  ) : null}
+
+                  {showVisibilityHint && sectionFields.length === 0 ? (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Visibility rules will appear here in a later phase.
+                    </p>
+                  ) : null}
+                </section>
+              );
+            })}
           </div>
         )}
-        <EventBindingsPanel
-          nodeId={editingId}
-          events={node.events}
-          onApply={applyEvents}
-        />
       </div>
     </div>
   );

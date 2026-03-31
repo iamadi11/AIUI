@@ -52,3 +52,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Shared semantics:** Keep truthiness and unsafe path-segment checks in one package (`@aiui/expression`) and reuse from logic to prevent subtle divergence.
 - **2026-03-31 - Registry UX contract:** Keep builder-facing palette/inspector/capability metadata under one `ComponentDefinition.ux` object so new components inherit discoverable UX behavior without extra app-level wiring.
 - **2026-03-31 - Drag/drop language consistency:** Keep add/nest/reorder terminology in one shared copy module so palette hints, canvas affordances, and drag overlays never drift.
+- **2026-03-31 - Beginner-first inspector:** Render inspector UI by ordered sections from registry metadata and map layout-scoped controls into `Layout` so first-time users see clear mental buckets before advanced controls.
