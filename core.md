@@ -407,6 +407,7 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 - **Engine:** `layout.margin` (number or per-side object) — outside the border box; affects sibling spacing in column and row stacks (`parseMargin` in `@aiui/layout-engine`).
 - **Inspector:** Per-side **Margin (T / R / B / L px)** on Box/Stack (`InspectorField` `kind: "marginSides"` → `layout.margin` object); uniform numeric `margin` in imported JSON still maps to all sides when editing.
 - **Canvas:** **Resize** handle on selected **empty** leaves — 8px snap, 32px minimum; writes `layout.width` / `layout.height` (matches Properties). Resize shows alignment guides and **snaps** intrinsic width/height to nearby sibling edges when within a small threshold.
+- **Debug:** `LayoutDebugPanel` lets you scrub the layout **width constraint** (slider + numeric input) to inspect how `layoutDocument` responds without affecting the main builder canvas.
 
 ### Phase 4 — Events (shipped baseline)
 

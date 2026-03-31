@@ -64,7 +64,7 @@ _Baseline shipped — see **Done**._
 
 _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation is incremental; do not break DSL/runtime boundaries._
 
-- [ ] **Phase 3 — Layout UX (remaining):** Constraint UI
+- [ ] **Phase 3 — Layout UX (remaining):** —
 - [ ] **Phase 8 — Power features (remaining):** Multi-select; more document templates; optional dedicated diagnostics panel
 
 ---
