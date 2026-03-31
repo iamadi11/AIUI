@@ -430,8 +430,9 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 
 ### Phase 8 — Power features (partial baseline)
 
-- **Shortcuts:** Delete / Backspace removes the selected layer (not root); ⌘/Ctrl+D duplicates the subtree as the next sibling (fresh ids); collapsible **Keyboard shortcuts** reference in the builder.
+- **Shortcuts:** Delete / Backspace removes selected layers (except root); ⌘/Ctrl+D duplicates selected subtrees as next siblings (fresh ids); collapsible **Keyboard shortcuts** reference in the builder.
 - **Templates:** `BUILDER_DOCUMENT_TEMPLATES` includes **Row + two boxes**, **Header / content / footer**, and **Sidebar + content** layouts, each inserted under the selected node (or root if none selected).
 - **Store:** `duplicateNode` uses `cloneUiSubtreeWithNewIds`; `removeNode` clears selection when the selected id disappears; selection store tracks a primary id plus an array of selected ids for multi-select.
+- **Diagnostics:** Dedicated **Diagnostics** panel in the builder surfaces schema validity (`safeParseDocument`), selection count, node/leaf/event/action counts, and undo/redo depth.
 
-**Remaining:** Optional dedicated diagnostics panel. Layout follow-ups: `PLAN.md` §14 Product UX Phase 3.
+**Remaining:** —. Layout follow-ups: `PLAN.md` §14 Product UX Phase 3.

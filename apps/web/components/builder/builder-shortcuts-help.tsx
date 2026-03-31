@@ -21,6 +21,10 @@ export function BuilderShortcutsHelp() {
           <dd className="shrink-0 font-mono text-foreground/90">Esc</dd>
         </div>
         <div className="flex justify-between gap-4">
+          <dt>Toggle multi-select</dt>
+          <dd className="shrink-0 font-mono text-foreground/90">⌘/Ctrl+Click</dd>
+        </div>
+        <div className="flex justify-between gap-4">
           <dt>Delete selected layer</dt>
           <dd className="shrink-0 font-mono text-foreground/90">
             Delete · Backspace

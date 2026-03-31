@@ -65,14 +65,14 @@ _Baseline shipped — see **Done**._
 _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation is incremental; do not break DSL/runtime boundaries._
 
 - [ ] **Phase 3 — Layout UX (remaining):** —
-- [ ] **Phase 8 — Power features (remaining):** Optional dedicated diagnostics panel
+- [ ] **Phase 8 — Power features (remaining):** —
 
 ---
 
 ## Done
 
 - **2026-03-31** — **Product UX — Phase 3 layout follow-up (partial):** `layout.margin` in `@aiui/layout-engine` (`parseMargin`, column + row spacing); registry **`marginSides`** + Properties **Margin (T/R/B/L px)** → `layout.margin` object; canvas **resize handle** on empty leaves (8px snap, min 32px) → `layout.width` / `layout.height`; **resize alignment guides + edge snapping**; Vitest `layout.margin.test.ts`
-- **2026-03-31** — **Product UX — Phase 8 (power features, baseline):** `duplicateNode` + `cloneUiSubtreeWithNewIds`; Delete/Backspace and ⌘/Ctrl+D; **BuilderShortcutsHelp**; template buttons backed by `BUILDER_DOCUMENT_TEMPLATES` (Row + two boxes; Header / content / footer; Sidebar + content); `removeNode` → `sanitizeSelection`
+- **2026-03-31** — **Product UX — Phase 8 (power features, baseline):** `duplicateNode` + `cloneUiSubtreeWithNewIds`; Delete/Backspace and ⌘/Ctrl+D; **BuilderShortcutsHelp** (+ Cmd/Ctrl+Click multi-select); template buttons backed by `BUILDER_DOCUMENT_TEMPLATES` (Row + two boxes; Header / content / footer; Sidebar + content); `removeNode` → `sanitizeSelection`; dedicated `DiagnosticsPanel` (schema/selection/tree/history metrics)
 - **2026-03-31** — **Product UX — Phase 7 (builder / runtime convergence):** Builder **Canvas** uses `AiuiRuntime` (same as `/preview`); `layoutDocument`-aligned **palette** drop overlays + **sortable** grips; selection via `data-aiui-id`; label chrome overlay; `/preview` drops duplicate `DslPreview` panel
 - **2026-03-31** — **Product UX — Phase 6 (advanced logic / React Flow):** `flattenActions()` expands `sequence` / `condition` for graph layout; `eventsToFlowElements` + `flowGraphStats`; **Logic** panel — “Synced with Properties” badge, per-step **inspect** (`JSON.stringify` when `data.action`), stats line (events · expanded steps); `logic-flow-panel.tsx` + `lib/logic/events-to-flow.ts`
 - **2026-03-31** — **Product UX — Phase 5 (logic / side effects UX):** Visual **If** step (`condition` with branch-only then/else) + **HTTP body** field; `BranchActionFields` for nested branches; `document.state` **Initial state** panel (`setDocumentState` in store); `event-actions` helpers (`defaultBranchAction`, `defaultConditionAction`, HTTP body parse/format)

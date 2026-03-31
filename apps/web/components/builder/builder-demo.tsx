@@ -31,6 +31,7 @@ import { LayoutDebugPanel } from "./layout-debug-panel";
 import { LogicFlowPanel } from "./logic-flow-panel";
 import { ComponentPalette } from "./component-palette";
 import { PropertiesInspector } from "./properties-inspector";
+import { DiagnosticsPanel } from "./diagnostics-panel";
 import {
   type CanvasDropData,
   type PaletteDragData,
@@ -51,6 +52,8 @@ export function BuilderDemo() {
   const reorderSibling = useDocumentStore((s) => s.reorderSibling);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
+  const undoDepth = useDocumentStore((s) => s.past.length);
+  const redoDepth = useDocumentStore((s) => s.future.length);
 
   const selectedNodeId = useSelectionStore((s) => s.selectedNodeId);
   const selectedIds = useSelectionStore((s) => s.selectedIds);
@@ -117,11 +120,10 @@ export function BuilderDemo() {
   }, [
     undo,
     redo,
-    selectNode,
     clearSelection,
     duplicateNode,
     removeNode,
-    selectedNodeId,
+    selectedIds,
     rootId,
   ]);
 
@@ -229,13 +231,17 @@ export function BuilderDemo() {
               >
                 Reset document
               </Button>
-              {selectedNodeId && selectedNodeId !== rootId ? (
+              {selectedIds.some((id) => id !== rootId) ? (
                 <>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => duplicateNode(selectedNodeId)}
+                    onClick={() => {
+                      for (const id of selectedIds) {
+                        if (id !== rootId) duplicateNode(id);
+                      }
+                    }}
                     title="Duplicate layer (⌘D / Ctrl+D)"
                   >
                     Duplicate
@@ -244,7 +250,11 @@ export function BuilderDemo() {
                     type="button"
                     variant="secondary"
                     size="sm"
-                    onClick={() => removeNode(selectedNodeId)}
+                    onClick={() => {
+                      for (const id of selectedIds) {
+                        if (id !== rootId) removeNode(id);
+                      }
+                    }}
                   >
                     Remove selected
                   </Button>
@@ -269,7 +279,7 @@ export function BuilderDemo() {
 
             <BuilderShortcutsHelp />
 
-              <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Selection:{" "}
               <span className="text-foreground">
                 {selectedIds.length === 0
@@ -334,6 +344,13 @@ export function BuilderDemo() {
             />
 
             <LogicFlowPanel root={document.root} selectedId={selectedNodeId} />
+
+            <DiagnosticsPanel
+              document={document}
+              selectedCount={selectedIds.length}
+              undoDepth={undoDepth}
+              redoDepth={redoDepth}
+            />
 
             <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">

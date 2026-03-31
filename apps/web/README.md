@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**: component palette, canvas, tree, properties, export, layout debug, and logic graph. **Preview** lives at `/preview`.
 
-**Builder UX:** The **canvas** is the same **`@aiui/runtime-core`** view as **Preview** (`AiuiRuntime`). Click a layer to select; click empty chrome to deselect; **Esc** clears selection. Double-click a node in the preview or the **label** chip on the selection outline to rename (`props.label`). Selection shows a breadcrumb path; full ids are in tooltips / a subtle hover chip. The **component palette** is grouped by category with a **search** field (registry-driven keywords + names).
+**Builder UX:** The **canvas** is the same **`@aiui/runtime-core`** view as **Preview** (`AiuiRuntime`). Click a layer to select; **Cmd/Ctrl+Click** toggles multi-select; click empty chrome to deselect; **Esc** clears selection. Double-click a node in the preview or the **label** chip on the selection outline to rename (`props.label`). Selection shows a breadcrumb path for a single layer (or a count for multi-select); full ids are in tooltips / a subtle hover chip. The **component palette** is grouped by category with a **search** field (registry-driven keywords + names).
 
 See `packages/registry/README.md` for palette metadata when adding primitives.
 
@@ -15,6 +15,8 @@ See `packages/registry/README.md` for palette metadata when adding primitives.
 **Initial state:** Edit `document.state` key/value defaults for expressions and `setState` paths (panel below export).
 
 **Logic graph:** The **Logic** panel renders a read-only React Flow chain from the selected node’s `events`; `sequence` and `condition` are expanded into steps. Click a step to inspect its action JSON; edit bindings in **Properties → Events**.
+
+**Diagnostics:** A dedicated **Diagnostics** panel shows schema validity, selection count, node/leaf/event/action counts, and undo/redo depth.
 
 **Shortcuts & templates:** Open **Keyboard shortcuts** on the builder for undo/redo, Esc, Delete/Backspace, and ⌘/Ctrl+D (duplicate). Use the **Templates** buttons (Row + two boxes, Header / content / footer, Sidebar + content) to insert common layouts under the selection (or under root).
 
