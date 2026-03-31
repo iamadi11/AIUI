@@ -378,3 +378,19 @@ NOT just a drag-and-drop builder.
 ---
 
 Take your time. Think deeply. This should be a blueprint for a real product.
+
+---
+
+## Appendix — Builder product UX (maintenance)
+
+This appendix tracks **product-facing** builder experience work. **Engine milestones** (layout engine, runtime, export) are separate from these UX phases; see `PLAN.md` §14 and `TODO.md` for current status.
+
+### Phase 1 — Builder UX foundation (shipped baseline)
+
+- **Canvas:** Hover vs selected states, hierarchy indentation, empty-canvas click deselects, **Escape** clears selection.
+- **Labels:** `props.label` (optional string) on **Box** and **Stack** for human-readable layers; **double-click** the label on a canvas card to edit inline; same field in the Properties inspector (`InspectorField` `kind: "text"`).
+- **Discoverability:** Selection line shows a **breadcrumb** (`Type (label) › …`); tree list uses the same titles; node ids appear only in `title` tooltips / subtle hover chip on canvas — not the primary label.
+
+### Phases 2–8 (planned)
+
+Palette and search; layout manipulation; event and logic UIs without raw JSON for common cases; React Flow alignment; builder/runtime visual parity; power-user tooling. Details in `PLAN.md` §14.

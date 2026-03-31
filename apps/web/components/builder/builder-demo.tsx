@@ -13,6 +13,8 @@ import type { UiNode } from "@aiui/dsl-schema";
 import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatNodeTitle } from "@/lib/builder/node-display";
+import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { Redo2, Undo2 } from "lucide-react";
@@ -38,6 +40,7 @@ export function BuilderDemo() {
   const removeNode = useDocumentStore((s) => s.removeNode);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
+  const updateNode = useDocumentStore((s) => s.updateNode);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
 
@@ -74,11 +77,15 @@ export function BuilderDemo() {
       if (meta && (e.key === "y" || e.key === "Y")) {
         e.preventDefault();
         redo();
+        return;
+      }
+      if (e.key === "Escape") {
+        selectNode(null);
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, selectNode]);
 
   function handleDragStart(event: DragStartEvent) {
     const data = event.active.data.current;
@@ -184,12 +191,18 @@ export function BuilderDemo() {
 
             <p className="text-xs text-muted-foreground">
               Selection:{" "}
-              <span className="font-mono text-foreground">
-                {selectedNodeId ?? "none"}
+              <span className="text-foreground">
+                {selectedNodeId
+                  ? (() => {
+                      const path = getPathToNode(document.root, selectedNodeId);
+                      return path?.map(formatNodeTitle).join(" › ") ?? "—";
+                    })()
+                  : "none"}
               </span>
               {" · "}
-              Click tree or canvas to select. Root cannot be removed. Undo/redo:
-              ⌘Z / ⌘⇧Z (Ctrl+Z / Ctrl+Shift+Z or Ctrl+Y).
+              Click canvas or tree; double-click a label to rename. Esc clears
+              selection. Root cannot be removed. Undo/redo: ⌘Z / ⌘⇧Z (Ctrl+Z /
+              Ctrl+Shift+Z or Ctrl+Y).
             </p>
 
             <BuilderCanvas
@@ -197,6 +210,12 @@ export function BuilderDemo() {
               rootId={rootId}
               selectedId={selectedNodeId}
               onSelect={selectNode}
+              onLabelChange={(id, label) =>
+                updateNode(id, (n) => ({
+                  ...n,
+                  props: { ...n.props, label },
+                }))
+              }
             />
 
             <div className="space-y-2">
@@ -260,21 +279,27 @@ function NodeTree(props: {
   const { node, depth, selectedId, onSelect, rootId } = props;
   const pad = depth * 12;
   const isRoot = node.id === rootId;
+  const title = formatNodeTitle(node);
 
   return (
-    <div className="font-mono text-sm">
+    <div className="text-sm">
       <button
         type="button"
-        className={`flex w-full rounded-md border border-transparent px-2 py-1 text-left transition-colors hover:border-border hover:bg-muted/50 ${
-          selectedId === node.id ? "border-border bg-muted" : ""
-        }`}
+        title={node.id}
+        className={cn(
+          "flex w-full rounded-md border border-transparent px-2 py-1.5 text-left transition-colors",
+          "hover:border-border hover:bg-muted/50",
+          selectedId === node.id &&
+            "border-primary/40 bg-muted/80 shadow-sm",
+        )}
         style={{ paddingLeft: pad + 8 }}
         onClick={() => onSelect(node.id)}
       >
-        <span className="text-muted-foreground">{node.type}</span>
-        <span className="ml-2 truncate text-xs text-foreground/80">{node.id}</span>
+        <span className="shrink-0 font-medium text-foreground">{title}</span>
         {isRoot ? (
-          <span className="ml-2 text-xs text-muted-foreground">(root)</span>
+          <span className="ml-2 shrink-0 text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+            Root
+          </span>
         ) : null}
       </button>
       {node.children?.map((child) => (

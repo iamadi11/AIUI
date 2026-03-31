@@ -55,6 +55,8 @@ Use **one** `pnpm-lock.yaml` and **one** `pnpm-workspace.yaml` at the repo root 
 
 _Add dated or milestone notes below as the project progresses._
 
+- **2026-03-31 — Builder UX Phase 1:** Use optional `props.label` on primitives for user-facing layer names; extend `@aiui/registry` `InspectorField` with `kind: "text"` instead of one-off inspector switches. Inline edit on canvas should cancel on **Escape** without committing — guard `blur` with a ref so cancel does not save partial text.
+
 - **2026-03-31 — pnpm + Next in monorepo:** `create-next-app` can leave `apps/web/pnpm-lock.yaml` and a stray `apps/web/pnpm-workspace.yaml` (build-ignore only). Either breaks `workspace:*` resolution and `pnpm add` from `apps/web`. Use a single lockfile at the repo root and delete the nested `pnpm-workspace.yaml` under `apps/web` unless it intentionally defines workspace `packages`.
 - **2026-03-31 — Recursive Zod tree:** Annotate `uiNodeSchema` as `z.ZodType<UiNode>` with a hand-written `UiNode` type; avoid `.default({})` on `props` if you need the schema to satisfy `ZodType<UiNode>` under strict builds.
 - **2026-03-31 — Builder document state:** Keep the editor’s source of truth as `AiuiDocument` (`dsl-schema`); perform structural edits via pure tree helpers (`updateNodeById`, `insertChild`, `removeNodeById`) so later undo/export paths stay aligned with Zod validation.

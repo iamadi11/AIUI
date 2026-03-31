@@ -60,8 +60,23 @@ _Baseline shipped — see **Done**._
 
 ---
 
+## Product UX phases (builder experience)
+
+_Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation is incremental; do not break DSL/runtime boundaries._
+
+- [ ] **Phase 2 — Component system UX:** Palette redesign, categories, search/filter, lazy registry loading
+- [ ] **Phase 3 — Layout UX:** Drag positioning, resize, margin/padding, snapping, constraints
+- [ ] **Phase 4 — Event system UX:** Simple event editor, add/remove, visual mapping
+- [ ] **Phase 5 — Logic / side effects UX:** API/state/conditions UI, action chaining without raw JSON
+- [ ] **Phase 6 — Advanced logic (React Flow):** Graph workflows, sync with simple mode, debugging
+- [ ] **Phase 7 — Builder = runtime convergence:** Same engine in builder as preview
+- [ ] **Phase 8 — Power features:** Multi-select, templates, shortcuts, debug panels
+
+---
+
 ## Done
 
+- **2026-03-31** — **Product UX — Phase 1 (builder foundation):** Canvas hover/selection affordances, hierarchy indent, backdrop click + **Esc** to clear selection; optional `props.label` on Box/Stack with **inline rename** on canvas (double-click) + `InspectorField` `kind: "text"`; selection **breadcrumb** and tree rows use `formatNodeTitle` (ids in `title` only); `getPathToNode` in `lib/document/tree.ts`
 - **2026-03-31** — **Setup — Single pnpm lockfile:** `scripts/check-single-repo-lockfile.mjs` (fail on nested `pnpm-lock.yaml` / `pnpm-workspace.yaml`); `pnpm run check:repo`; wired into `pnpm test`; `.cursor/rules/aiui-single-pnpm-lockfile.mdc`
 - **2026-03-31** — **Phase 6 — DSL migration chain:** `DSL_VERSION` `0.2.0`; `MIGRATION_REGISTRY["0.1.0"]` → `migrate_0_1_0_to_0_2_0`; `migrateDocument` loops `applyVersionMigrations` after layout/version normalization; Vitest for `0.1.0` → current and unknown version passthrough
 - **2026-03-31** — **Phase 4 — Structural DOM sync:** `prevDoc` + `syncNode` / `syncChildren` (match by `data-aiui-id`); `update()` with new object reuses nodes, adds/removes/reorders children; per-node listener map; layout-only path when `prevConfigRef === config && prevDoc` (no `replaceChildren`); Vitest reuse + reorder

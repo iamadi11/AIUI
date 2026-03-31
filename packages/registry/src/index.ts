@@ -16,6 +16,12 @@ export type InspectorField =
       label: string;
       min?: number;
       step?: number;
+    }
+  | {
+      kind: "text";
+      key: string;
+      label: string;
+      placeholder?: string;
     };
 
 export type ComponentDefinition = {
@@ -32,14 +38,27 @@ export const primitives: Record<string, ComponentDefinition> = {
   [BOX_TYPE]: {
     type: BOX_TYPE,
     displayName: "Box",
-    defaultProps: {},
-    inspectorFields: [],
+    defaultProps: { label: "" },
+    inspectorFields: [
+      {
+        kind: "text",
+        key: "label",
+        label: "Label",
+        placeholder: "Name this layer…",
+      },
+    ],
   },
   [STACK_TYPE]: {
     type: STACK_TYPE,
     displayName: "Stack",
-    defaultProps: { direction: "column" as const, gap: 0 },
+    defaultProps: { direction: "column" as const, gap: 0, label: "" },
     inspectorFields: [
+      {
+        kind: "text",
+        key: "label",
+        label: "Label",
+        placeholder: "Name this layer…",
+      },
       {
         kind: "select",
         key: "direction",

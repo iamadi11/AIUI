@@ -37,6 +37,30 @@ function FieldEditor(props: {
 }) {
   const { node, field, defaults, onChange } = props;
 
+  if (field.kind === "text") {
+    const current = resolveProp(node, field.key, defaults);
+    const value = typeof current === "string" ? current : "";
+    return (
+      <div>
+        <label
+          className="mb-1 block text-xs font-medium text-muted-foreground"
+          htmlFor={`prop-${node.id}-${field.key}`}
+        >
+          {field.label}
+        </label>
+        <input
+          id={`prop-${node.id}-${field.key}`}
+          type="text"
+          className={controlClass}
+          value={value}
+          placeholder={field.placeholder}
+          autoComplete="off"
+          onChange={(e) => onChange(field.key, e.target.value)}
+        />
+      </div>
+    );
+  }
+
   if (field.kind === "select") {
     const current = resolveProp(node, field.key, defaults);
     const value =

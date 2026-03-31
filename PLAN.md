@@ -221,3 +221,22 @@ packages/runtime-react/
 | `.cursor/skills/` | Project skills for DSL/runtime and repo upkeep |
 
 This document should evolve when major architectural decisions change; note changes in `cursor.md` or git history.
+
+---
+
+## 14. Builder product UX phases (visual programming)
+
+These phases improve **how** users edit the DSL in the Next.js builder. They sit alongside the engine milestones above; **status** lives in `TODO.md`.
+
+| Phase | Focus |
+|-------|--------|
+| **1 — Foundation** | Canvas interaction, selection/hover, inline labels, clear affordances, low-friction basics |
+| **2 — Components** | Palette layout, categories, search, registry-driven extensibility |
+| **3 — Layout** | Drag/resize, spacing controls, snapping, constraints |
+| **4 — Events** | Friendly event list/editor, discoverability |
+| **5 — Logic** | API/state/conditions UI, progressive disclosure, hide raw JSON for typical flows |
+| **6 — Graph** | React Flow workflows, sync with simple mode, debug |
+| **7 — Convergence** | Builder uses runtime engine; preview parity |
+| **8 — Power** | Multi-select, templates, shortcuts, diagnostics |
+
+**Principles:** Visual-first, smart defaults, progressive disclosure, never expose raw DSL to end users in product flows; keep `AiuiDocument` as source of truth.

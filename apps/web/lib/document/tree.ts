@@ -10,6 +10,17 @@ export function findNodeById(root: UiNode, id: string): UiNode | null {
   return null;
 }
 
+/** Path from root to `id` (inclusive), or `null` if not found. */
+export function getPathToNode(root: UiNode, id: string): UiNode[] | null {
+  if (root.id === id) return [root];
+  if (!root.children?.length) return null;
+  for (const child of root.children) {
+    const sub = getPathToNode(child, id);
+    if (sub) return [root, ...sub];
+  }
+  return null;
+}
+
 /** Returns parent of `id`, or `null` if `id` is the root or missing. */
 export function findParentOf(root: UiNode, id: string): UiNode | null {
   if (root.id === id) return null;

@@ -1,17 +1,17 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## AIUI builder (`apps/web`)
+
+From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**: component palette, canvas, tree, properties, export, layout debug, and logic graph. **Preview** lives at `/preview`.
+
+**Phase 1 UX basics:** Click empty canvas to deselect; **Esc** clears selection; double-click a layer **label** on the canvas to rename (Box/Stack `props.label`). Selection shows a breadcrumb path; full ids are in tooltips / a subtle hover chip.
+
 ## Getting Started
 
-First, run the development server:
+First, run the development server (from repo root, `pnpm dev`):
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
