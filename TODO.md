@@ -33,7 +33,6 @@ _Logic graph shipped — see **Done**._
 _Baseline shipped — `@aiui/runtime-core` (`render` / `update` / `destroy`); see **Done**._
 
 - [ ] Partial re-layout / DOM diff after state changes (currently full rebuild microtask after actions)
-- [ ] Wire `runtime-core` into `/preview` or a dedicated demo route (optional; `DslPreview` remains React dev host)
 
 ---
 
@@ -70,6 +69,7 @@ _Baseline shipped — `@aiui/runtime-core` (`render` / `update` / `destroy`); se
 
 ## Done
 
+- **2026-03-31** — **Preview `/preview`:** `RuntimePreview` mounts `@aiui/runtime-core` (ResizeObserver → `update` on width change); React `DslPreview` kept as labeled dev host; `transpilePackages` includes runtime-core, logic, expression
 - **2026-03-31** — **`@aiui/runtime-core`:** `render({ container, config })` → validate DSL, `layoutDocument`, nested absolute DOM from registry primitives, `events` → `runActions` with document `state`; `queueMicrotask` batch after actions; per-node mount error UI; Vitest + happy-dom
 - **2026-03-31** — **React Flow** (`@xyflow/react`): read-only **Logic graph** panel for selected node — `events` → Start → event name → action chain; `eventsToFlowElements`; styles in `globals.css`; `nodrag nopan` + DnD context; `hideAttribution`
 - **2026-03-31** — Builder **Properties** → **Events**: linear list of bindings (event name + JSON actions array), validated with `safeParseActionsArray`; blur / add / remove commits to `node.events`

@@ -3,6 +3,7 @@
 import { safeParseDocument } from "@aiui/dsl-schema";
 import Link from "next/link";
 import { DslPreview } from "@/components/preview/dsl-preview";
+import { RuntimePreview } from "@/components/preview/runtime-preview";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDocumentStore } from "@/stores/document-store";
@@ -19,8 +20,10 @@ export default function PreviewPage() {
             <p className="text-xs font-medium text-muted-foreground">AIUI</p>
             <h1 className="text-lg font-semibold tracking-tight">Preview</h1>
             <p className="text-sm text-muted-foreground">
-              React host driven by <code className="font-mono text-xs">@aiui/registry</code>
-              — same document as the builder (in-memory).
+              Runtime preview uses <code className="font-mono text-xs">@aiui/runtime-core</code>
+              ; the React panel below is a dev host via{" "}
+              <code className="font-mono text-xs">@aiui/registry</code>. Same in-memory document
+              as the builder.
             </p>
           </div>
           <Link
@@ -56,8 +59,18 @@ export default function PreviewPage() {
 
         <section className="space-y-2">
           <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Rendered output
+            Runtime preview (DOM)
           </h2>
+          <RuntimePreview document={document} />
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            React host (dev)
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Tailwind layout for quick visual checks; behavior should converge with runtime-core.
+          </p>
           <DslPreview root={document.root} />
         </section>
       </main>
