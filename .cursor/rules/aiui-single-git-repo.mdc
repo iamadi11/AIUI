@@ -1,0 +1,10 @@
+---
+description: Enforce a single Git repository at the AIUI monorepo root (no nested repos under apps/).
+alwaysApply: true
+---
+
+# Single Git repository
+
+- **One `.git` only:** at the workspace root (`AIUI/`). Never initialize or keep a nested `.git` under `apps/` or `packages/`.
+- **Scaffolding:** If `create-next-app` or similar creates `apps/web/.git`, **delete `apps/web/.git`** before committing so `apps/web` is tracked as plain files in the root repo.
+- **Submodules:** Do not add Git submodules for `apps/web` unless the team explicitly chooses that workflow.

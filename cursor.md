@@ -13,6 +13,10 @@ A **UI runtime platform**: visual builder → **Universal JSON DSL** + **JavaScr
 - **Validation / types:** Zod, shared `dsl-schema`  
 - **Builder state:** Zustand (default choice unless complexity justifies RTK)
 
+## Git (monorepo)
+
+Use **one repository at the repo root**. Do not keep `apps/<name>/.git` (nested repos break `workspace:*` and confuse Source Control). If a tool creates a nested repo, remove that `.git` directory and commit the app files into the root repo.
+
 ## Repository pointers
 
 | Path | Purpose |

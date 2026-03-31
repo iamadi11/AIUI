@@ -1,3 +1,8 @@
+# Monorepo: one Git repo at the repository root only. Do not run `git init`
+# inside apps/* (e.g. after create-next-app). If Git reports an "embedded
+# repository", delete apps/<app>/.git and add the app as normal files.
+apps/*/.git/
+
 # Dependencies
 node_modules
 .pnpm-store
