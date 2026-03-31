@@ -34,7 +34,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Build non-technical data source picker and path browser.
 - [x] Add sample-data aware binding preview.
 - [x] Implement reusable property editor primitives for registry-driven UI.
-- [ ] Add validation and user-facing messages for broken bindings.
+- [x] Add validation and user-facing messages for broken bindings.
 
 ### Phase 4 - Side effects and workflow orchestration
 
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 3 broken-binding validation + user messages added:
+  - Added per-mode binding validation for query/state/expression descriptors.
+  - Added draft-time validation messaging with clear success/warning feedback.
+  - Added active-binding health status (OK vs warning) with actionable copy.
 - **2026-03-31** - Phase 3 reusable property editor primitives implemented:
   - Extracted registry field renderer primitives into shared builder module.
   - Centralized inspector field scope/value parsing and control rendering for text/select/number/margin sides.

@@ -64,3 +64,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Non-technical binding UX:** Data binding flows should start with guided source/path selection and presets before exposing raw expressions, so first-time users can bind values without schema-level knowledge.
 - **2026-03-31 - Binding confidence loop:** Always pair binding authoring controls with immediate sample-data preview so users can verify intent before applying and reduce trial-and-error edits.
 - **2026-03-31 - Registry-driven editor scaling:** Keep field rendering in reusable primitives (`text/select/number/layout`) and let inspector sections orchestrate composition, so new components can be added via registry metadata without duplicating UI logic.
+- **2026-03-31 - Binding error UX:** Validation should live next to binding authoring and display user-facing fixes (missing source/path, unresolved sample tokens) so broken bindings are corrected before runtime.

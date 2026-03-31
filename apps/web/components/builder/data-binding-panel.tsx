@@ -58,6 +58,40 @@ function evaluateBindingPreview(binding: BindingDescriptor): unknown {
   return tokenized;
 }
 
+function validateBinding(binding: BindingDescriptor): string | null {
+  if (binding.kind === "query") {
+    if (!binding.source.trim()) return "Pick a data source.";
+    if (!binding.path.trim()) return "Pick a query path.";
+    const sourceData = SAMPLE_DATA_SOURCES[binding.source];
+    if (sourceData === undefined) return "Data source not found.";
+    const resolved = resolveDataPath(sourceData, binding.path);
+    if (resolved === undefined && binding.fallback === undefined) {
+      return "Path not found in sample data. Add fallback or choose another path.";
+    }
+    return null;
+  }
+  if (binding.kind === "state") {
+    if (!binding.path.trim()) return "Pick a state path.";
+    const resolved = resolveDataPath(SAMPLE_STATE, binding.path);
+    if (resolved === undefined && binding.fallback === undefined) {
+      return "State path not found in sample state. Add fallback or choose another path.";
+    }
+    return null;
+  }
+  if (binding.kind === "expression") {
+    const expr = binding.expression.trim();
+    if (!expr) return "Expression cannot be empty.";
+    const unresolvedToken = /\{\{\s*([^}]+)\s*\}\}/.test(
+      String(evaluateBindingPreview(binding)),
+    );
+    if (unresolvedToken && binding.fallback === undefined) {
+      return "Expression references unresolved token(s) in sample data/state.";
+    }
+    return null;
+  }
+  return null;
+}
+
 export function DataBindingPanel(props: {
   node: UiNode;
   bindableKeys: string[];
@@ -95,6 +129,16 @@ export function DataBindingPanel(props: {
     }
     return undefined;
   }, [expression, mode, path, source, statePath, staticValue]);
+  const draftBinding = useMemo<BindingDescriptor | null>(() => {
+    if (mode === "query" && path) return { kind: "query", source, path };
+    if (mode === "state" && statePath) return { kind: "state", path: statePath };
+    if (mode === "expression" && expression.trim()) {
+      return { kind: "expression", expression: expression.trim() };
+    }
+    if (mode === "static") return { kind: "static", value: staticValue };
+    return null;
+  }, [expression, mode, path, source, statePath, staticValue]);
+  const draftValidation = draftBinding ? validateBinding(draftBinding) : null;
 
   function apply(next: BindingDescriptor) {
     const merged = { ...existing, [targetKey]: next };
@@ -257,6 +301,15 @@ export function DataBindingPanel(props: {
         <p className="mt-0.5 text-[0.7rem] leading-snug text-foreground/90">
           {draftPreview === undefined ? "Select a binding path/value to preview." : formatPreview(draftPreview)}
         </p>
+        {draftValidation ? (
+          <p className="mt-1 text-[0.68rem] leading-snug text-amber-700">
+            {draftValidation}
+          </p>
+        ) : draftBinding ? (
+          <p className="mt-1 text-[0.68rem] leading-snug text-emerald-700">
+            Binding looks valid against sample data.
+          </p>
+        ) : null}
       </div>
 
       {Object.keys(existing).length > 0 ? (
@@ -265,12 +318,21 @@ export function DataBindingPanel(props: {
           <ul className="space-y-1">
             {Object.entries(existing).map(([key, binding]) => (
               <li key={key} className="flex items-center justify-between gap-2 text-[0.7rem]">
-                <span className="truncate">
-                  <span className="font-medium">{key}</span> {"->"} {binding.kind}
-                </span>
-                <span className="max-w-36 truncate text-[0.65rem] text-muted-foreground">
-                  {formatPreview(evaluateBindingPreview(binding))}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate">
+                    <span className="font-medium">{key}</span> {"->"} {binding.kind}
+                  </p>
+                  <p className="max-w-56 truncate text-[0.65rem] text-muted-foreground">
+                    {formatPreview(evaluateBindingPreview(binding))}
+                  </p>
+                  {validateBinding(binding) ? (
+                    <p className="text-[0.65rem] text-amber-700">
+                      {validateBinding(binding)}
+                    </p>
+                  ) : (
+                    <p className="text-[0.65rem] text-emerald-700">OK</p>
+                  )}
+                </div>
                 <button
                   type="button"
                   className="rounded border border-border px-1.5 py-0.5 text-[0.65rem] hover:bg-muted"
