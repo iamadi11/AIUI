@@ -106,12 +106,13 @@ export function BuilderNavbar(props: BuilderNavbarProps) {
               variant="outline"
               size="sm"
               className="gap-1 px-2"
+              aria-label={msg("navbar.more")}
               aria-expanded={moreOpen}
               aria-haspopup="true"
               onClick={() => setMoreOpen((o) => !o)}
             >
               <MoreHorizontal className="size-4" aria-hidden />
-              <span className="sr-only sm:not-sr-only sm:text-xs">
+              <span className="hidden sm:inline sm:text-xs">
                 {msg("navbar.more")}
               </span>
             </Button>

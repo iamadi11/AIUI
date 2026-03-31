@@ -2,6 +2,22 @@ import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 
 export type DocumentScaleLevel = "normal" | "large" | "very_large";
 
+/** Stable ids; copy is resolved via i18n in the app layer. */
+export type DocumentPerformanceGuardrailId =
+  | "deferred_diagnostics"
+  | "collapse_large_json"
+  | "deep_nesting"
+  | "high_action_volume";
+
+export type DocumentPerformanceSummary =
+  | { kind: "normal" }
+  | {
+      kind: "large";
+      nodeCount: number;
+      actionCount: number;
+      maxDepth: number;
+    };
+
 export type DocumentPerformanceDiagnostics = {
   nodeCount: number;
   leafCount: number;
@@ -12,8 +28,8 @@ export type DocumentPerformanceDiagnostics = {
   scaleLevel: DocumentScaleLevel;
   isLargeDocument: boolean;
   shouldDeferExpensiveDiagnostics: boolean;
-  guardrails: string[];
-  summary: string;
+  guardrailIds: DocumentPerformanceGuardrailId[];
+  perfSummary: DocumentPerformanceSummary;
 };
 
 const LARGE_DOCUMENT_NODE_THRESHOLD = 120;
@@ -74,31 +90,28 @@ export function analyzeDocumentPerformance(
   const isLargeDocument = scaleLevel !== "normal";
   const shouldDeferExpensiveDiagnostics = isLargeDocument;
 
-  const guardrails: string[] = [];
+  const guardrailIds: DocumentPerformanceGuardrailId[] = [];
   if (isLargeDocument) {
-    guardrails.push(
-      "Expensive diagnostics run in deferred mode by default for faster editing.",
-    );
+    guardrailIds.push("deferred_diagnostics");
   }
   if (scaleLevel === "very_large") {
-    guardrails.push(
-      "Large JSON previews should stay collapsed unless you are actively debugging state.",
-    );
+    guardrailIds.push("collapse_large_json");
   }
   if (maxDepth >= LARGE_DOCUMENT_DEPTH_THRESHOLD) {
-    guardrails.push(
-      "Deep nesting can slow inspection and drag-drop interactions; consider flattening with section stacks.",
-    );
+    guardrailIds.push("deep_nesting");
   }
   if (actionCount >= LARGE_DOCUMENT_ACTION_THRESHOLD) {
-    guardrails.push(
-      "High action volume increases logic evaluation overhead; split workflows into smaller reusable chunks.",
-    );
+    guardrailIds.push("high_action_volume");
   }
 
-  const summary = isLargeDocument
-    ? `Large document detected (${nodeCount} nodes, ${actionCount} actions, depth ${maxDepth}).`
-    : "Document size is within normal builder diagnostics thresholds.";
+  const perfSummary: DocumentPerformanceSummary = isLargeDocument
+    ? {
+        kind: "large",
+        nodeCount,
+        actionCount,
+        maxDepth,
+      }
+    : { kind: "normal" };
 
   return {
     nodeCount,
@@ -110,8 +123,8 @@ export function analyzeDocumentPerformance(
     scaleLevel,
     isLargeDocument,
     shouldDeferExpensiveDiagnostics,
-    guardrails,
-    summary,
+    guardrailIds,
+    perfSummary,
   };
 }
 

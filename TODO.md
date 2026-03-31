@@ -51,8 +51,9 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 7 — Hardening
 
-- [ ] Diagnostics + MCP docs in sync with behavior; redaction unchanged unless envelopes change.
-- [ ] i18n keys for new copy; a11y spot-check on builder shell; large-doc responsiveness.
+- [x] **Diagnostics + MCP:** `docs/mcp/debug-mcp-spec.md` **0.2.2** — tools tied to `packages/debug-mcp`, diagnostics panel uses same telemetry fields + i18n; redaction policy unchanged (`issue-telemetry.ts`).
+- [x] **i18n:** Performance summaries/guardrails via `perfSummary` + `guardrailIds` (`document-performance.ts`) + `document-performance-ui.ts`; diagnostics panel, large-doc banner, Suspense fallback, viewport parity copy localized.
+- [x] **a11y:** Navbar **More** uses `aria-label`; inspector **ScrollArea** labeled; main workspace **min height** on small viewports (`min(42dvh,640px)`, `lg:min-h-0` for flex).
 
 ## Phase 8+ — Multi-screen (optional)
 

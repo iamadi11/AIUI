@@ -69,6 +69,72 @@ const EN_MESSAGES = {
   "builder.liveDocument": "Live document (Zustand)",
   "builder.liveDocumentHidden":
     "Hidden by default for very large documents. Use export panel for targeted JSON inspection to avoid expensive rerenders.",
+  "builder.largeDocumentDeferredBody":
+    "Some heavy diagnostics are deferred by default to keep editing responsive.",
+  "page.loadingBuilder": "Loading builder…",
+  "diagnostics.title": "Diagnostics",
+  "diagnostics.schemaLabel": "Schema",
+  "diagnostics.schemaValid": "valid",
+  "diagnostics.schemaInvalid": "invalid",
+  "diagnostics.selectedLabel": "Selected",
+  "diagnostics.nodesLabel": "Nodes",
+  "diagnostics.leavesLabel": "Leaves",
+  "diagnostics.eventsLabel": "Events",
+  "diagnostics.actionsLabel": "Actions",
+  "diagnostics.undoDepth": "Undo depth",
+  "diagnostics.redoDepth": "Redo depth",
+  "diagnostics.documentScale": "Document scale",
+  "diagnostics.depthComplexityLine":
+    "Depth: {depth} • Complexity score: {score}",
+  "diagnostics.perfSummaryNormal":
+    "Document size is within normal builder diagnostics thresholds.",
+  "diagnostics.perfSummaryLarge":
+    "Large document detected ({nodeCount} nodes, {actionCount} actions, depth {maxDepth}).",
+  "diagnostics.guardrailDeferred":
+    "Expensive diagnostics run in deferred mode by default for faster editing.",
+  "diagnostics.guardrailCollapseJson":
+    "Large JSON previews should stay collapsed unless you are actively debugging state.",
+  "diagnostics.guardrailDeepNesting":
+    "Deep nesting can slow inspection and drag-drop interactions; consider flattening with section stacks.",
+  "diagnostics.guardrailHighActions":
+    "High action volume increases logic evaluation overhead; split workflows into smaller reusable chunks.",
+  "diagnostics.deferredChecksBody":
+    "Expensive layout and parity checks are deferred while editing this document.",
+  "diagnostics.runFullChecksNow": "Run full checks now",
+  "diagnostics.disableFullChecks": "Disable full checks",
+  "diagnostics.layoutWarningsTitle": "Layout warnings ({count})",
+  "diagnostics.moreWarnings": "+{count} more warnings",
+  "diagnostics.layoutNoConflicts":
+    "No overflow or constraint conflicts detected for current viewport presets.",
+  "diagnostics.screenGraphTitle": "Screen graph ({count})",
+  "diagnostics.viewportParity": "Viewport parity",
+  "diagnostics.viewportParityDeferred":
+    "Deferred for large documents. Run full checks for parity details.",
+  "diagnostics.viewportParitySchemaSkipped":
+    "Schema invalid — parity skipped.",
+  "diagnostics.viewportParityOkSummary":
+    "Editor and runtime viewport parity checks pass for all presets.",
+  "diagnostics.viewportParityFailSummary":
+    "Viewport parity issues in {count} preset(s).",
+  "diagnostics.issueTelemetryTitle": "Issue telemetry ({count})",
+  "diagnostics.noTelemetryYet": "No telemetry issues emitted yet.",
+  "diagnostics.documentValidationFailed": "Document validation failed.",
+  "diagnostics.parityRowOk": "ok",
+  "diagnostics.parityRowBad":
+    "{count} invalid rect(s), deterministic={deterministic}",
+  "diagnostics.fieldSource": "source",
+  "diagnostics.fieldCategory": "category",
+  "diagnostics.fieldCode": "code",
+  "diagnostics.fieldNodeId": "nodeId",
+  "diagnostics.fieldTrace": "trace",
+  "diagnostics.fieldTimestamp": "timestamp",
+  "diagnostics.fieldDocVersion": "doc version",
+  "diagnostics.detailsJson": "details JSON",
+  "diagnostics.fieldFingerprint": "fingerprint",
+  "diagnostics.telemetryLargeDocUser":
+    "Large dashboard detected. The builder enables performance guardrails to keep editing responsive.",
+  "diagnostics.telemetryLargeDocDev":
+    "Large-document guardrails are active; expensive diagnostics are deferred until you enable full checks.",
   "builder.propertiesInspectorAriaLabel": "Properties inspector",
   "builder.inspectorSheetTitle": "Selection",
   "builder.inspectorSheetDescription":

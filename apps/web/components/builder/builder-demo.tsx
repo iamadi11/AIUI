@@ -28,6 +28,7 @@ import {
 import { runtimeDocumentForActiveEditorScreen } from "@/lib/builder/runtime-document-editor";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { analyzeDocumentPerformanceFromDoc } from "@/lib/builder/document-performance";
+import { formatPerfSummaryLine } from "@/lib/builder/document-performance-ui";
 import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
@@ -486,7 +487,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
           </aside>
 
           <main
-            className="flex min-h-0 min-w-0 flex-col gap-3 overflow-hidden p-3"
+            className="flex min-h-[min(42dvh,640px)] min-w-0 flex-col gap-3 overflow-hidden p-3 lg:min-h-0"
             aria-labelledby="builder-workspace-heading"
           >
             <h2 id="builder-workspace-heading" className="sr-only">
@@ -499,8 +500,8 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                   {msg("builder.largeDocumentGuardrailsActive")}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
-                  {performance.summary} Some heavy diagnostics are deferred by
-                  default to keep editing responsive.
+                  {formatPerfSummaryLine(performance)}{" "}
+                  {msg("builder.largeDocumentDeferredBody")}
                 </p>
               </div>
             ) : null}

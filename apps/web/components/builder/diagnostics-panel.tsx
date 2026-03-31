@@ -7,6 +7,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   analyzeDocumentPerformanceFromDoc,
 } from "@/lib/builder/document-performance";
+import {
+  formatPerfSummaryLine,
+  guardrailMessage,
+} from "@/lib/builder/document-performance-ui";
+import { msg } from "@/lib/i18n/messages";
 import { collectLayoutWarningsFromDoc } from "@/lib/builder/layout-warnings";
 import { collectPrototypeDiagnostics } from "@/lib/builder/prototype-diagnostics";
 import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
@@ -64,15 +69,12 @@ export function DiagnosticsPanel(props: {
     if (!shouldRunExpensiveChecks) {
       return {
         ok: true,
-        summary:
-          "Deferred for large document. Run full checks for parity details.",
         rows: [],
       };
     }
     if (!parse.success) {
       return {
         ok: false,
-        summary: "Schema invalid — parity skipped.",
         rows: [],
       };
     }
@@ -81,6 +83,25 @@ export function DiagnosticsPanel(props: {
   const failingParityRows = viewportParity.rows.filter(
     (row) => row.invalidRectCount > 0 || !row.deterministic,
   );
+  const viewportParityIntro = useMemo(() => {
+    if (!shouldRunExpensiveChecks) {
+      return msg("diagnostics.viewportParityDeferred");
+    }
+    if (!parse.success) {
+      return msg("diagnostics.viewportParitySchemaSkipped");
+    }
+    if (viewportParity.ok) {
+      return msg("diagnostics.viewportParityOkSummary");
+    }
+    return msg("diagnostics.viewportParityFailSummary", {
+      count: failingParityRows.length,
+    });
+  }, [
+    shouldRunExpensiveChecks,
+    parse.success,
+    viewportParity.ok,
+    failingParityRows.length,
+  ]);
   const prototypeIssues = useMemo(
     () =>
       shouldRunExpensiveChecks
@@ -169,11 +190,9 @@ export function DiagnosticsPanel(props: {
         severity: perf.scaleLevel === "very_large" ? "warn" : "info",
         category: "performance",
         code: "BUILDER_LARGE_DOCUMENT",
-        summary: perf.summary,
-        userMessage:
-          "Large dashboard detected. Builder enables performance guardrails to keep editing responsive.",
-        developerMessage:
-          "Large-document guardrails activated; expensive diagnostics are deferred until explicitly enabled.",
+        summary: formatPerfSummaryLine(perf),
+        userMessage: msg("diagnostics.telemetryLargeDocUser"),
+        developerMessage: msg("diagnostics.telemetryLargeDocDev"),
         documentVersion: document.version,
         details: {
           nodeCount: perf.nodeCount,
@@ -190,57 +209,76 @@ export function DiagnosticsPanel(props: {
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Diagnostics
+        {msg("diagnostics.title")}
       </p>
       {logicMapSlot ? (
         <div className="mt-2 rounded-lg border border-border/70 bg-muted/15 p-2">
           {logicMapSlot}
         </div>
       ) : null}
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+      <div className="mt-3 grid min-w-0 grid-cols-2 gap-2 overflow-x-auto text-xs">
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Schema</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.schemaLabel")}
+          </span>
           <p className="font-medium text-foreground">
-            {parse.success ? "valid" : "invalid"}
+            {parse.success
+              ? msg("diagnostics.schemaValid")
+              : msg("diagnostics.schemaInvalid")}
           </p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Selected</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.selectedLabel")}
+          </span>
           <p className="font-medium text-foreground">{selectedCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Nodes</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.nodesLabel")}
+          </span>
           <p className="font-medium text-foreground">{perf.nodeCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Leaves</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.leavesLabel")}
+          </span>
           <p className="font-medium text-foreground">{perf.leafCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Events</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.eventsLabel")}
+          </span>
           <p className="font-medium text-foreground">{perf.eventCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Actions</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.actionsLabel")}
+          </span>
           <p className="font-medium text-foreground">{perf.actionCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Undo depth</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.undoDepth")}
+          </span>
           <p className="font-medium text-foreground">{undoDepth}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
-          <span className="text-muted-foreground">Redo depth</span>
+          <span className="text-muted-foreground">
+            {msg("diagnostics.redoDepth")}
+          </span>
           <p className="font-medium text-foreground">{redoDepth}</p>
         </div>
       </div>
       {!parse.success ? (
         <p className="mt-2 text-[0.65rem] text-destructive">
-          {parse.error.issues[0]?.message ?? "Document validation failed."}
+          {parse.error.issues[0]?.message ??
+            msg("diagnostics.documentValidationFailed")}
         </p>
       ) : null}
       <div className="mt-3 rounded-lg border border-border/70 bg-muted/20 p-2">
         <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
-          Document scale
+          {msg("diagnostics.documentScale")}
         </p>
         <p
           className={
@@ -249,16 +287,19 @@ export function DiagnosticsPanel(props: {
               : "mt-1 text-[0.68rem] text-emerald-700"
           }
         >
-          {perf.summary}
+          {formatPerfSummaryLine(perf)}
         </p>
         <p className="mt-1 text-[0.68rem] text-foreground/90">
-          Depth: {perf.maxDepth} • Complexity score: {perf.estimatedComplexityScore}
+          {msg("diagnostics.depthComplexityLine", {
+            depth: perf.maxDepth,
+            score: perf.estimatedComplexityScore,
+          })}
         </p>
-        {perf.guardrails.length > 0 ? (
+        {perf.guardrailIds.length > 0 ? (
           <ul className="mt-1 space-y-1">
-            {perf.guardrails.map((guardrail) => (
-              <li key={guardrail} className="text-[0.67rem] text-foreground/80">
-                {guardrail}
+            {perf.guardrailIds.map((id) => (
+              <li key={id} className="text-[0.67rem] text-foreground/80">
+                {guardrailMessage(id)}
               </li>
             ))}
           </ul>
@@ -266,8 +307,7 @@ export function DiagnosticsPanel(props: {
         {perf.shouldDeferExpensiveDiagnostics ? (
           <div className="mt-2 rounded border border-amber-300/60 bg-amber-50/70 p-2">
             <p className="text-[0.67rem] text-amber-900">
-              Expensive layout/parity checks are deferred while editing this
-              document.
+              {msg("diagnostics.deferredChecksBody")}
             </p>
             <button
               type="button"
@@ -275,8 +315,8 @@ export function DiagnosticsPanel(props: {
               onClick={() => setRunExpensiveChecks((prev) => !prev)}
             >
               {runExpensiveChecks
-                ? "Disable full checks"
-                : "Run full checks now"}
+                ? msg("diagnostics.disableFullChecks")
+                : msg("diagnostics.runFullChecksNow")}
             </button>
           </div>
         ) : null}
@@ -284,7 +324,9 @@ export function DiagnosticsPanel(props: {
       {layoutWarnings.length > 0 ? (
         <div className="mt-3 rounded-lg border border-amber-300/60 bg-amber-50/60 p-2">
           <p className="text-[0.7rem] font-medium uppercase tracking-wide text-amber-800">
-            Layout warnings ({layoutWarnings.length})
+            {msg("diagnostics.layoutWarningsTitle", {
+              count: layoutWarnings.length,
+            })}
           </p>
           <ul className="mt-1 space-y-1">
             {layoutWarnings.slice(0, 6).map((warning) => (
@@ -297,19 +339,23 @@ export function DiagnosticsPanel(props: {
           </ul>
           {layoutWarnings.length > 6 ? (
             <p className="mt-1 text-[0.65rem] text-amber-800/90">
-              +{layoutWarnings.length - 6} more warnings
+              {msg("diagnostics.moreWarnings", {
+                count: layoutWarnings.length - 6,
+              })}
             </p>
           ) : null}
         </div>
       ) : (
         <p className="mt-2 text-[0.65rem] text-muted-foreground">
-          No overflow/constraint conflicts detected for current viewport presets.
+          {msg("diagnostics.layoutNoConflicts")}
         </p>
       )}
       {prototypeIssues.length > 0 ? (
         <div className="mt-3 rounded-lg border border-destructive/35 bg-destructive/5 p-2">
           <p className="text-[0.7rem] font-medium uppercase tracking-wide text-destructive">
-            Screen graph ({prototypeIssues.length})
+            {msg("diagnostics.screenGraphTitle", {
+              count: prototypeIssues.length,
+            })}
           </p>
           <ul className="mt-1 space-y-1">
             {prototypeIssues.map((p) => (
@@ -324,16 +370,16 @@ export function DiagnosticsPanel(props: {
       ) : null}
       <div className="mt-3 rounded-lg border border-border/70 bg-muted/20 p-2">
         <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
-          Viewport parity
+          {msg("diagnostics.viewportParity")}
         </p>
         <p
           className={
-            viewportParity.ok
+            shouldRunExpensiveChecks && parse.success && viewportParity.ok
               ? "mt-1 text-[0.68rem] text-emerald-700"
               : "mt-1 text-[0.68rem] text-amber-700"
           }
         >
-          {viewportParity.summary}
+          {viewportParityIntro}
         </p>
         {viewportParity.rows.length > 0 ? (
           <ul className="mt-1 space-y-1">
@@ -341,8 +387,11 @@ export function DiagnosticsPanel(props: {
               <li key={row.viewportId} className="text-[0.68rem] text-foreground/90">
                 {row.viewportLabel} ({row.width}px):{" "}
                 {row.invalidRectCount === 0 && row.deterministic
-                  ? "ok"
-                  : `${row.invalidRectCount} invalid rect(s), deterministic=${row.deterministic}`}
+                  ? msg("diagnostics.parityRowOk")
+                  : msg("diagnostics.parityRowBad", {
+                      count: row.invalidRectCount,
+                      deterministic: String(row.deterministic),
+                    })}
               </li>
             ))}
           </ul>
@@ -350,11 +399,11 @@ export function DiagnosticsPanel(props: {
       </div>
       <div className="mt-3 rounded-lg border border-border/70 bg-muted/10 p-2">
         <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
-          Issue telemetry ({issues.length})
+          {msg("diagnostics.issueTelemetryTitle", { count: issues.length })}
         </p>
         {issues.length === 0 ? (
           <p className="mt-1 text-[0.68rem] text-muted-foreground">
-            No telemetry issues emitted yet.
+            {msg("diagnostics.noTelemetryYet")}
           </p>
         ) : (
           <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -394,45 +443,63 @@ export function DiagnosticsPanel(props: {
                 <p className="mt-1 text-foreground/80">{selectedIssue.developerMessage}</p>
                 <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1">
                   <p>
-                    <span className="text-muted-foreground">source:</span> {selectedIssue.source}
+                    <span className="text-muted-foreground">
+                      {msg("diagnostics.fieldSource")}:
+                    </span>{" "}
+                    {selectedIssue.source}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">category:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {msg("diagnostics.fieldCategory")}:
+                    </span>{" "}
                     {selectedIssue.category}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">code:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {msg("diagnostics.fieldCode")}:
+                    </span>{" "}
                     {selectedIssue.code ?? "-"}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">nodeId:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {msg("diagnostics.fieldNodeId")}:
+                    </span>{" "}
                     {selectedIssue.nodeId ?? "-"}
                   </p>
                   <p className="col-span-2">
-                    <span className="text-muted-foreground">timestamp:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {msg("diagnostics.fieldTimestamp")}:
+                    </span>{" "}
                     {formatTimestamp(selectedIssue.lastSeenAt)}
                   </p>
                   <p className="col-span-2">
-                    <span className="text-muted-foreground">trace:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {msg("diagnostics.fieldTrace")}:
+                    </span>{" "}
                     <span className="font-mono text-foreground/90">
                       {selectedIssue.issueId} / {selectedIssue.contextRef}
                     </span>
                   </p>
                   <p className="col-span-2">
-                    <span className="text-muted-foreground">doc version:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {msg("diagnostics.fieldDocVersion")}:
+                    </span>{" "}
                     {selectedIssue.documentVersion}
                   </p>
                 </div>
                 {selectedIssue.details ? (
                   <div className="mt-2">
-                    <p className="text-muted-foreground">details JSON</p>
+                    <p className="text-muted-foreground">
+                      {msg("diagnostics.detailsJson")}
+                    </p>
                     <pre className="mt-1 max-h-28 overflow-auto rounded border border-border/70 bg-muted/30 p-2 font-mono text-[0.64rem] text-foreground/90">
                       {JSON.stringify(selectedIssue.details, null, 2)}
                     </pre>
                   </div>
                 ) : null}
                 <p className="mt-2 truncate text-[0.63rem] text-muted-foreground">
-                  fingerprint: <span className="font-mono">{selectedIssue.fingerprint}</span>
+                  {msg("diagnostics.fieldFingerprint")}:{" "}
+                  <span className="font-mono">{selectedIssue.fingerprint}</span>
                 </p>
               </div>
             ) : null}

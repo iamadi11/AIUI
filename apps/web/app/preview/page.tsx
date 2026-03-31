@@ -149,7 +149,11 @@ function PreviewPageContent() {
                 viewportParity.ok ? "text-emerald-800" : "text-amber-900",
               )}
             >
-              {viewportParity.summary}
+              {viewportParity.ok
+                ? msg("diagnostics.viewportParityOkSummary")
+                : msg("diagnostics.viewportParityFailSummary", {
+                    count: failingParityRows.length,
+                  })}
             </p>
             <ul className="mt-2 space-y-1">
               {viewportParity.rows.map((row) => (

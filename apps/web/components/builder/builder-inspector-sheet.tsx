@@ -54,7 +54,10 @@ export function BuilderInspectorSheet(props: BuilderInspectorSheetProps) {
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>{description}</SheetDescription>
         </SheetHeader>
-        <ScrollArea className="min-h-0 flex-1 px-4 py-4">
+        <ScrollArea
+          className="min-h-0 flex-1 px-4 py-4"
+          aria-label={msg("builder.propertiesInspectorAriaLabel")}
+        >
           {showEdge && selectedEdge ? (
             <BuilderEdgeInspector
               document={document}

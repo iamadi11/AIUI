@@ -6,8 +6,13 @@ Cursor-facing MCP server for diagnosing and fixing builder/runtime issues **with
 
 ## Version
 
-- **Spec:** `0.2.1`
-- **Status:** aligned with runtime issue telemetry envelope
+- **Spec:** `0.2.2`
+- **Status:** aligned with runtime issue telemetry envelope and `@aiui/debug-mcp` tool surface (`packages/debug-mcp`)
+
+### 0.2.2 (2026-04)
+
+- **Diagnostics UI** (`apps/web`): developer **Diagnostics** panel lists issues from the same **issue telemetry** model as MCP (`userMessage` / `developerMessage`, `details` JSON). Redaction for MCP `get_issue_context` remains **hash-or-strip** for sensitive keys per `REDACT_KEYS` in `issue-telemetry.ts`; no envelope field changes.
+- **Performance summaries** are authored in the app i18n layer; MCP still receives string `summary` on recorded issues as emitted by the builder/runtime.
 
 ## Runtime diagnostics envelope
 
@@ -35,6 +40,8 @@ Issues from `@aiui/runtime-core` should map to:
 Full JSON shape is unchanged from prior revisions; see `packages/debug-mcp` types for authoritative fields.
 
 ## MCP tools
+
+Implemented in `packages/debug-mcp/src/tools.ts` (Zod schemas in `types.ts`).
 
 | Tool | Role |
 |------|------|

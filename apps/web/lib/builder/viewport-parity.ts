@@ -14,7 +14,6 @@ export type ViewportParityRow = {
 export type ViewportParityReport = {
   ok: boolean;
   rows: ViewportParityRow[];
-  summary: string;
 };
 
 function collectNodeIds(root: UiNode): string[] {
@@ -64,9 +63,5 @@ export function buildViewportParityReport(root: UiNode): ViewportParityReport {
   return {
     ok: failing.length === 0,
     rows,
-    summary:
-      failing.length === 0
-        ? "Editor/runtime viewport parity checks pass for all presets."
-        : `Viewport parity issues in ${failing.length} preset(s).`,
   };
 }
