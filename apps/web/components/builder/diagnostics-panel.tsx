@@ -2,7 +2,7 @@
 
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 import { safeParseDocument } from "@aiui/dsl-schema";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { collectLayoutWarnings } from "@/lib/builder/layout-warnings";
 import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
 import { createIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
@@ -37,6 +37,25 @@ function countTree(root: UiNode): {
   return { nodeCount, leafCount, eventCount, actionCount };
 }
 
+function severityClassname(severity: string): string {
+  switch (severity) {
+    case "error":
+      return "text-destructive";
+    case "warn":
+      return "text-amber-700";
+    default:
+      return "text-foreground/80";
+  }
+}
+
+function formatTimestamp(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString();
+}
+
 export function DiagnosticsPanel(props: {
   document: AiuiDocument;
   selectedCount: number;
@@ -46,6 +65,7 @@ export function DiagnosticsPanel(props: {
   const { document, selectedCount, undoDepth, redoDepth } = props;
   const issues = useIssueTelemetryStore((s) => s.issues);
   const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
+  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const parse = safeParseDocument(document);
   const tree = countTree(document.root);
   const layoutWarnings = collectLayoutWarnings(document.root);
@@ -53,6 +73,20 @@ export function DiagnosticsPanel(props: {
   const failingParityRows = viewportParity.rows.filter(
     (row) => row.invalidRectCount > 0 || !row.deterministic,
   );
+  const selectedIssue = useMemo(
+    () => issues.find((issue) => issue.issueId === selectedIssueId) ?? issues[0] ?? null,
+    [issues, selectedIssueId],
+  );
+
+  useEffect(() => {
+    if (issues.length === 0) {
+      setSelectedIssueId(null);
+      return;
+    }
+    if (!selectedIssueId || !issues.some((issue) => issue.issueId === selectedIssueId)) {
+      setSelectedIssueId(issues[0].issueId);
+    }
+  }, [issues, selectedIssueId]);
 
   useEffect(() => {
     if (!parse.success) {
@@ -226,17 +260,86 @@ export function DiagnosticsPanel(props: {
             No telemetry issues emitted yet.
           </p>
         ) : (
-          <ul className="mt-1 space-y-1">
-            {issues.slice(0, 5).map((issue) => (
-              <li key={issue.issueId} className="text-[0.68rem] leading-snug">
-                <span className="font-mono text-foreground/80">{issue.severity}</span>{" "}
-                <span className="text-foreground/90">{issue.summary}</span>{" "}
-                <span className="text-muted-foreground">
-                  ({issue.source}, x{issue.occurrences})
-                </span>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <ul className="max-h-56 space-y-1 overflow-y-auto pr-1">
+              {issues.slice(0, 12).map((issue) => {
+                const isSelected = selectedIssue?.issueId === issue.issueId;
+                return (
+                  <li key={issue.issueId}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedIssueId(issue.issueId)}
+                      className={`w-full rounded border px-2 py-1 text-left text-[0.67rem] leading-snug transition-colors ${
+                        isSelected
+                          ? "border-primary/50 bg-primary/10"
+                          : "border-border/70 bg-background/60 hover:border-border"
+                      }`}
+                    >
+                      <p className="flex items-center justify-between gap-2">
+                        <span className={`font-mono ${severityClassname(issue.severity)}`}>
+                          {issue.severity}
+                        </span>
+                        <span className="text-muted-foreground">x{issue.occurrences}</span>
+                      </p>
+                      <p className="truncate text-foreground/90">{issue.summary}</p>
+                      <p className="truncate text-muted-foreground">
+                        {issue.source} • {issue.category}
+                      </p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            {selectedIssue ? (
+              <div className="rounded border border-border/70 bg-background/70 p-2 text-[0.67rem]">
+                <p className="truncate font-medium text-foreground">{selectedIssue.summary}</p>
+                <p className="mt-1 text-muted-foreground">{selectedIssue.userMessage}</p>
+                <p className="mt-1 text-foreground/80">{selectedIssue.developerMessage}</p>
+                <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1">
+                  <p>
+                    <span className="text-muted-foreground">source:</span> {selectedIssue.source}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">category:</span>{" "}
+                    {selectedIssue.category}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">code:</span>{" "}
+                    {selectedIssue.code ?? "-"}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">nodeId:</span>{" "}
+                    {selectedIssue.nodeId ?? "-"}
+                  </p>
+                  <p className="col-span-2">
+                    <span className="text-muted-foreground">timestamp:</span>{" "}
+                    {formatTimestamp(selectedIssue.lastSeenAt)}
+                  </p>
+                  <p className="col-span-2">
+                    <span className="text-muted-foreground">trace:</span>{" "}
+                    <span className="font-mono text-foreground/90">
+                      {selectedIssue.issueId} / {selectedIssue.contextRef}
+                    </span>
+                  </p>
+                  <p className="col-span-2">
+                    <span className="text-muted-foreground">doc version:</span>{" "}
+                    {selectedIssue.documentVersion}
+                  </p>
+                </div>
+                {selectedIssue.details ? (
+                  <div className="mt-2">
+                    <p className="text-muted-foreground">details JSON</p>
+                    <pre className="mt-1 max-h-28 overflow-auto rounded border border-border/70 bg-muted/30 p-2 font-mono text-[0.64rem] text-foreground/90">
+                      {JSON.stringify(selectedIssue.details, null, 2)}
+                    </pre>
+                  </div>
+                ) : null}
+                <p className="mt-2 truncate text-[0.63rem] text-muted-foreground">
+                  fingerprint: <span className="font-mono">{selectedIssue.fingerprint}</span>
+                </p>
+              </div>
+            ) : null}
+          </div>
         )}
       </div>
     </div>
