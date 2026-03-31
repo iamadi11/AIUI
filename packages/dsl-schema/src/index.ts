@@ -3,6 +3,12 @@ import { z } from "zod";
 /** Semantic version of the document format (not layout algorithm). */
 export const DSL_VERSION = "0.1.0";
 
+/**
+ * Layout algorithm version (deterministic engine in `@aiui/layout-engine`).
+ * Bump when layout rules change incompatibly.
+ */
+export const LAYOUT_VERSION = "0.1.0";
+
 export type UiNode = {
   id: string;
   type: string;
@@ -25,6 +31,8 @@ export const uiNodeSchema: z.ZodType<UiNode> = z.lazy(() =>
 
 export const documentSchema = z.object({
   version: z.string().min(1),
+  /** Which layout rules produced `layout` rects (see `LAYOUT_VERSION`). */
+  layoutVersion: z.string().min(1).optional(),
   root: uiNodeSchema,
 });
 

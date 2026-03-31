@@ -11,9 +11,10 @@ export default function Home() {
             Builder + Universal JSON DSL
           </h1>
           <p className="text-muted-foreground leading-relaxed">
-            Phase 1 baseline: document model, builder (palette, canvas, inspector,
-            undo/redo), Zod-validated{" "}
-            <span className="text-foreground">golden JSON</span> export/import, and a{" "}
+            Phase 1–2 baseline: document model, builder, golden JSON, and the pure-TS{" "}
+            <span className="text-foreground">layout engine</span> (debug rects below).
+            Includes Zod-validated{" "}
+            <span className="text-foreground">export/import</span> and a{" "}
             <Link
               href="/preview"
               className="text-primary underline-offset-4 hover:underline"
@@ -28,7 +29,7 @@ export default function Home() {
 
         <div className="flex flex-wrap gap-3">
           <p className="text-sm text-muted-foreground">
-            Next: Phase 2 — deterministic layout engine (`packages/layout-engine`).
+            Next: Phase 3 — logic (expressions, actions) or wire runtime to layout rects.
           </p>
         </div>
       </main>

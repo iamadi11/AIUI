@@ -1,5 +1,5 @@
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
-import { DSL_VERSION } from "@aiui/dsl-schema";
+import { DSL_VERSION, LAYOUT_VERSION } from "@aiui/dsl-schema";
 import { getDefinition } from "@aiui/registry";
 import { newNodeId } from "@/lib/id";
 
@@ -40,6 +40,7 @@ export function createNodeFromType(
 export function createInitialDocument(rootType: string): AiuiDocument {
   return {
     version: DSL_VERSION,
+    layoutVersion: LAYOUT_VERSION,
     root: createNodeFromType(rootType, { id: INITIAL_DOCUMENT_ROOT_ID }),
   };
 }

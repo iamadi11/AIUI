@@ -18,10 +18,7 @@ _Baseline MVP shipped — see **Done**._
 
 ## Phase 2 — Layout engine
 
-- [ ] Extract pure TS layout package: constraints → `Map<nodeId, Rect>`
-- [ ] Implement stack / row / column + padding / gap
-- [ ] Text measurement strategy with caching (minimize DOM reads)
-- [ ] Document `layoutVersion` and supported subset in schema
+_Shipped baseline — see **Done** and `packages/layout-engine/README.md`._
 
 ---
 
@@ -75,6 +72,7 @@ _Baseline MVP shipped — see **Done**._
 
 ## Done
 
+- **2026-03-31** — `@aiui/layout-engine`: `layoutDocument` → `Map<id, Rect>`; Box column + Stack row/column + `gap`; `layout.padding`; `measure.ts` text cache stub; `LAYOUT_VERSION` on `AiuiDocument`; builder **Layout debug** panel
 - **2026-03-31** — Golden export/import: `exportGoldenJson` / `importGoldenJson` via `safeParseDocument`; builder panel — download, copy, file import (`setDocument`, clears history); filename `aiui-document-<version>.json`
 - **2026-03-31** — Preview route `/preview`: client page reads live Zustand document; `DslPreview` maps `Box` / `Stack` via `@aiui/registry`; `safeParseDocument` banner; link from builder toolbar
 - **2026-03-31** — Undo/redo: full-document snapshots (`structuredClone`), stacks capped at 50; structural + prop edits; `reset` / `setDocument` clear history; selection cleared when undo removes selected node; ⌘Z / ⌘⇧Z and Ctrl+Y shortcuts (skipped in form fields)
