@@ -1,4 +1,5 @@
 import type { Action } from "@aiui/dsl-schema";
+import { DEFAULT_SCREEN_ID } from "@aiui/dsl-schema";
 
 /** Single-step actions that can appear in the visual list or as `condition` branches. */
 export function isBranchAction(
@@ -7,6 +8,7 @@ export function isBranchAction(
   Action,
   | { type: "setState" }
   | { type: "navigate" }
+  | { type: "navigateScreen" }
   | { type: "http" }
   | { type: "fetch" }
   | { type: "transform" }
@@ -16,6 +18,7 @@ export function isBranchAction(
   return (
     a.type === "setState" ||
     a.type === "navigate" ||
+    a.type === "navigateScreen" ||
     a.type === "http" ||
     a.type === "fetch" ||
     a.type === "transform" ||
@@ -94,6 +97,7 @@ export function defaultBranchAction(
   t:
     | "setState"
     | "navigate"
+    | "navigateScreen"
     | "http"
     | "fetch"
     | "transform"
@@ -103,6 +107,7 @@ export function defaultBranchAction(
   Action,
   | { type: "setState" }
   | { type: "navigate" }
+  | { type: "navigateScreen" }
   | { type: "http" }
   | { type: "fetch" }
   | { type: "transform" }
@@ -111,6 +116,9 @@ export function defaultBranchAction(
 > {
   if (t === "setState") return { type: "setState", path: "key", value: "" };
   if (t === "navigate") return { type: "navigate", href: "/" };
+  if (t === "navigateScreen") {
+    return { type: "navigateScreen", screenId: DEFAULT_SCREEN_ID };
+  }
   if (t === "fetch") return { type: "fetch", method: "GET", url: "https://" };
   if (t === "transform") return { type: "transform", path: "key", expression: "true" };
   if (t === "modal") return { type: "modal", action: "open", target: "modal-id" };

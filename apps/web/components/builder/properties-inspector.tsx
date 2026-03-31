@@ -1,6 +1,6 @@
 "use client";
 
-import type { Action, BindingDescriptor, UiNode } from "@aiui/dsl-schema";
+import type { Action, AiuiDocument, BindingDescriptor, UiNode } from "@aiui/dsl-schema";
 import {
   getDefinition,
   INSPECTOR_SECTION_LABELS,
@@ -13,6 +13,7 @@ import {
 import { msg } from "@/lib/i18n/messages";
 import { findNodeById } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
+import { useMemo } from "react";
 import { DataBindingPanel } from "./data-binding-panel";
 import { EventBindingsPanel } from "./event-bindings-panel";
 import {
@@ -126,9 +127,21 @@ function layoutGuidance(node: UiNode): {
   };
 }
 
+function screenOptionsFromDocument(doc: AiuiDocument) {
+  return Object.entries(doc.screens).map(([id, def]) => ({
+    id,
+    label: def.title ? `${def.title} (${id})` : id,
+  }));
+}
+
 export function PropertiesInspector(props: PropertiesInspectorProps) {
   const { root, selectedId, rootId } = props;
   const updateNode = useDocumentStore((s) => s.updateNode);
+  const document = useDocumentStore((s) => s.document);
+  const screenOptions = useMemo(
+    () => screenOptionsFromDocument(document),
+    [document],
+  );
 
   const node = selectedId ? findNodeById(root, selectedId) : null;
   const def = node ? getDefinition(node.type) : undefined;
@@ -337,6 +350,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                         events={node.events}
                         onApply={applyEvents}
                         interactionPresets={capabilities?.interactionPresets}
+                        screenOptions={screenOptions}
                       />
                     </div>
                   ) : null}

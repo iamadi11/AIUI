@@ -74,6 +74,7 @@ function SimpleStepTypeSelect(props: {
           else if (
             t === "setState" ||
             t === "navigate" ||
+            t === "navigateScreen" ||
             t === "http" ||
             t === "fetch" ||
             t === "transform" ||
@@ -87,6 +88,7 @@ function SimpleStepTypeSelect(props: {
       >
         <option value="setState">{msg("events.kindSetState")}</option>
         <option value="navigate">{msg("events.kindNavigate")}</option>
+        <option value="navigateScreen">{msg("events.kindNavigateScreen")}</option>
         <option value="http">{msg("events.kindHttp")}</option>
         <option value="fetch">{msg("events.kindFetch")}</option>
         <option value="transform">{msg("events.kindTransform")}</option>
@@ -235,6 +237,7 @@ function actionSummary(actions: Action[]): string {
   const parts = actions.map((a) => {
     if (a.type === "setState") return "State";
     if (a.type === "navigate") return "Go to URL";
+    if (a.type === "navigateScreen") return `Screen → ${a.screenId}`;
     if (a.type === "http") return `${a.method} request`;
     if (a.type === "fetch") return `${a.method} fetch`;
     if (a.type === "transform") return "Transform";
@@ -247,15 +250,24 @@ function actionSummary(actions: Action[]): string {
 }
 
 /** Inline editor for a single branch action (nested under conditions). */
+type ScreenOption = { id: string; label: string };
+
 function BranchActionFields(props: {
   idPrefix: string;
   branch: Action;
   onChange: (a: Action) => void;
   onBlurCommit: () => void;
   documentNodeOptions?: readonly DocumentNodeOption[];
+  screenOptions?: readonly ScreenOption[];
 }) {
-  const { idPrefix, branch, onChange, onBlurCommit, documentNodeOptions } =
-    props;
+  const {
+    idPrefix,
+    branch,
+    onChange,
+    onBlurCommit,
+    documentNodeOptions,
+    screenOptions,
+  } = props;
   if (!isBranchAction(branch)) return null;
 
   const typeSelect = (
@@ -275,6 +287,7 @@ function BranchActionFields(props: {
           if (
             t === "setState" ||
             t === "navigate" ||
+            t === "navigateScreen" ||
             t === "http" ||
             t === "fetch" ||
             t === "transform" ||
@@ -288,6 +301,7 @@ function BranchActionFields(props: {
       >
         <option value="setState">Update state</option>
         <option value="navigate">Open URL</option>
+        <option value="navigateScreen">{msg("events.kindNavigateScreen")}</option>
         <option value="http">HTTP</option>
         <option value="fetch">Fetch</option>
         <option value="transform">Transform</option>
@@ -370,6 +384,62 @@ function BranchActionFields(props: {
             placeholder="https://…"
             autoComplete="off"
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (branch.type === "navigateScreen") {
+    const opts = screenOptions ?? [];
+    const inList = opts.some((o) => o.id === branch.screenId);
+    return (
+      <div className="space-y-2">
+        {typeSelect}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label
+              className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+              htmlFor={`${idPrefix}-sp`}
+            >
+              {msg("events.screenPickLabel")}
+            </label>
+            <select
+              id={`${idPrefix}-sp`}
+              className={controlClass}
+              value={inList ? branch.screenId : ""}
+              onChange={(e) =>
+                onChange({ ...branch, screenId: e.target.value })
+              }
+              onBlur={onBlurCommit}
+            >
+              <option value="">{msg("events.screenPickPlaceholder")}</option>
+              {opts.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label
+              className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+              htmlFor={`${idPrefix}-sid`}
+            >
+              {msg("events.screenIdManual")}
+            </label>
+            <input
+              id={`${idPrefix}-sid`}
+              type="text"
+              className={controlClass}
+              value={branch.screenId}
+              onChange={(e) =>
+                onChange({ ...branch, screenId: e.target.value })
+              }
+              onBlur={onBlurCommit}
+              placeholder="default"
+              autoComplete="off"
+            />
+          </div>
         </div>
       </div>
     );
@@ -569,9 +639,18 @@ function ConditionStepRow(props: {
   onBlurCommit: () => void;
   canRemove: boolean;
   documentNodeOptions?: readonly DocumentNodeOption[];
+  screenOptions?: readonly ScreenOption[];
 }) {
-  const { action, index, onChange, onRemove, onBlurCommit, canRemove, documentNodeOptions } =
-    props;
+  const {
+    action,
+    index,
+    onChange,
+    onRemove,
+    onBlurCommit,
+    canRemove,
+    documentNodeOptions,
+    screenOptions,
+  } = props;
   const hasElse = action.else !== undefined;
 
   return (
@@ -627,6 +706,7 @@ function ConditionStepRow(props: {
             onChange={(then) => onChange({ ...action, then })}
             onBlurCommit={onBlurCommit}
             documentNodeOptions={documentNodeOptions}
+            screenOptions={screenOptions}
           />
         </div>
         <label className="flex cursor-pointer items-center gap-2 text-[0.65rem] text-foreground">
@@ -664,6 +744,7 @@ function ConditionStepRow(props: {
               }
               onBlurCommit={onBlurCommit}
               documentNodeOptions={documentNodeOptions}
+              screenOptions={screenOptions}
             />
           </div>
         ) : null}
@@ -684,6 +765,7 @@ function SimpleActionRow(props: {
   canMoveUp: boolean;
   canMoveDown: boolean;
   documentNodeOptions?: readonly DocumentNodeOption[];
+  screenOptions?: readonly ScreenOption[];
 }) {
   const {
     action,
@@ -697,6 +779,7 @@ function SimpleActionRow(props: {
     canMoveUp,
     canMoveDown,
     documentNodeOptions,
+    screenOptions,
   } = props;
 
   if (action.type === "condition") {
@@ -709,6 +792,7 @@ function SimpleActionRow(props: {
         onBlurCommit={onBlurCommit}
         canRemove={canRemove}
         documentNodeOptions={documentNodeOptions}
+        screenOptions={screenOptions}
       />
     );
   }
@@ -880,6 +964,107 @@ function SimpleActionRow(props: {
           placeholder="https://…"
           autoComplete="off"
         />
+      </div>
+    );
+  }
+
+  if (action.type === "navigateScreen") {
+    const opts = screenOptions ?? [];
+    const inList = opts.some((o) => o.id === action.screenId);
+    return (
+      <div className="rounded-md border border-border/80 bg-background/60 p-2">
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-[min(100%,12rem)] flex-1">
+            <SimpleStepTypeSelect
+              index={index}
+              action={action}
+              onChange={onChange}
+              onBlurCommit={onBlurCommit}
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step up"
+              onClick={onMoveUp}
+              disabled={!canMoveUp}
+            >
+              <ArrowUp className="size-3.5" aria-hidden />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step down"
+              onClick={onMoveDown}
+              disabled={!canMoveDown}
+            >
+              <ArrowDown className="size-3.5" aria-hidden />
+            </Button>
+            {canRemove ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-7 text-muted-foreground hover:text-destructive"
+                title="Remove step"
+                onClick={onRemove}
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+              </Button>
+            ) : null}
+          </div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label
+              className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+              htmlFor={`navsc-${index}`}
+            >
+              {msg("events.screenPickLabel")}
+            </label>
+            <select
+              id={`navsc-${index}`}
+              className={controlClass}
+              value={inList ? action.screenId : ""}
+              onChange={(e) =>
+                onChange({ ...action, screenId: e.target.value })
+              }
+              onBlur={onBlurCommit}
+            >
+              <option value="">{msg("events.screenPickPlaceholder")}</option>
+              {opts.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label
+              className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+              htmlFor={`navsc-id-${index}`}
+            >
+              {msg("events.screenIdManual")}
+            </label>
+            <input
+              id={`navsc-id-${index}`}
+              type="text"
+              className={controlClass}
+              value={action.screenId}
+              onChange={(e) =>
+                onChange({ ...action, screenId: e.target.value })
+              }
+              onBlur={onBlurCommit}
+              placeholder="default"
+              autoComplete="off"
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -1066,6 +1251,7 @@ function SimpleActionRow(props: {
           onChange={onChange}
           onBlurCommit={onBlurCommit}
           documentNodeOptions={documentNodeOptions}
+          screenOptions={screenOptions}
         />
       </div>
     );
@@ -1081,8 +1267,11 @@ export function EventBindingsPanel(props: {
   onApply: (next: Record<string, Action[]> | undefined) => void;
   /** Registry-driven quick actions (e.g. table row presets). */
   interactionPresets?: readonly InteractionPreset[];
+  /** Document screens for navigateScreen step picker. */
+  screenOptions?: readonly ScreenOption[];
 }) {
-  const { nodeId, root, events, onApply, interactionPresets } = props;
+  const { nodeId, root, events, onApply, interactionPresets, screenOptions } =
+    props;
   const documentNodeOptions = useMemo(
     () => listDocumentNodesForPicker(root),
     [root],
@@ -1279,6 +1468,7 @@ export function EventBindingsPanel(props: {
     type:
       | "setState"
       | "navigate"
+      | "navigateScreen"
       | "http"
       | "fetch"
       | "transform"
@@ -1522,6 +1712,7 @@ export function EventBindingsPanel(props: {
                             onMoveDown={() => moveSimpleAction(row.id, i, 1)}
                             onBlurCommit={handleBlur}
                             documentNodeOptions={documentNodeOptions}
+                            screenOptions={screenOptions}
                           />
                         ))}
                         <div className="flex flex-wrap gap-1.5 pt-1">
@@ -1544,6 +1735,17 @@ export function EventBindingsPanel(props: {
                             }
                           >
                             + URL
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[0.65rem]"
+                            onClick={() =>
+                              addVisualStep(row.id, "navigateScreen")
+                            }
+                          >
+                            + {msg("events.kindNavigateScreen")}
                           </Button>
                           <Button
                             type="button"

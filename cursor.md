@@ -45,6 +45,7 @@ After each phase or sub-milestone:
 ## Learnings
 
 - **2026-03-31 - Screen templates:** Keep composed multi-layer roots next to `createNodeFromType` in the app (`screen-template-builders.ts`) while `SCREEN_TEMPLATE_LABELS` stays in `@aiui/registry` for a single list of ids + human labels shared by the store title and the builder select.
+- **2026-03-31 - navigateScreen in visual events:** Treat `navigateScreen` as a first-class branch action (with `isBranchAction` + `defaultBranchAction`) and pass `screenOptions` from the document store into `EventBindingsPanel` so the step picker stays aligned with `document.screens` without JSON edits.
 - **2026-03-31 - Multi-screen documents:** Prefer `screens` + `initialScreenId` + `flowLayout` as the source of truth; use `editorDocumentView(doc, activeScreenId)` wherever the builder still expects a single `root`; legacy `root`-only JSON is normalized in `migrateDocument` via `normalizeLegacyRootToScreens`.
 - **2026-03-31 - Screen graph + dnd-kit:** Bridge palette drops to React Flow coordinates with a ref to `screenToFlowPosition` and a document-level `pointermove` listener while dragging so drop placement is stable.
 - **2026-03-31 - Minimal builder shell:** Navbar is Preview + undo/redo + overflow actions; **component palette** lives in a **left sidebar**; **Design / Logic** tabs (dev mode) promote the React Flow logic map; walkthrough and document templates were removed from the UI; export panel, live JSON, and deep diagnostics stay behind `/?dev=1`; default `/preview` carries golden JSON import/export.

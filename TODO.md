@@ -18,6 +18,7 @@ All items below are done unless marked otherwise.
 
 ## Recently completed (2026-03-31)
 
+- **Visual events — navigateScreen:** Properties → Actions step editor includes **Go to screen** (`navigateScreen`) with document screen picker + manual id field; branch actions under **If** support the same; `isBranchAction` / `defaultBranchAction` extended in [`event-actions.ts`](apps/web/lib/builder/event-actions.ts).
 - **Add screen from template:** Builder screen graph toolbar includes a select fed by [`SCREEN_TEMPLATE_LABELS`](packages/registry/src/screen-templates.ts); [`screen-template-builders.ts`](apps/web/lib/builder/screen-template-builders.ts) composes starter trees (dashboard / stacked / table+modal); `addScreenFromTemplate` + `centerFlowPosition` on the flow ref place the new node near the graph center.
 - **Multi-screen DSL + screen graph:** Documents use `screens`, `initialScreenId`, and `flowLayout` (positions + prototype edges); migration wraps legacy `root`; builder adds **React Flow** screen nodes, palette drop to create screens, connect edges (navigate/modal) with actions synced via `applyPrototypeEdgeToDocument`; runtime supports `navigateScreen`, modal stack, and overlay; `navigateScreen` action + `editorDocumentView` for per-screen editing; registry [`screen-templates.ts`](packages/registry/src/screen-templates.ts) for future template labels.
 - Builder shell: **sidebar palette** (left), slim **navbar** (Preview + More); **`/?dev=1`** adds **Design / Logic** tabs (React Flow logic map + dev panels), tree, export, diagnostics, live JSON; **Advanced** → `/?dev=1` from default route.
@@ -31,4 +32,4 @@ All items below are done unless marked otherwise.
 
 - [ ] Optional React shadcn renderer path if imperative DOM is not enough for visual parity.
 - [ ] Extend `interactionPresets` across more primitives and tune copy.
-- [ ] Visual events editor: `navigateScreen` step (screen picker) alongside URL navigate; edge inspector to pick trigger node when multiple buttons exist.
+- [ ] Visual events / screen graph: edge inspector to pick trigger node when multiple components could fire the same prototype edge.
