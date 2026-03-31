@@ -33,7 +33,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Define binding descriptor schema (static, expression, state path, query path).
 - [x] Build non-technical data source picker and path browser.
 - [x] Add sample-data aware binding preview.
-- [ ] Implement reusable property editor primitives for registry-driven UI.
+- [x] Implement reusable property editor primitives for registry-driven UI.
 - [ ] Add validation and user-facing messages for broken bindings.
 
 ### Phase 4 - Side effects and workflow orchestration
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 3 reusable property editor primitives implemented:
+  - Extracted registry field renderer primitives into shared builder module.
+  - Centralized inspector field scope/value parsing and control rendering for text/select/number/margin sides.
+  - Refactored Properties inspector to consume reusable primitives instead of inline one-off field logic.
 - **2026-03-31** - Phase 3 sample-data-aware binding preview added:
   - Added sample preview output for in-progress binding drafts (query/state/expression/static).
   - Added live preview values alongside active bindings list for fast validation.
