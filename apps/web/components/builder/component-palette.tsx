@@ -122,9 +122,15 @@ export function ComponentPalette() {
   const queryActive = query.trim().length > 0;
 
   return (
-    <div className="flex min-h-0 flex-col gap-3">
+    <section
+      className="flex min-h-0 flex-col gap-3"
+      aria-labelledby="component-palette-heading"
+    >
       <div>
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <p
+          id="component-palette-heading"
+          className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+        >
           Components
         </p>
         <div className="relative">
@@ -193,6 +199,11 @@ export function ComponentPalette() {
       <p className="text-[0.65rem] leading-relaxed text-muted-foreground">
         {DRAG_COPY.paletteFooter}
       </p>
-    </div>
+      <p className="sr-only" aria-live="polite">
+        {hasAnyMatch
+          ? `${filtered.length} component${filtered.length === 1 ? "" : "s"} available`
+          : "No components available"}
+      </p>
+    </section>
   );
 }

@@ -12,6 +12,7 @@ type NodeTreeProps = {
   onToggle: (id: string) => void;
   onRangeSelect: (id: string) => void;
   rootId: string;
+  labelledById?: string;
 };
 
 export function NodeTree(props: NodeTreeProps) {
@@ -21,16 +22,24 @@ export function NodeTree(props: NodeTreeProps) {
   const isRoot = node.id === rootId;
   const title = formatNodeTitle(node);
 
+  const isSelected = selectedIds.includes(node.id);
+
   return (
-    <div className="text-sm">
+    <div
+      className="text-sm"
+      role={depth === 0 ? "tree" : "group"}
+      aria-labelledby={depth === 0 ? props.labelledById : undefined}
+    >
       <button
         type="button"
         title={node.id}
+        role="treeitem"
+        aria-level={depth + 1}
+        aria-selected={isSelected}
         className={cn(
           "flex w-full rounded-md border border-transparent px-2 py-1.5 text-left transition-colors",
           "hover:border-border hover:bg-muted/50",
-          selectedIds.includes(node.id) &&
-            "border-primary/40 bg-muted/80 shadow-sm",
+          isSelected && "border-primary/40 bg-muted/80 shadow-sm",
         )}
         style={{ paddingLeft: pad + 8 }}
         onClick={(e) => {

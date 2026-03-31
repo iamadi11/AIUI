@@ -43,7 +43,7 @@ export default function PreviewPage() {
   if (!developerMode) {
     return (
       <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
-        <main className="flex w-full flex-1 flex-col">
+        <main className="flex w-full flex-1 flex-col" aria-label="Runtime preview">
           <div className="flex justify-end px-4 py-3">
             <Link
               href="/?dev=1"
@@ -67,11 +67,13 @@ export default function PreviewPage() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
-      <header className="border-b border-border px-6 py-4">
+      <header className="border-b border-border px-6 py-4" aria-labelledby="preview-page-title">
         <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-muted-foreground">AIUI</p>
-            <h1 className="text-lg font-semibold tracking-tight">Preview (Developer mode)</h1>
+            <h1 id="preview-page-title" className="text-lg font-semibold tracking-tight">
+              Preview (Developer mode)
+            </h1>
             <p className="text-sm text-muted-foreground">
               Runtime preview uses <code className="font-mono text-xs">@aiui/runtime-core</code>
               ; the React panel below is a dev host via{" "}
@@ -89,7 +91,7 @@ export default function PreviewPage() {
       </header>
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-10">
-        <div className="flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground" aria-live="polite">
           <span>
             DSL <span className="font-mono text-foreground">{document.version}</span>
           </span>
@@ -156,7 +158,11 @@ export default function PreviewPage() {
             <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Runtime preview (DOM)
             </h2>
-            <div className="ml-auto flex flex-wrap gap-1">
+            <div
+              className="ml-auto flex flex-wrap gap-1"
+              role="group"
+              aria-label="Select simulated viewport"
+            >
               {VIEWPORT_PRESETS.map((preset) => (
                 <button
                   key={preset.id}
@@ -168,6 +174,8 @@ export default function PreviewPage() {
                       : "border-border bg-background text-muted-foreground hover:bg-muted",
                   )}
                   title={preset.description}
+                  aria-pressed={preset.id === viewportId}
+                  aria-label={`${preset.label} viewport`}
                   onClick={() => setViewportId(preset.id)}
                 >
                   {preset.label}

@@ -512,8 +512,11 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
   }, [root]);
 
   return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <section className="space-y-2" aria-labelledby="builder-canvas-heading">
+      <p
+        id="builder-canvas-heading"
+        className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+      >
         Canvas
       </p>
       <p className="text-[0.65rem] leading-snug text-muted-foreground">
@@ -521,6 +524,8 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
       </p>
       <div
         className="rounded-xl border border-dashed border-border bg-muted/15 p-3 transition-colors hover:bg-muted/25"
+        role="region"
+        aria-label="Builder canvas runtime surface"
         onPointerDownCapture={handlePointerDownCapture}
         onDoubleClickCapture={handleDoubleClickCapture}
       >
@@ -704,6 +709,6 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

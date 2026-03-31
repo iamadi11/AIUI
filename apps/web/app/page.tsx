@@ -4,10 +4,10 @@ import { BuilderDemo } from "@/components/builder/builder-demo";
 export default function Home() {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-16" aria-labelledby="builder-page-title">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">AIUI</p>
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 id="builder-page-title" className="text-3xl font-semibold tracking-tight">
             Builder + Universal JSON DSL
           </h1>
           <p className="text-muted-foreground leading-relaxed">

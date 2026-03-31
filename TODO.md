@@ -74,11 +74,15 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Add onboarding tour and empty-state education.
 - [x] Add migration assistant for older dashboard DSL versions.
 - [x] Add performance hardening path for large documents.
-- [ ] Complete accessibility pass.
+- [x] Complete accessibility pass.
 - [ ] Complete internationalization readiness pass.
 
 ## Done
 
+- **2026-03-31** - Phase 8 accessibility pass completed for builder/preview UI:
+  - Added semantic landmarks and region labeling across builder shell and preview surfaces (`main`, `aside`, section labels, and toolbar semantics).
+  - Improved assistive-tech clarity with explicit tree semantics (`role="tree"`/`treeitem` + selection state), live status announcements, and viewport toggle state (`aria-pressed`).
+  - Added focused ARIA labeling updates for canvas/palette interactions to improve keyboard and screen-reader orientation without changing core behavior.
 - **2026-03-31** - Phase 8 performance hardening path for large documents added:
   - Added builder-side document scale diagnostics (`normal`/`large`/`very_large`) with node/action/depth complexity scoring and guardrail guidance.
   - Added deferred heavy-check mode in Diagnostics panel so expensive layout/parity analysis is opt-in for large dashboards.

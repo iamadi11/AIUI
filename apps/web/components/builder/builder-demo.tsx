@@ -181,9 +181,14 @@ export function BuilderDemo() {
     >
       <div className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,200px)_1fr_minmax(0,260px)]">
-          <ComponentPalette />
-          <div className="min-w-0 space-y-4">
-            <div className="flex flex-wrap gap-2">
+          <aside aria-label="Component palette">
+            <ComponentPalette />
+          </aside>
+          <main className="min-w-0 space-y-4" aria-labelledby="builder-workspace-heading">
+            <h2 id="builder-workspace-heading" className="sr-only">
+              Builder workspace
+            </h2>
+            <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Builder actions">
               <Button
                 type="button"
                 variant="outline"
@@ -310,7 +315,7 @@ export function BuilderDemo() {
               }}
             />
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground" aria-live="polite">
               Selection:{" "}
               <span className="text-foreground">
                 {selectedIds.length === 0
@@ -370,8 +375,11 @@ export function BuilderDemo() {
               </div>
             ) : null}
 
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <section className="space-y-2" aria-labelledby="builder-tree-heading">
+              <p
+                id="builder-tree-heading"
+                className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              >
                 Tree
               </p>
               <NodeTree
@@ -397,8 +405,9 @@ export function BuilderDemo() {
                   setSelection(ids.slice(from, to + 1));
                 }}
                 rootId={rootId}
+                labelledById="builder-tree-heading"
               />
-            </div>
+            </section>
 
             <DocumentExportPanel document={document} />
 
@@ -418,8 +427,14 @@ export function BuilderDemo() {
               redoDepth={redoDepth}
             />
 
-            <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <section
+              className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm"
+              aria-labelledby="live-document-heading"
+            >
+              <p
+                id="live-document-heading"
+                className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              >
                 Live document (Zustand)
               </p>
               {performance.scaleLevel === "very_large" ? (
@@ -432,14 +447,16 @@ export function BuilderDemo() {
                   {JSON.stringify(document, null, 2)}
                 </pre>
               )}
-            </div>
-          </div>
+            </section>
+          </main>
 
-          <PropertiesInspector
-            root={document.root}
-            selectedId={selectedNodeId}
-            rootId={rootId}
-          />
+          <aside aria-label="Properties inspector">
+            <PropertiesInspector
+              root={document.root}
+              selectedId={selectedNodeId}
+              rootId={rootId}
+            />
+          </aside>
         </div>
       </div>
 
