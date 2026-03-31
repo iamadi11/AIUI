@@ -1,9 +1,9 @@
 "use client";
 
 import type { AiuiDocument } from "@aiui/dsl-schema";
-import { AiuiRuntime } from "@aiui/runtime-react";
 import { cn } from "@/lib/utils";
 import type { ViewportPreset } from "@/lib/builder/viewport-presets";
+import { RuntimeSurface } from "@/components/runtime/runtime-surface";
 
 /**
  * Builder preview skin over `@aiui/runtime-react` / `@aiui/runtime-core`.
@@ -26,7 +26,7 @@ export function RuntimePreview(props: {
           className="mx-auto"
           style={{ width: `min(100%, ${props.viewport.width}px)` }}
         >
-          <AiuiRuntime
+          <RuntimeSurface
             document={props.document}
             className={cn(
               "min-h-[140px] w-full rounded-xl border border-border bg-muted/25 p-4",

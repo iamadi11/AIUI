@@ -13,11 +13,11 @@ import {
   parsePadding,
   type Rect,
 } from "@aiui/layout-engine";
-import { AiuiRuntime } from "@aiui/runtime-react";
 import { getDefinition } from "@aiui/registry";
 import { GripVertical } from "lucide-react";
 import { findNodeById } from "@/lib/document/tree";
 import { cn } from "@/lib/utils";
+import { RuntimeSurface } from "@/components/runtime/runtime-surface";
 import type { CanvasDropData, CanvasSiblingData } from "./dnd-types";
 import { DRAG_COPY } from "./drag-copy";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -522,7 +522,7 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
         onDoubleClickCapture={handleDoubleClickCapture}
       >
         <div ref={measureRef} className="relative w-full min-h-[220px]">
-          <AiuiRuntime
+          <RuntimeSurface
             document={document}
             className="min-h-[200px] w-full rounded-lg border border-border/60 bg-background/40"
           />

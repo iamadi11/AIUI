@@ -74,3 +74,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Palette visibility contract:** Components appear in the builder left navbar only when they are registered in `@aiui/registry` with `ux.palette` metadata; shadcn adoption should be driven by registry entries, not app-level hardcoded lists.
 - **2026-03-31 - Parity guardrail in CI:** Encode parity rules as matrix tests (viewport x initial data x repeated interaction) so deterministic runtime behavior is enforced automatically rather than validated manually.
 - **2026-03-31 - Visual baseline discipline:** Keep high-priority runtime visuals under committed snapshot tests (desktop + mobile widths) so style/layout drift is detected immediately during test runs.
+- **2026-03-31 - Runtime surface parity:** Route builder canvas and preview through one shared app-level runtime surface wrapper so future host-level behavior changes cannot drift between editor and preview experiences.

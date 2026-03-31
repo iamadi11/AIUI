@@ -47,7 +47,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 5 - Parity and preview contract
 
-- [ ] Enforce single renderer path across editor canvas, preview, and runtime output.
+- [x] Enforce single renderer path across editor canvas, preview, and runtime output.
 - [x] Define parity test matrix: same DSL + viewport + data => same result.
 - [x] Add high-priority visual regression snapshots.
 - [ ] Ensure preview mode hides editor chrome while preserving behavior.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 5 single renderer path enforced:
+  - Added shared `RuntimeSurface` component used by both builder canvas and preview surfaces.
+  - Replaced direct `AiuiRuntime` usage in app-level surfaces with the shared runtime host wrapper.
+  - Locked app rendering parity to one host mount path before adding further preview/developer diagnostics.
 - **2026-03-31** - Phase 5 visual regression snapshots added:
   - Added runtime visual snapshot tests for high-priority primitives/layouts (`Stack`, `Button`, `Card`, `Badge`) at desktop and mobile widths.
   - Snapshot artifacts are committed under runtime-core test snapshots to catch style/layout drift in CI.
