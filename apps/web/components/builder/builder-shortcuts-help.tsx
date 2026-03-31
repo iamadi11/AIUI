@@ -33,6 +33,10 @@ export function BuilderShortcutsHelp() {
           <dd className="shrink-0 font-mono text-foreground/90">Shift+Click</dd>
         </div>
         <div className="flex justify-between gap-4">
+          <dt>Select parent layer</dt>
+          <dd className="shrink-0 font-mono text-foreground/90">Alt+↑</dd>
+        </div>
+        <div className="flex justify-between gap-4">
           <dt>Delete selected layer</dt>
           <dd className="shrink-0 font-mono text-foreground/90">
             Delete · Backspace

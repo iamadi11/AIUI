@@ -18,7 +18,7 @@ See `packages/registry/README.md` for palette metadata when adding primitives.
 
 **Diagnostics:** A dedicated **Diagnostics** panel shows schema validity, selection count, node/leaf/event/action counts, and undo/redo depth.
 
-**Shortcuts & templates:** Open **Keyboard shortcuts** on the builder for undo/redo, Esc, Delete/Backspace, ⌘/Ctrl+D (duplicate), and ⌘/Ctrl+A (select all). In the tree, use **Shift+Click** to range-select between the current primary selection and the clicked layer. Use the **Templates** buttons (Row + two boxes, Header / content / footer, Sidebar + content) to insert common layouts under the selection (or under root).
+**Shortcuts & templates:** Open **Keyboard shortcuts** on the builder for undo/redo, Esc, Delete/Backspace, ⌘/Ctrl+D (duplicate), and ⌘/Ctrl+A (select all). In the tree, use **Shift+Click** to range-select between the current primary selection and the clicked layer; use **Alt+↑** to jump selection to the parent layer. Use the **Templates** buttons (Row + two boxes, Header / content / footer, Sidebar + content) to insert common layouts under the selection (or under root).
 
 ## Getting Started
 

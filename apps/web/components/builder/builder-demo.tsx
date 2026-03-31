@@ -16,7 +16,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
-import { getPathToNode } from "@/lib/document/tree";
+import { findParentOf, getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { Redo2, Undo2 } from "lucide-react";
@@ -118,6 +118,13 @@ export function BuilderDemo() {
         setSelection(collectNodeIds(document.root));
         return;
       }
+      if (e.altKey && e.key === "ArrowUp") {
+        e.preventDefault();
+        if (!selectedNodeId) return;
+        const parent = findParentOf(document.root, selectedNodeId);
+        if (parent) selectNode(parent.id);
+        return;
+      }
       if (e.key === "Delete" || e.key === "Backspace") {
         const targets = selectedIds.filter((id) => id !== rootId);
         if (targets.length === 0) return;
@@ -138,9 +145,11 @@ export function BuilderDemo() {
     redo,
     clearSelection,
     setSelection,
+    selectNode,
     duplicateNode,
     removeNode,
     selectedIds,
+    selectedNodeId,
     rootId,
     document.root,
   ]);
@@ -313,7 +322,8 @@ export function BuilderDemo() {
               Click canvas or tree; double-click a label to rename. Esc clears
               selection. Root cannot be removed. Delete/Backspace removes the
               selection; ⌘/Ctrl+D duplicates. Undo/redo: ⌘Z / ⌘⇧Z (Ctrl+Z /
-              Ctrl+Shift+Z or Ctrl+Y). See the Keyboard shortcuts panel below.
+              Ctrl+Shift+Z or Ctrl+Y). Alt+↑ selects parent. See the Keyboard
+              shortcuts panel below.
             </p>
 
             <BuilderCanvas
