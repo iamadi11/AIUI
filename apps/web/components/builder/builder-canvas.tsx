@@ -261,6 +261,10 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
     startY: number;
     baseW: number;
     baseH: number;
+    padX: number;
+    padY: number;
+    candidateWidths: number[];
+    candidateHeights: number[];
   }>(null);
   const [resizeDraft, setResizeDraft] = useState<null | {
     id: string;
@@ -369,21 +373,71 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
 
   useEffect(() => {
     if (resizeSession === null) return;
-    const { id, startX, startY, baseW, baseH } = resizeSession;
+    const {
+      id,
+      startX,
+      startY,
+      baseW,
+      baseH,
+      candidateWidths,
+      candidateHeights,
+    } = resizeSession;
+
+    function computeSnappedSize(
+      dx: number,
+      dy: number,
+    ): { w: number; h: number } {
+      const rawW = baseW + dx;
+      const rawH = baseH + dy;
+
+      let w = snapLayoutSize(rawW);
+      let h = snapLayoutSize(rawH);
+
+      const threshold = SNAP_PX; // px within which to snap to sibling edges
+
+      if (candidateWidths.length > 0) {
+        let best = { value: w, dist: Number.POSITIVE_INFINITY };
+        for (const cw of candidateWidths) {
+          const dist = Math.abs(rawW - cw);
+          if (dist < best.dist) {
+            best = { value: cw, dist };
+          }
+        }
+        if (best.dist <= threshold) {
+          w = Math.max(MIN_LEAF_PX, best.value);
+        }
+      }
+
+      if (candidateHeights.length > 0) {
+        let best = { value: h, dist: Number.POSITIVE_INFINITY };
+        for (const ch of candidateHeights) {
+          const dist = Math.abs(rawH - ch);
+          if (dist < best.dist) {
+            best = { value: ch, dist };
+          }
+        }
+        if (best.dist <= threshold) {
+          h = Math.max(MIN_LEAF_PX, best.value);
+        }
+      }
+
+      return { w, h };
+    }
+
     function move(e: PointerEvent) {
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
+      const { w, h } = computeSnappedSize(dx, dy);
       setResizeDraft({
         id,
-        w: snapLayoutSize(baseW + dx),
-        h: snapLayoutSize(baseH + dy),
+        w,
+        h,
       });
     }
     function up(e: PointerEvent) {
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
-      const w = snapLayoutSize(baseW + dx);
-      const h = snapLayoutSize(baseH + dy);
+      const { w, h } = computeSnappedSize(dx, dy);
       onLeafLayoutResizeRef.current?.(id, w, h);
       setResizeSession(null);
       setResizeDraft(null);
@@ -493,13 +547,13 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
 
             {alignmentGuides.x !== null ? (
               <div
-                className="absolute z-[26] bg-primary/25"
+                className="absolute z-26 bg-primary/25"
                 style={{ left: alignmentGuides.x, top: 0, bottom: 0, width: 1 }}
               />
             ) : null}
             {alignmentGuides.y !== null ? (
               <div
-                className="absolute z-[26] bg-primary/25"
+                className="absolute z-26 bg-primary/25"
                 style={{ top: alignmentGuides.y, left: 0, right: 0, height: 1 }}
               />
             ) : null}
@@ -541,14 +595,10 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
                   e.stopPropagation();
                   e.preventDefault();
                   const pad = parsePadding(selectedNode);
-                  const innerW = Math.max(
-                    0,
-                    selectedRect.width - pad.left - pad.right,
-                  );
-                  const innerH = Math.max(
-                    0,
-                    selectedRect.height - pad.top - pad.bottom,
-                  );
+                  const padX = pad.left + pad.right;
+                  const padY = pad.top + pad.bottom;
+                  const innerW = Math.max(0, selectedRect.width - padX);
+                  const innerH = Math.max(0, selectedRect.height - padY);
                   const layout = selectedNode.layout as
                     | Record<string, unknown>
                     | undefined;
@@ -561,12 +611,65 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
                     Number.isFinite(layout.height)
                       ? layout.height
                       : innerH;
+
+                  const candidateWidths: number[] = [];
+                  const candidateHeights: number[] = [];
+                  const selectedLeft = selectedRect.x;
+                  const selectedTop = selectedRect.y;
+
+                  for (const [otherId, r] of rects) {
+                    if (otherId === selectedNode.id) continue;
+                    // Horizontal: align right edge with other left/right, or left edge with other left/right
+                    const rightToOtherLeft =
+                      r.x - selectedLeft - padX; // right edge to other left
+                    const rightToOtherRight =
+                      r.x + r.width - selectedLeft - padX; // right edge to other right
+                    const leftToOtherLeft =
+                      r.x - selectedLeft - padX; // left edge to other left (same as rightToOtherLeft)
+                    const leftToOtherRight =
+                      r.x + r.width - selectedLeft - padX; // left edge to other right
+
+                    for (const w of [
+                      rightToOtherLeft,
+                      rightToOtherRight,
+                      leftToOtherLeft,
+                      leftToOtherRight,
+                    ]) {
+                      if (Number.isFinite(w) && w > 0) {
+                        candidateWidths.push(w);
+                      }
+                    }
+
+                    // Vertical: align bottom edge with other top/bottom, or top edge with other top/bottom
+                    const bottomToOtherTop = r.y - selectedTop - padY;
+                    const bottomToOtherBottom =
+                      r.y + r.height - selectedTop - padY;
+                    const topToOtherTop = r.y - selectedTop - padY;
+                    const topToOtherBottom =
+                      r.y + r.height - selectedTop - padY;
+
+                    for (const h of [
+                      bottomToOtherTop,
+                      bottomToOtherBottom,
+                      topToOtherTop,
+                      topToOtherBottom,
+                    ]) {
+                      if (Number.isFinite(h) && h > 0) {
+                        candidateHeights.push(h);
+                      }
+                    }
+                  }
+
                   setResizeSession({
                     id: selectedNode.id,
                     startX: e.clientX,
                     startY: e.clientY,
                     baseW,
                     baseH,
+                    padX,
+                    padY,
+                    candidateWidths,
+                    candidateHeights,
                   });
                   setResizeDraft({
                     id: selectedNode.id,
