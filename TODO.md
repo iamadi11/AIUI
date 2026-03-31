@@ -65,7 +65,6 @@ _Baseline shipped — see **Done**._
 _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation is incremental; do not break DSL/runtime boundaries._
 
 - [ ] **Phase 3 — Layout UX (follow-up):** Visual resize handles on canvas, snapping/guides, margin in engine, constraint UI
-- [ ] **Phase 6 — Advanced logic (React Flow):** Graph workflows, sync with simple mode, debugging
 - [ ] **Phase 7 — Builder = runtime convergence:** Same engine in builder as preview
 - [ ] **Phase 8 — Power features:** Multi-select, templates, shortcuts, debug panels
 
@@ -73,6 +72,7 @@ _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation i
 
 ## Done
 
+- **2026-03-31** — **Product UX — Phase 6 (advanced logic / React Flow):** `flattenActions()` expands `sequence` / `condition` for graph layout; `eventsToFlowElements` + `flowGraphStats`; **Logic** panel — “Synced with Properties” badge, per-step **inspect** (`JSON.stringify` when `data.action`), stats line (events · expanded steps); `logic-flow-panel.tsx` + `lib/logic/events-to-flow.ts`
 - **2026-03-31** — **Product UX — Phase 5 (logic / side effects UX):** Visual **If** step (`condition` with branch-only then/else) + **HTTP body** field; `BranchActionFields` for nested branches; `document.state` **Initial state** panel (`setDocumentState` in store); `event-actions` helpers (`defaultBranchAction`, `defaultConditionAction`, HTTP body parse/format)
 - **2026-03-31** — **Product UX — Phase 4 (event system UX):** `EventBindingsPanel` — preset **When** (click, submit, … + custom), collapsible rows with summary (`click · State → …`), **Visual steps** for `setState` / `navigate` / `http` (+ add step), **Advanced JSON** for sequences/conditions; blur-to-save for visual fields; `lib/builder/event-actions.ts` helpers
 - **2026-03-31** — **Product UX — Phase 3 (layout UX baseline):** `layout.padding` / `layout.width` / `layout.height` in registry + inspector (`InspectorField` `scope: "layout"`); `leafIntrinsic` reads optional `layout.width`/`height` in `@aiui/layout-engine`; sibling **reorder** on canvas via `@dnd-kit/sortable` + grip + `reorderSibling` in `document-store` / `tree.ts`; palette vs sibling collision (`closestCenter` vs `canvasPointerCollision`)

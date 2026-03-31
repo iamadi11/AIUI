@@ -23,16 +23,56 @@ export function formatActionLabel(action: Action): string {
 }
 
 /**
+ * Linearize actions for graph layout: expands `sequence` and `condition`
+ * into rows (then/else branches get prefixed labels).
+ */
+export function flattenActions(actions: Action[]): { label: string; action?: Action }[] {
+  const out: { label: string; action?: Action }[] = [];
+  for (const a of actions) {
+    if (a.type === "sequence") {
+      out.push(...flattenActions(a.steps));
+    } else if (a.type === "condition") {
+      out.push({ label: `if (${a.when})`, action: a });
+      const thenFlat = flattenActions([a.then]);
+      thenFlat.forEach((row, i) => {
+        out.push({
+          label: i === 0 ? `then → ${row.label}` : `    ${row.label}`,
+          action: row.action,
+        });
+      });
+      if (a.else) {
+        const elseFlat = flattenActions([a.else]);
+        elseFlat.forEach((row, i) => {
+          out.push({
+            label: i === 0 ? `else → ${row.label}` : `    ${row.label}`,
+            action: row.action,
+          });
+        });
+      }
+    } else {
+      out.push({ label: formatActionLabel(a), action: a });
+    }
+  }
+  return out;
+}
+
+export type LogicFlowNodeData = {
+  label: string;
+  /** Present on steps backed by a concrete action (for inspect / debug). */
+  action?: Action;
+};
+
+/**
  * Build a read-only React Flow graph for a node's `events` map:
- * Start → each event name → chained actions left-to-right by column.
+ * Start → each event name → flattened action chain top-to-bottom per column.
  */
 export function eventsToFlowElements(
   events: Record<string, Action[]> | undefined,
-): { nodes: Node[]; edges: Edge[] } {
-  const nodes: Node[] = [];
+): { nodes: Node<LogicFlowNodeData>[]; edges: Edge[] } {
+  const nodes: Node<LogicFlowNodeData>[] = [];
   const edges: Edge[] = [];
-  const colW = 220;
-  const rowH = 64;
+  const colW = 240;
+  const rowH = 58;
 
   nodes.push({
     id: START_ID,
@@ -60,14 +100,15 @@ export function eventsToFlowElements(
       target: eid,
     });
 
+    const flat = flattenActions(actions);
     let prev = eid;
-    const y = rowH * 2;
-    actions.forEach((action, i) => {
+    let y = rowH * 2;
+    flat.forEach((item, i) => {
       const aid = `act-${col}-${i}-${safe}`;
       nodes.push({
         id: aid,
         position: { x: col * colW, y: y + i * rowH },
-        data: { label: formatActionLabel(action) },
+        data: { label: item.label, action: item.action },
       });
       edges.push({
         id: `edge-${prev}-${aid}`,
@@ -80,4 +121,17 @@ export function eventsToFlowElements(
   }
 
   return { nodes, edges };
+}
+
+/** Stats for UI footers / debugging. */
+export function flowGraphStats(
+  events: Record<string, Action[]> | undefined,
+): { eventCount: number; stepCount: number } {
+  if (!events) return { eventCount: 0, stepCount: 0 };
+  const names = Object.keys(events);
+  let stepCount = 0;
+  for (const name of names) {
+    stepCount += flattenActions(events[name] ?? []).length;
+  }
+  return { eventCount: names.length, stepCount };
 }

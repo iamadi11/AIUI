@@ -14,6 +14,8 @@ See `packages/registry/README.md` for palette metadata when adding primitives.
 
 **Initial state:** Edit `document.state` key/value defaults for expressions and `setState` paths (panel below export).
 
+**Logic graph:** The **Logic** panel renders a read-only React Flow chain from the selected node’s `events`; `sequence` and `condition` are expanded into steps. Click a step to inspect its action JSON; edit bindings in **Properties → Events**.
+
 ## Getting Started
 
 First, run the development server (from repo root, `pnpm dev`):

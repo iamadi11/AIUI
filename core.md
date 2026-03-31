@@ -411,6 +411,11 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 - **Events:** Visual **If** (expression + then/else, each branch: state / URL / HTTP only); top-level HTTP steps include optional **body** (JSON). `sequence` / nested logic stays in Advanced JSON.
 - **Document:** **Initial state** panel edits `document.state` (key/value rows, JSON-friendly values) with undo via `setDocumentState`.
 
-### Phases 6–8 (planned)
+### Phase 6 — Advanced logic / React Flow (shipped baseline)
 
-React Flow alignment; builder/runtime visual parity; power-user tooling; optional layout follow-ups (on-canvas resize, snapping, margin). Details in `PLAN.md` §14.
+- **Graph:** `eventsToFlowElements` + `flattenActions()` turn each event’s `actions` into a linear chain (expanded `sequence` / `condition`); **Logic** panel shows counts, a sync note with Properties, and click-to-inspect JSON for a step when `data.action` is present.
+- **Editing:** Event bindings are still edited in Properties (graph is read-only observability).
+
+### Phases 7–8 (planned)
+
+Builder/runtime convergence (preview parity); power features (multi-select, templates, shortcuts, diagnostics). Optional layout follow-ups (on-canvas resize, snapping, margin). Details in `PLAN.md` §14.
