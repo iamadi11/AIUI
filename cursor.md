@@ -61,3 +61,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Constraint diagnostics:** Responsive readiness needs proactive warnings, not post-hoc debugging; compute layout conflicts (min/max and nowrap overflow) and surface them in builder diagnostics with suggested fixes.
 - **2026-03-31 - Parity visibility:** Treat viewport parity as a first-class diagnostic with explicit per-preset status so editor/runtime consistency is continuously visible during development.
 - **2026-03-31 - Binding contract clarity:** Use a discriminated binding descriptor (`kind`) as the single schema entry point for all binding modes so editors and runtime can add features without ad-hoc field guessing.
+- **2026-03-31 - Non-technical binding UX:** Data binding flows should start with guided source/path selection and presets before exposing raw expressions, so first-time users can bind values without schema-level knowledge.

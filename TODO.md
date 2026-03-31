@@ -31,7 +31,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 ### Phase 3 - Universal properties and data binding
 
 - [x] Define binding descriptor schema (static, expression, state path, query path).
-- [ ] Build non-technical data source picker and path browser.
+- [x] Build non-technical data source picker and path browser.
 - [ ] Add sample-data aware binding preview.
 - [ ] Implement reusable property editor primitives for registry-driven UI.
 - [ ] Add validation and user-facing messages for broken bindings.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 3 data source picker + path browser added:
+  - Added Data bindings panel in inspector Data section for non-technical binding setup.
+  - Added source/path browser backed by sample query datasets and state-path presets.
+  - Added binding apply/remove flows writing directly to `node.bindings` (`query`, `state`, `expression`, `static`).
 - **2026-03-31** - Phase 3 binding descriptor schema defined:
   - Added discriminated binding descriptor schema in `@aiui/dsl-schema` (`static`, `expression`, `state`, `query`).
   - Added optional `bindings` field on `UiNode` for property-key -> descriptor mapping.

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Action, UiNode } from "@aiui/dsl-schema";
+import type { Action, BindingDescriptor, UiNode } from "@aiui/dsl-schema";
 import {
   getDefinition,
   INSPECTOR_SECTION_LABELS,
@@ -12,6 +12,7 @@ import {
 } from "@aiui/registry";
 import { findNodeById } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
+import { DataBindingPanel } from "./data-binding-panel";
 import { EventBindingsPanel } from "./event-bindings-panel";
 
 type PropertiesInspectorProps = {
@@ -444,6 +445,17 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
     });
   }
 
+  function applyBindings(next: Record<string, BindingDescriptor> | undefined) {
+    updateNode(editingId, (n) => {
+      if (next === undefined) {
+        const copy = { ...n };
+        delete copy.bindings;
+        return copy;
+      }
+      return { ...n, bindings: next };
+    });
+  }
+
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -541,9 +553,18 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                   ) : null}
 
                   {showDataHint && sectionFields.length === 0 ? (
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      Data bindings are not configured for this component yet.
-                    </p>
+                    <div className="mt-3">
+                      <DataBindingPanel
+                        node={node}
+                        bindableKeys={
+                          (fields ?? [])
+                            .filter((f) => fieldScope(f) === "props")
+                            .map((f) => f.key)
+                            .filter((v, i, a) => a.indexOf(v) === i)
+                        }
+                        onApplyBindings={applyBindings}
+                      />
+                    </div>
                   ) : null}
 
                   {showVisibilityHint && sectionFields.length === 0 ? (
