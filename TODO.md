@@ -73,12 +73,16 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 - [x] Add onboarding tour and empty-state education.
 - [x] Add migration assistant for older dashboard DSL versions.
-- [ ] Add performance hardening path for large documents.
+- [x] Add performance hardening path for large documents.
 - [ ] Complete accessibility pass.
 - [ ] Complete internationalization readiness pass.
 
 ## Done
 
+- **2026-03-31** - Phase 8 performance hardening path for large documents added:
+  - Added builder-side document scale diagnostics (`normal`/`large`/`very_large`) with node/action/depth complexity scoring and guardrail guidance.
+  - Added deferred heavy-check mode in Diagnostics panel so expensive layout/parity analysis is opt-in for large dashboards.
+  - Added non-breaking builder guardrails for very large docs (large-doc notice and hidden live JSON preview to reduce rerender pressure).
 - **2026-03-31** - Phase 8 migration assistant for older dashboard DSL versions added:
   - Added `inspectGoldenJsonImport()` in `@aiui/dsl-schema` to detect version/default migrations and return import guidance metadata.
   - Added builder import confirmation UX that shows migration warnings and requires explicit "Migrate and import" acceptance before replacing the active document.

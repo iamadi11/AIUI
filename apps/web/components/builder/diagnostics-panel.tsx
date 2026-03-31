@@ -1,41 +1,13 @@
 "use client";
 
-import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
+import type { AiuiDocument } from "@aiui/dsl-schema";
 import { safeParseDocument } from "@aiui/dsl-schema";
 import { useEffect, useMemo, useState } from "react";
+import { analyzeDocumentPerformance } from "@/lib/builder/document-performance";
 import { collectLayoutWarnings } from "@/lib/builder/layout-warnings";
 import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
 import { createIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
 import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
-
-function countTree(root: UiNode): {
-  nodeCount: number;
-  leafCount: number;
-  eventCount: number;
-  actionCount: number;
-} {
-  let nodeCount = 0;
-  let leafCount = 0;
-  let eventCount = 0;
-  let actionCount = 0;
-
-  function walk(node: UiNode) {
-    nodeCount += 1;
-    const kids = node.children ?? [];
-    if (kids.length === 0) {
-      leafCount += 1;
-    }
-    const events = node.events ?? {};
-    for (const actions of Object.values(events)) {
-      eventCount += 1;
-      actionCount += actions.length;
-    }
-    for (const child of kids) walk(child);
-  }
-
-  walk(root);
-  return { nodeCount, leafCount, eventCount, actionCount };
-}
 
 function severityClassname(severity: string): string {
   switch (severity) {
@@ -66,10 +38,31 @@ export function DiagnosticsPanel(props: {
   const issues = useIssueTelemetryStore((s) => s.issues);
   const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+  const [runExpensiveChecks, setRunExpensiveChecks] = useState(false);
   const parse = safeParseDocument(document);
-  const tree = countTree(document.root);
-  const layoutWarnings = collectLayoutWarnings(document.root);
-  const viewportParity = buildViewportParityReport(document.root);
+  const perf = useMemo(
+    () => analyzeDocumentPerformance(document.root),
+    [document.root],
+  );
+  const shouldRunExpensiveChecks =
+    !perf.shouldDeferExpensiveDiagnostics || runExpensiveChecks;
+  const layoutWarnings = useMemo(
+    () =>
+      shouldRunExpensiveChecks ? collectLayoutWarnings(document.root) : [],
+    [document.root, shouldRunExpensiveChecks],
+  );
+  const viewportParity = useMemo(
+    () =>
+      shouldRunExpensiveChecks
+        ? buildViewportParityReport(document.root)
+        : {
+            ok: true,
+            summary:
+              "Deferred for large document. Run full checks for parity details.",
+            rows: [],
+          },
+    [document.root, shouldRunExpensiveChecks],
+  );
   const failingParityRows = viewportParity.rows.filter(
     (row) => row.invalidRectCount > 0 || !row.deterministic,
   );
@@ -77,16 +70,6 @@ export function DiagnosticsPanel(props: {
     () => issues.find((issue) => issue.issueId === selectedIssueId) ?? issues[0] ?? null,
     [issues, selectedIssueId],
   );
-
-  useEffect(() => {
-    if (issues.length === 0) {
-      setSelectedIssueId(null);
-      return;
-    }
-    if (!selectedIssueId || !issues.some((issue) => issue.issueId === selectedIssueId)) {
-      setSelectedIssueId(issues[0].issueId);
-    }
-  }, [issues, selectedIssueId]);
 
   useEffect(() => {
     if (!parse.success) {
@@ -156,6 +139,32 @@ export function DiagnosticsPanel(props: {
     );
   }, [document.version, failingParityRows, recordIssue]);
 
+  useEffect(() => {
+    if (!perf.isLargeDocument) return;
+    recordIssue(
+      createIssueTelemetryEnvelope({
+        source: "builder",
+        severity: perf.scaleLevel === "very_large" ? "warn" : "info",
+        category: "performance",
+        code: "BUILDER_LARGE_DOCUMENT",
+        summary: perf.summary,
+        userMessage:
+          "Large dashboard detected. Builder enables performance guardrails to keep editing responsive.",
+        developerMessage:
+          "Large-document guardrails activated; expensive diagnostics are deferred until explicitly enabled.",
+        documentVersion: document.version,
+        details: {
+          nodeCount: perf.nodeCount,
+          eventCount: perf.eventCount,
+          actionCount: perf.actionCount,
+          maxDepth: perf.maxDepth,
+          complexityScore: perf.estimatedComplexityScore,
+          scaleLevel: perf.scaleLevel,
+        },
+      }),
+    );
+  }, [document.version, perf, recordIssue]);
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -174,19 +183,19 @@ export function DiagnosticsPanel(props: {
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
           <span className="text-muted-foreground">Nodes</span>
-          <p className="font-medium text-foreground">{tree.nodeCount}</p>
+          <p className="font-medium text-foreground">{perf.nodeCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
           <span className="text-muted-foreground">Leaves</span>
-          <p className="font-medium text-foreground">{tree.leafCount}</p>
+          <p className="font-medium text-foreground">{perf.leafCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
           <span className="text-muted-foreground">Events</span>
-          <p className="font-medium text-foreground">{tree.eventCount}</p>
+          <p className="font-medium text-foreground">{perf.eventCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
           <span className="text-muted-foreground">Actions</span>
-          <p className="font-medium text-foreground">{tree.actionCount}</p>
+          <p className="font-medium text-foreground">{perf.actionCount}</p>
         </div>
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
           <span className="text-muted-foreground">Undo depth</span>
@@ -202,6 +211,49 @@ export function DiagnosticsPanel(props: {
           {parse.error.issues[0]?.message ?? "Document validation failed."}
         </p>
       ) : null}
+      <div className="mt-3 rounded-lg border border-border/70 bg-muted/20 p-2">
+        <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
+          Document scale
+        </p>
+        <p
+          className={
+            perf.isLargeDocument
+              ? "mt-1 text-[0.68rem] text-amber-700"
+              : "mt-1 text-[0.68rem] text-emerald-700"
+          }
+        >
+          {perf.summary}
+        </p>
+        <p className="mt-1 text-[0.68rem] text-foreground/90">
+          Depth: {perf.maxDepth} • Complexity score: {perf.estimatedComplexityScore}
+        </p>
+        {perf.guardrails.length > 0 ? (
+          <ul className="mt-1 space-y-1">
+            {perf.guardrails.map((guardrail) => (
+              <li key={guardrail} className="text-[0.67rem] text-foreground/80">
+                {guardrail}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {perf.shouldDeferExpensiveDiagnostics ? (
+          <div className="mt-2 rounded border border-amber-300/60 bg-amber-50/70 p-2">
+            <p className="text-[0.67rem] text-amber-900">
+              Expensive layout/parity checks are deferred while editing this
+              document.
+            </p>
+            <button
+              type="button"
+              className="mt-1 text-[0.67rem] font-medium text-amber-800 underline underline-offset-2"
+              onClick={() => setRunExpensiveChecks((prev) => !prev)}
+            >
+              {runExpensiveChecks
+                ? "Disable full checks"
+                : "Run full checks now"}
+            </button>
+          </div>
+        ) : null}
+      </div>
       {layoutWarnings.length > 0 ? (
         <div className="mt-3 rounded-lg border border-amber-300/60 bg-amber-50/60 p-2">
           <p className="text-[0.7rem] font-medium uppercase tracking-wide text-amber-800">
@@ -240,16 +292,18 @@ export function DiagnosticsPanel(props: {
         >
           {viewportParity.summary}
         </p>
-        <ul className="mt-1 space-y-1">
-          {viewportParity.rows.map((row) => (
-            <li key={row.viewportId} className="text-[0.68rem] text-foreground/90">
-              {row.viewportLabel} ({row.width}px):{" "}
-              {row.invalidRectCount === 0 && row.deterministic
-                ? "ok"
-                : `${row.invalidRectCount} invalid rect(s), deterministic=${row.deterministic}`}
-            </li>
-          ))}
-        </ul>
+        {viewportParity.rows.length > 0 ? (
+          <ul className="mt-1 space-y-1">
+            {viewportParity.rows.map((row) => (
+              <li key={row.viewportId} className="text-[0.68rem] text-foreground/90">
+                {row.viewportLabel} ({row.width}px):{" "}
+                {row.invalidRectCount === 0 && row.deterministic
+                  ? "ok"
+                  : `${row.invalidRectCount} invalid rect(s), deterministic=${row.deterministic}`}
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
       <div className="mt-3 rounded-lg border border-border/70 bg-muted/10 p-2">
         <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">

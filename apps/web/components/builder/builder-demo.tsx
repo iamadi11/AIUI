@@ -16,6 +16,7 @@ import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatNodeTitle } from "@/lib/builder/node-display";
+import { analyzeDocumentPerformance } from "@/lib/builder/document-performance";
 import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
 import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
@@ -24,7 +25,7 @@ import { createRuntimeIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-tel
 import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
 import { Redo2, Undo2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { BuilderShortcutsHelp } from "./builder-shortcuts-help";
 import { canvasPointerCollision } from "./builder-collision";
@@ -95,6 +96,10 @@ export function BuilderDemo() {
     (tpl) => tpl.id === "starter-dashboard",
   );
   const userLayerCount = Math.max(0, countNodes(document.root) - 1);
+  const performance = useMemo(
+    () => analyzeDocumentPerformance(document.root),
+    [document.root],
+  );
 
   const [activePalette, setActivePalette] = useState<PaletteDragData | null>(
     null,
@@ -281,6 +286,18 @@ export function BuilderDemo() {
 
             <BuilderShortcutsHelp />
 
+            {performance.isLargeDocument ? (
+              <div className="rounded-xl border border-amber-300/70 bg-amber-50/70 p-3">
+                <p className="text-xs font-medium text-amber-900">
+                  Large document guardrails active
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
+                  {performance.summary} Some heavy diagnostics are deferred by
+                  default to keep editing responsive.
+                </p>
+              </div>
+            ) : null}
+
             <FirstTimeWalkthroughPanel
               document={document}
               selectedCount={selectedIds.length}
@@ -405,9 +422,16 @@ export function BuilderDemo() {
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Live document (Zustand)
               </p>
-              <pre className="max-h-64 overflow-auto text-sm leading-relaxed">
-                {JSON.stringify(document, null, 2)}
-              </pre>
+              {performance.scaleLevel === "very_large" ? (
+                <p className="text-xs text-muted-foreground">
+                  Hidden by default for very large documents. Use export panel
+                  for targeted JSON inspection to avoid expensive rerenders.
+                </p>
+              ) : (
+                <pre className="max-h-64 overflow-auto text-sm leading-relaxed">
+                  {JSON.stringify(document, null, 2)}
+                </pre>
+              )}
             </div>
           </div>
 
