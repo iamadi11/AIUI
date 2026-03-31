@@ -49,4 +49,34 @@ describe("layout margin", () => {
     const rB = rects.get(B)!;
     expect(rB.x).toBe(rA.x + rA.width + 12);
   });
+
+  it("wraps row stack children when wrap is enabled", () => {
+    const root = {
+      id: ROOT,
+      type: "Stack",
+      props: { direction: "row", gap: 8, label: "" },
+      layout: { wrap: true, rowGap: 10 },
+      children: [
+        {
+          id: A,
+          type: "Box",
+          props: {},
+          layout: { width: 60, height: 32 },
+          children: [],
+        },
+        {
+          id: B,
+          type: "Box",
+          props: {},
+          layout: { width: 60, height: 32 },
+          children: [],
+        },
+      ],
+    };
+    const rects = layoutDocument(root, { width: 120 });
+    const rA = rects.get(A)!;
+    const rB = rects.get(B)!;
+    expect(rB.y).toBe(rA.y + rA.height + 10);
+    expect(rB.x).toBe(rA.x);
+  });
 });

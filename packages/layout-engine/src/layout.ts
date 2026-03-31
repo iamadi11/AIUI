@@ -5,8 +5,16 @@ import type { IntrinsicSize, LayoutConstraints, LayoutOptions, Rect } from "./ty
 
 const MIN_LEAF = 32;
 
+function layoutNumber(node: UiNode, key: string): number | undefined {
+  const raw = node.layout?.[key];
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  return undefined;
+}
+
 function gapFor(node: UiNode): number {
   if (node.type !== "Stack") return 0;
+  const layoutGap = layoutNumber(node, "gap");
+  if (layoutGap !== undefined) return Math.max(0, layoutGap);
   const g = node.props.gap;
   if (typeof g === "number" && Number.isFinite(g)) return Math.max(0, g);
   if (typeof g === "string") {
@@ -14,6 +22,21 @@ function gapFor(node: UiNode): number {
     return Number.isFinite(n) ? Math.max(0, n) : 0;
   }
   return 0;
+}
+
+function rowGapFor(node: UiNode): number {
+  const rowGap = layoutNumber(node, "rowGap");
+  if (rowGap !== undefined) return Math.max(0, rowGap);
+  return gapFor(node);
+}
+
+function wrapFor(node: UiNode): boolean {
+  return node.layout?.wrap === true;
+}
+
+function minChildWidthFor(node: UiNode): number {
+  const v = layoutNumber(node, "minChildWidth");
+  return v === undefined ? 0 : Math.max(0, v);
 }
 
 function isRow(node: UiNode): boolean {
@@ -69,24 +92,69 @@ export function measureNode(
   }
 
   if (isRow(node)) {
+    const wrap = wrapFor(node);
+    const rowGap = rowGapFor(node);
+    const minChildWidth = minChildWidthFor(node);
     const dims = children.map((c) => {
       const mg = parseMargin(c);
-      return measureNode(c, innerW - mg.left - mg.right, innerH, intrinsics);
+      const childMaxW = Math.max(0, innerW - mg.left - mg.right);
+      const measured = measureNode(c, childMaxW, innerH, intrinsics);
+      return {
+        w:
+          minChildWidth > 0
+            ? Math.min(childMaxW, Math.max(minChildWidth, measured.w))
+            : measured.w,
+        h: measured.h,
+      };
     });
-    let totalW = 0;
-    let rowH = 0;
+    if (!wrap) {
+      let totalW = 0;
+      let rowH = 0;
+      for (let i = 0; i < dims.length; i++) {
+        const mg = parseMargin(children[i]);
+        totalW += mg.left + dims[i].w + mg.right;
+        if (i < dims.length - 1) totalW += gap;
+        rowH = Math.max(rowH, dims[i].h + mg.top + mg.bottom);
+      }
+      if (innerH !== undefined) {
+        rowH = Math.min(rowH, innerH);
+      }
+      return {
+        w: pad.left + pad.right + totalW,
+        h: pad.top + pad.bottom + rowH,
+      };
+    }
+
+    let usedW = 0;
+    let totalH = 0;
+    let lineW = 0;
+    let lineH = 0;
+    let itemsInLine = 0;
     for (let i = 0; i < dims.length; i++) {
       const mg = parseMargin(children[i]);
-      totalW += mg.left + dims[i].w + mg.right;
-      if (i < dims.length - 1) totalW += gap;
-      rowH = Math.max(rowH, dims[i].h + mg.top + mg.bottom);
+      const itemW = mg.left + dims[i].w + mg.right;
+      const itemH = mg.top + dims[i].h + mg.bottom;
+      const nextW = itemsInLine === 0 ? itemW : lineW + gap + itemW;
+      if (itemsInLine > 0 && nextW > innerW) {
+        usedW = Math.max(usedW, lineW);
+        totalH += lineH + rowGap;
+        lineW = itemW;
+        lineH = itemH;
+        itemsInLine = 1;
+        continue;
+      }
+      lineW = nextW;
+      lineH = Math.max(lineH, itemH);
+      itemsInLine += 1;
     }
-    if (innerH !== undefined) {
-      rowH = Math.min(rowH, innerH);
+    if (itemsInLine > 0) {
+      usedW = Math.max(usedW, lineW);
+      totalH += lineH;
     }
+    if (innerH !== undefined) totalH = Math.min(totalH, innerH);
     return {
-      w: pad.left + pad.right + totalW,
-      h: pad.top + pad.bottom + rowH,
+      w: pad.left + pad.right + Math.min(innerW, usedW),
+      h: pad.top + pad.bottom + totalH,
     };
   }
 
@@ -136,44 +204,97 @@ function layoutSubtree(
   }
 
   if (isRow(node)) {
+    const wrap = wrapFor(node);
+    const rowGap = rowGapFor(node);
+    const minChildWidth = minChildWidthFor(node);
     const dims = children.map((c) => {
       const mg = parseMargin(c);
-      return measureNode(c, innerW - mg.left - mg.right, innerH, intrinsics);
+      const childMaxW = Math.max(0, innerW - mg.left - mg.right);
+      const measured = measureNode(c, childMaxW, innerH, intrinsics);
+      return {
+        w:
+          minChildWidth > 0
+            ? Math.min(childMaxW, Math.max(minChildWidth, measured.w))
+            : measured.w,
+        h: measured.h,
+      };
     });
     const margins = children.map((c) => parseMargin(c));
-    let rowH = 0;
-    for (let i = 0; i < dims.length; i++) {
-      rowH = Math.max(
-        rowH,
-        dims[i].h + margins[i].top + margins[i].bottom,
-      );
+    if (!wrap) {
+      let rowH = 0;
+      for (let i = 0; i < dims.length; i++) {
+        rowH = Math.max(
+          rowH,
+          dims[i].h + margins[i].top + margins[i].bottom,
+        );
+      }
+      if (innerH !== undefined) {
+        rowH = Math.min(rowH, innerH);
+      }
+      let cx = x + pad.left;
+      for (let i = 0; i < children.length; i++) {
+        const mg = margins[i];
+        cx += mg.left;
+        const dy =
+          y +
+          pad.top +
+          mg.top +
+          (rowH - mg.top - mg.bottom - dims[i].h) / 2;
+        layoutSubtree(
+          children[i],
+          cx,
+          dy,
+          dims[i].w,
+          rowH - mg.top - mg.bottom,
+          map,
+          intrinsics,
+        );
+        cx += dims[i].w + mg.right;
+        if (i < children.length - 1) cx += gap;
+      }
+      const rectW = cx - x + pad.right;
+      const rectH = pad.top + rowH + pad.bottom;
+      const r = { x, y, width: rectW, height: rectH };
+      map.set(node.id, r);
+      return r;
     }
-    if (innerH !== undefined) {
-      rowH = Math.min(rowH, innerH);
-    }
+
     let cx = x + pad.left;
+    let cy = y + pad.top;
+    let lineH = 0;
+    let lineW = 0;
+    let maxUsedW = 0;
     for (let i = 0; i < children.length; i++) {
       const mg = margins[i];
+      const itemW = mg.left + dims[i].w + mg.right;
+      const itemH = mg.top + dims[i].h + mg.bottom;
+      const nextW = lineW === 0 ? itemW : lineW + gap + itemW;
+      if (lineW > 0 && nextW > innerW) {
+        maxUsedW = Math.max(maxUsedW, lineW);
+        cy += lineH + rowGap;
+        cx = x + pad.left;
+        lineW = 0;
+        lineH = 0;
+      }
+
       cx += mg.left;
-      const dy =
-        y +
-        pad.top +
-        mg.top +
-        (rowH - mg.top - mg.bottom - dims[i].h) / 2;
       layoutSubtree(
         children[i],
         cx,
-        dy,
+        cy + mg.top,
         dims[i].w,
-        rowH - mg.top - mg.bottom,
+        undefined,
         map,
         intrinsics,
       );
       cx += dims[i].w + mg.right;
+      lineW = lineW === 0 ? itemW : lineW + gap + itemW;
+      lineH = Math.max(lineH, itemH);
       if (i < children.length - 1) cx += gap;
     }
-    const rectW = cx - x + pad.right;
-    const rectH = pad.top + rowH + pad.bottom;
+    maxUsedW = Math.max(maxUsedW, lineW);
+    const rectW = pad.left + Math.min(innerW, maxUsedW) + pad.right;
+    const rectH = pad.top + lineH + (cy - (y + pad.top)) + pad.bottom;
     const r = { x, y, width: rectW, height: rectH };
     map.set(node.id, r);
     return r;

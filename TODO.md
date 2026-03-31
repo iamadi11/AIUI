@@ -22,7 +22,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 2 - Responsive layout defaults
 
-- [ ] Expand layout schema for responsive stack/grid constraints and wrapping.
+- [x] Expand layout schema for responsive stack/grid constraints and wrapping.
 - [ ] Add anti-hardcode guidance in properties editor.
 - [ ] Add desktop/tablet/mobile viewport presets in preview mode.
 - [ ] Add overflow/constraint conflict warnings.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 2 layout schema expansion (responsive + wrapping):
+  - Added typed `UiLayout` schema contract in `@aiui/dsl-schema` with stack/grid constraint fields (`wrap`, `rowGap`, `columnGap`, `minChildWidth`, `gridColumns`, min/max size bounds) plus responsive tablet/mobile overrides.
+  - Updated layout-engine row stack behavior to support wrapping with configurable row gaps and minimum child width constraints.
+  - Added layout-engine test coverage for row wrapping behavior to lock in expected placement.
 - **2026-03-31** - Phase 1 first-time walkthrough + friction capture added:
   - Added an in-builder first-time walkthrough checklist panel with auto-progressed milestones (add layers, mix primitives, rename, multi-select, configure actions).
   - Added friction-note capture UI with persisted notes for iterative UX review.

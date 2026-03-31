@@ -55,3 +55,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Beginner-first inspector:** Render inspector UI by ordered sections from registry metadata and map layout-scoped controls into `Layout` so first-time users see clear mental buckets before advanced controls.
 - **2026-03-31 - Smart starter templates:** Template packs should be composable subtrees (filter/cards/table/chart) with explicit labels and practical default sizing so first-time users start from meaningful dashboard structure, not blank boxes.
 - **2026-03-31 - Walkthrough instrumentation:** Bake first-time validation into the product surface (checklist + friction notes) so usability gaps are captured during real flows instead of after-the-fact recollection.
+- **2026-03-31 - Responsive layout contract:** Keep layout extensibility explicit in DSL (`UiLayout` + responsive overrides) and enforce row wrapping semantics in layout-engine tests so schema evolution and renderer behavior stay aligned.
