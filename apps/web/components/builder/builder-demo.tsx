@@ -22,6 +22,7 @@ import { BuilderCanvas } from "./builder-canvas";
 import { canvasPointerCollision } from "./builder-collision";
 import { DocumentExportPanel } from "./document-export-panel";
 import { LayoutDebugPanel } from "./layout-debug-panel";
+import { LogicFlowPanel } from "./logic-flow-panel";
 import { ComponentPalette } from "./component-palette";
 import { PropertiesInspector } from "./properties-inspector";
 import {
@@ -217,6 +218,8 @@ export function BuilderDemo() {
               root={document.root}
               documentLayoutVersion={document.layoutVersion}
             />
+
+            <LogicFlowPanel root={document.root} selectedId={selectedNodeId} />
 
             <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">

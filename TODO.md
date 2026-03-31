@@ -24,7 +24,7 @@ _Shipped baseline — see **Done** and `packages/layout-engine/README.md`._
 
 ## Phase 3 — Logic system
 
-- [ ] Integrate React Flow for logic graph (optional in same phase after linear path works)
+_Logic graph shipped — see **Done**._
 
 ---
 
@@ -69,6 +69,7 @@ _Shipped baseline — see **Done** and `packages/layout-engine/README.md`._
 
 ## Done
 
+- **2026-03-31** — **React Flow** (`@xyflow/react`): read-only **Logic graph** panel for selected node — `events` → Start → event name → action chain; `eventsToFlowElements`; styles in `globals.css`; `nodrag nopan` + DnD context; `hideAttribution`
 - **2026-03-31** — Builder **Properties** → **Events**: linear list of bindings (event name + JSON actions array), validated with `safeParseActionsArray`; blur / add / remove commits to `node.events`
 - **2026-03-31** — Logic DSL + executor: `Action` union + Zod `actionSchema`; document `state` + node `events`; `@aiui/logic` — `runAction` / `runActions`, `setPathImmutable`, `setState` / `navigate` / `http` / `sequence` / `condition` (expressions via `@aiui/expression`); Vitest
 - **2026-03-31** — `@aiui/expression`: lexer + AST parser + `evaluate` / `evaluateExpression`; `interpolateTemplate` for `{{ }}`; blocks unsafe path segments; Vitest coverage
