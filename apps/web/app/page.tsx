@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BuilderDemo } from "@/components/builder/builder-demo";
 
 export default function Home() {
@@ -10,9 +11,15 @@ export default function Home() {
             Builder + Universal JSON DSL
           </h1>
           <p className="text-muted-foreground leading-relaxed">
-            Phase 1: document model and Zustand stores, palette and canvas with
-            nested drops, plus a properties panel driven by the shared component
-            registry.
+            Phase 1: document model and Zustand stores, palette and canvas,
+            properties panel, undo/redo, and a live{" "}
+            <Link
+              href="/preview"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              preview route
+            </Link>{" "}
+            that renders the same document with registry-driven React.
           </p>
         </div>
 
@@ -20,7 +27,7 @@ export default function Home() {
 
         <div className="flex flex-wrap gap-3">
           <p className="text-sm text-muted-foreground">
-            Next: preview route, golden JSON export.
+            Next: golden JSON export (validated round-trip).
           </p>
         </div>
       </main>

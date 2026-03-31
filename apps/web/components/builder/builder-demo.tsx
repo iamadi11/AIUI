@@ -11,10 +11,12 @@ import {
 } from "@dnd-kit/core";
 import type { UiNode } from "@aiui/dsl-schema";
 import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { Redo2, Undo2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { canvasPointerCollision } from "./builder-collision";
@@ -132,6 +134,12 @@ export function BuilderDemo() {
                 <Redo2 className="size-3.5" aria-hidden />
                 Redo
               </Button>
+              <Link
+                href="/preview"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              >
+                Preview
+              </Link>
               <Button
                 type="button"
                 variant="outline"
