@@ -14,6 +14,19 @@ Component **definitions** for the builder and any host that maps `UiNode.type` t
 The default production adapter is `SHADCN_ADAPTER` (`id: "shadcn"`), which exposes the current primitive registry.
 Future component libraries must plug in through this interface instead of adding app-level hardcoded mappings.
 
+## Capability schema and validator
+
+Capability metadata is standardized by `COMPONENT_CAPABILITY_SCHEMA` and validated by:
+
+- `validateComponentCapabilities(value)` — validates raw capability objects.
+- `validateCapabilitiesForType(type)` — validates capability metadata for a registered component type.
+
+Validation catches:
+
+- invalid field types
+- unsupported `supportedLayoutModes` values
+- inconsistent capability combinations (e.g. `supportsRowActions: true` while `supportsActions: false`)
+
 ## UX metadata standard
 
 Each `ComponentDefinition` must provide `ux` metadata:

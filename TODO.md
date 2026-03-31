@@ -57,7 +57,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 - [x] Keep shadcn as production default library.
 - [x] Define adapter interface for future UI libraries.
-- [ ] Define component capability schema and validator.
+- [x] Define component capability schema and validator.
 - [ ] Create component certification checklist before user exposure.
 - [ ] Publish adapter onboarding guide for future component integrations.
 
@@ -91,6 +91,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
   - Added `UiAdapterDefinition` contract in `@aiui/registry` with stable identification and component-resolution methods.
   - Added default `SHADCN_ADAPTER` implementation as the production adapter baseline.
   - Documented adapter contract usage in registry README to prevent app-level hardcoded integration paths.
+- **2026-03-31** - Phase 6 component capability schema and validator added:
+  - Added `COMPONENT_CAPABILITY_SCHEMA` in `@aiui/registry` as the canonical capability contract.
+  - Added `validateComponentCapabilities()` and `validateCapabilitiesForType()` to enforce capability metadata shape and consistency.
+  - Validation now catches invalid boolean fields, unsupported layout modes, and contradictory action capability combinations.
 - **2026-03-31** - Phase 5 single renderer path enforced:
   - Added shared `RuntimeSurface` component used by both builder canvas and preview surfaces.
   - Replaced direct `AiuiRuntime` usage in app-level surfaces with the shared runtime host wrapper.

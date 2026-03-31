@@ -109,6 +109,87 @@ export type ComponentCapabilities = {
   supportedLayoutModes?: readonly ("flow" | "stack" | "grid" | "absolute")[];
 };
 
+export const COMPONENT_CAPABILITY_SCHEMA = {
+  supportsDataSource: "boolean",
+  supportsActions: "boolean",
+  supportsRowActions: "boolean",
+  supportsVisibilityRules: "boolean",
+  supportedLayoutModes: ["flow", "stack", "grid", "absolute"] as const,
+} as const;
+
+export type CapabilityValidationIssue = {
+  path: string;
+  message: string;
+};
+
+export type CapabilityValidationResult = {
+  ok: boolean;
+  issues: CapabilityValidationIssue[];
+};
+
+export function validateComponentCapabilities(
+  value: unknown,
+): CapabilityValidationResult {
+  const issues: CapabilityValidationIssue[] = [];
+  if (!value || typeof value !== "object") {
+    return {
+      ok: false,
+      issues: [{ path: "capabilities", message: "Capabilities must be an object." }],
+    };
+  }
+
+  const caps = value as Record<string, unknown>;
+  const booleanFields = [
+    "supportsDataSource",
+    "supportsActions",
+    "supportsRowActions",
+    "supportsVisibilityRules",
+  ] as const;
+
+  for (const field of booleanFields) {
+    const raw = caps[field];
+    if (raw !== undefined && typeof raw !== "boolean") {
+      issues.push({
+        path: `capabilities.${field}`,
+        message: "Expected boolean when provided.",
+      });
+    }
+  }
+
+  if (caps.supportedLayoutModes !== undefined) {
+    if (!Array.isArray(caps.supportedLayoutModes)) {
+      issues.push({
+        path: "capabilities.supportedLayoutModes",
+        message: "Expected an array of layout mode strings.",
+      });
+    } else {
+      for (let i = 0; i < caps.supportedLayoutModes.length; i += 1) {
+        const mode = caps.supportedLayoutModes[i];
+        if (
+          mode !== "flow" &&
+          mode !== "stack" &&
+          mode !== "grid" &&
+          mode !== "absolute"
+        ) {
+          issues.push({
+            path: `capabilities.supportedLayoutModes[${i}]`,
+            message: `Unsupported layout mode "${String(mode)}".`,
+          });
+        }
+      }
+    }
+  }
+
+  if (caps.supportsRowActions === true && caps.supportsActions === false) {
+    issues.push({
+      path: "capabilities.supportsRowActions",
+      message: "supportsRowActions requires supportsActions to be true or omitted.",
+    });
+  }
+
+  return { ok: issues.length === 0, issues };
+}
+
 /**
  * Standardized builder UX metadata. This keeps palette/search/inspector behavior
  * on one explicit contract instead of spread across ad-hoc top-level fields.
@@ -495,6 +576,12 @@ export function getInspectorFields(
 
 export function getCapabilities(type: string) {
   return getDefinition(type)?.ux.capabilities;
+}
+
+export function validateCapabilitiesForType(type: string): CapabilityValidationResult {
+  const caps = getCapabilities(type);
+  if (!caps) return { ok: true, issues: [] };
+  return validateComponentCapabilities(caps);
 }
 
 export function getPaletteMeta(type: string) {
