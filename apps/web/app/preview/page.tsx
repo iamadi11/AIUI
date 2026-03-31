@@ -4,12 +4,20 @@ import { safeParseDocument } from "@aiui/dsl-schema";
 import Link from "next/link";
 import { RuntimePreview } from "@/components/preview/runtime-preview";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  VIEWPORT_PRESETS,
+  getViewportPreset,
+  type ViewportPresetId,
+} from "@/lib/builder/viewport-presets";
 import { cn } from "@/lib/utils";
 import { useDocumentStore } from "@/stores/document-store";
+import { useState } from "react";
 
 export default function PreviewPage() {
   const document = useDocumentStore((s) => s.document);
   const parsed = safeParseDocument(document);
+  const [viewportId, setViewportId] = useState<ViewportPresetId>("desktop");
+  const viewport = getViewportPreset(viewportId);
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
@@ -57,10 +65,33 @@ export default function PreviewPage() {
         ) : null}
 
         <section className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Runtime preview (DOM)
+            </h2>
+            <div className="ml-auto flex flex-wrap gap-1">
+              {VIEWPORT_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={cn(
+                    "rounded-md border px-2 py-1 text-xs transition-colors",
+                    preset.id === viewportId
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted",
+                  )}
+                  title={preset.description}
+                  onClick={() => setViewportId(preset.id)}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Runtime preview (DOM)
+            {viewport.description}
           </h2>
-          <RuntimePreview document={document} />
+          <RuntimePreview document={document} viewport={viewport} />
         </section>
       </main>
     </div>

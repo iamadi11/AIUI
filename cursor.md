@@ -57,3 +57,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Walkthrough instrumentation:** Bake first-time validation into the product surface (checklist + friction notes) so usability gaps are captured during real flows instead of after-the-fact recollection.
 - **2026-03-31 - Responsive layout contract:** Keep layout extensibility explicit in DSL (`UiLayout` + responsive overrides) and enforce row wrapping semantics in layout-engine tests so schema evolution and renderer behavior stay aligned.
 - **2026-03-31 - Responsive editing guardrail:** In layout editing UX, treat fixed width/height as an exception path and surface inline caution copy whenever hardcoded dimensions are present.
+- **2026-03-31 - Viewport simulation:** Keep preview viewport presets centralized and explicit (desktop/tablet/mobile) so responsive checks use consistent widths across features and tests.
