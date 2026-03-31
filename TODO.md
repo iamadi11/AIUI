@@ -59,7 +59,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Define adapter interface for future UI libraries.
 - [x] Define component capability schema and validator.
 - [x] Create component certification checklist before user exposure.
-- [ ] Publish adapter onboarding guide for future component integrations.
+- [x] Publish adapter onboarding guide for future component integrations.
 
 ### Phase 7 - Diagnostics and Cursor MCP
 
@@ -99,6 +99,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
   - Added `docs/adapters/component-certification-checklist.md` as a pre-exposure gate for new adapter components.
   - Checklist covers metadata contract, runtime parity, UX safety, and required verification steps.
   - Linked checklist from registry docs so adapter work has one visible certification path.
+- **2026-03-31** - Phase 6 adapter onboarding guide published:
+  - Added `docs/adapters/adapter-onboarding-guide.md` with step-by-step integration flow for future UI libraries.
+  - Guide covers adapter contract, capability validation, parity checks, certification, and documentation rollout.
+  - Linked onboarding guide from registry docs so future adapter work follows a single documented process.
 - **2026-03-31** - Phase 5 single renderer path enforced:
   - Added shared `RuntimeSurface` component used by both builder canvas and preview surfaces.
   - Replaced direct `AiuiRuntime` usage in app-level surfaces with the shared runtime host wrapper.

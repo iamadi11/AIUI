@@ -32,6 +32,7 @@ Validation catches:
 Before exposing adapter components to end users, run the certification checklist:
 
 - `docs/adapters/component-certification-checklist.md`
+- `docs/adapters/adapter-onboarding-guide.md` (full integration flow)
 
 ## UX metadata standard
 
