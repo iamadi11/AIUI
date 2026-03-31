@@ -9,6 +9,10 @@ const EN_MESSAGES = {
   "builder.workspaceTabDesign": "Design",
   "builder.workspaceTabLogic": "Logic",
   "builder.workspaceTabList": "Workspace",
+  "builder.workspaceCanvasMode": "Page canvas",
+  "builder.workspaceGraphMode": "Page graph",
+  "builder.workspaceGraphHint":
+    "Graph mode shows the page tree as React Flow nodes. Select a node to edit it in Properties.",
   "builder.screenFlowHeading": "Screens (React Flow)",
   "builder.screenNodeLayerCount": "{count} layer(s) on page",
   "builder.edgeKindNavigate": "Next connection: navigate",

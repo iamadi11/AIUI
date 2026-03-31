@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-04-01 - Page graph mode:** For the “components on React Flow canvas” follow-up, keep **runtime canvas** as default and add React Flow as a **workspace mode**; start with tree-derived positions and selection sync before attempting drag/layout mutation so preview parity remains stable.
 - **2026-04-01 - Multi-screen clarity:** Even when `screenCount > 1`, keep the **screen graph** behind an explicit toggle and default to the page canvas; this preserves the single-page mental model while still exposing graph wiring as a secondary tool.
 - **2026-04-01 - Preview parity CI guard:** Keep automated parity checks on the shared `buildViewportParityReport` path (used by builder diagnostics and `/preview`), and snapshot stable row fields (`viewportId`, `width`, `nodeCount`, `invalidRectCount`, `deterministic`) to avoid brittle pixel-level tests.
 - **2026-04-01 - Phase 7 hardening:** Keep **document performance** copy out of `document-performance.ts` — return **`perfSummary`** + **`guardrailIds`** and map to **`msg()`** in **`document-performance-ui.ts`** so diagnostics and the large-doc banner stay i18n-ready without pulling i18n into pure metrics code.

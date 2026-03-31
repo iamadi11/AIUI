@@ -18,7 +18,7 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 - [x] **Single-page mode** (`screens.length === 1`): hide the **screen graph** (React Flow); the **page canvas** (`BuilderCanvas` / runtime surface) uses the **full workspace** below the optional dev/perf rows.
 - [x] **Multi-screen mode**: vertical split defaults to **~22% screen map / ~78% page canvas** (was 40/60) so composition stays dominant.
 - [x] When the graph is hidden, **add another screen** via the **template** dropdown + short hint; palette → **page canvas** remains the primary DnD path for components.
-- [ ] **Follow-up:** true “components on a React Flow canvas” (spatial node graph for the page tree) is a larger architectural step — see [`PLAN.md`](PLAN.md) if/when prioritized over the current runtime canvas.
+- [x] **Follow-up:** add a **Page graph** workspace mode (React Flow tree view) with node selection wiring into inspector; runtime page canvas remains default for parity-sensitive editing.
 
 ## Phase 2 — Preview parity
 

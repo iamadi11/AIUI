@@ -61,6 +61,7 @@ import {
 } from "./screen-flow-canvas";
 import { BuilderInspectorSheet } from "./builder-inspector-sheet";
 import { msg } from "@/lib/i18n/messages";
+import { PageFlowCanvas } from "./page-flow-canvas";
 
 function collectNodeIds(root: UiNode): string[] {
   const ids: string[] = [];
@@ -113,6 +114,9 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
 
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [dataStateSheetOpen, setDataStateSheetOpen] = useState(false);
+  const [workspaceMode, setWorkspaceMode] = useState<"canvas" | "graph">(
+    "canvas",
+  );
 
   const editorDoc = useMemo(
     () => editorDocumentView(document, activeScreenId),
@@ -296,32 +300,66 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const canvasColumn = (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
       <div className="min-h-0 flex-1">
-        <BuilderCanvas
-          document={editorDoc}
-          runtimeDocument={runtimeDocument}
-          onRuntimeDiagnostic={handleRuntimeDiagnostic}
-          selectedId={selectedNodeId}
-          onSelect={selectNodeEx}
-          onToggleSelect={toggleNodeEx}
-          onLabelChange={(id, label) =>
-            updateNode(id, (n) => ({
-              ...n,
-              props: { ...n.props, label },
-            }))
-          }
-          onLeafLayoutResize={(id, width, height) =>
-            updateNode(id, (n) => {
-              const prev = n.layout ? { ...n.layout } : {};
-              const next = { ...prev } as Record<string, unknown>;
-              next.width = width;
-              next.height = height;
-              return { ...n, layout: next };
-            })
-          }
-          rootId={rootId}
-          onDuplicateNode={(id) => duplicateNode(id)}
-          onRemoveNode={(id) => removeNode(id)}
-        />
+        {workspaceMode === "canvas" ? (
+          <BuilderCanvas
+            document={editorDoc}
+            runtimeDocument={runtimeDocument}
+            onRuntimeDiagnostic={handleRuntimeDiagnostic}
+            selectedId={selectedNodeId}
+            onSelect={selectNodeEx}
+            onToggleSelect={toggleNodeEx}
+            onLabelChange={(id, label) =>
+              updateNode(id, (n) => ({
+                ...n,
+                props: { ...n.props, label },
+              }))
+            }
+            onLeafLayoutResize={(id, width, height) =>
+              updateNode(id, (n) => {
+                const prev = n.layout ? { ...n.layout } : {};
+                const next = { ...prev } as Record<string, unknown>;
+                next.width = width;
+                next.height = height;
+                return { ...n, layout: next };
+              })
+            }
+            rootId={rootId}
+            onDuplicateNode={(id) => duplicateNode(id)}
+            onRemoveNode={(id) => removeNode(id)}
+          />
+        ) : (
+          <PageFlowCanvas
+            root={editorDoc.root}
+            selectedId={selectedNodeId}
+            onSelect={selectNodeEx}
+          />
+        )}
+      </div>
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <p className="text-xs text-muted-foreground">
+          {msg("builder.workspaceTabList")}
+        </p>
+        <Button
+          type="button"
+          size="sm"
+          variant={workspaceMode === "canvas" ? "default" : "outline"}
+          onClick={() => setWorkspaceMode("canvas")}
+        >
+          {msg("builder.workspaceCanvasMode")}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={workspaceMode === "graph" ? "default" : "outline"}
+          onClick={() => setWorkspaceMode("graph")}
+        >
+          {msg("builder.workspaceGraphMode")}
+        </Button>
+        {workspaceMode === "graph" ? (
+          <p className="text-xs text-muted-foreground">
+            {msg("builder.workspaceGraphHint")}
+          </p>
+        ) : null}
       </div>
 
       {userLayerCount === 0 ? (
