@@ -1,6 +1,7 @@
 "use client";
 
 import type { AiuiDocument } from "@aiui/dsl-schema";
+import type { DiagnosticsSink } from "@aiui/runtime-core";
 import { cn } from "@/lib/utils";
 import type { ViewportPreset } from "@/lib/builder/viewport-presets";
 import { RuntimeSurface } from "@/components/runtime/runtime-surface";
@@ -12,6 +13,7 @@ export function RuntimePreview(props: {
   document: AiuiDocument;
   viewport: ViewportPreset;
   hideChrome?: boolean;
+  diagnostics?: DiagnosticsSink;
 }) {
   const hideChrome = props.hideChrome ?? false;
 
@@ -40,6 +42,7 @@ export function RuntimePreview(props: {
         >
           <RuntimeSurface
             document={props.document}
+            diagnostics={props.diagnostics}
             className={cn(
               "min-h-[140px] w-full p-4",
               hideChrome

@@ -1,6 +1,7 @@
 "use client";
 
 import { safeParseDocument } from "@aiui/dsl-schema";
+import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { RuntimePreview } from "@/components/preview/runtime-preview";
@@ -13,10 +14,13 @@ import {
 } from "@/lib/builder/viewport-presets";
 import { cn } from "@/lib/utils";
 import { useDocumentStore } from "@/stores/document-store";
+import { createRuntimeIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
+import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
 import { useState } from "react";
 
 export default function PreviewPage() {
   const document = useDocumentStore((s) => s.document);
+  const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
   const parsed = safeParseDocument(document);
   const [viewportId, setViewportId] = useState<ViewportPresetId>("desktop");
   const viewport = getViewportPreset(viewportId);
@@ -26,6 +30,15 @@ export default function PreviewPage() {
   );
   const searchParams = useSearchParams();
   const developerMode = searchParams.get("dev") === "1";
+
+  function handleRuntimeDiagnostic(diagnostic: RuntimeDiagnostic): void {
+    recordIssue(
+      createRuntimeIssueTelemetryEnvelope({
+        diagnostic,
+        documentVersion: document.version,
+      }),
+    );
+  }
 
   if (!developerMode) {
     return (
@@ -44,6 +57,7 @@ export default function PreviewPage() {
               document={document}
               viewport={viewport}
               hideChrome
+              diagnostics={handleRuntimeDiagnostic}
             />
           </div>
         </main>
@@ -164,7 +178,11 @@ export default function PreviewPage() {
           <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {viewport.description}
           </h2>
-          <RuntimePreview document={document} viewport={viewport} />
+          <RuntimePreview
+            document={document}
+            viewport={viewport}
+            diagnostics={handleRuntimeDiagnostic}
+          />
         </section>
       </main>
     </div>

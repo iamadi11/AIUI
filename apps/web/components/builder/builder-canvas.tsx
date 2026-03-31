@@ -1,6 +1,7 @@
 "use client";
 
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
+import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -41,6 +42,7 @@ type BuilderCanvasProps = {
   onLabelChange: (id: string, label: string) => void;
   /** Set intrinsic `layout.width` / `layout.height` for empty leaves (snapped to 8px, min 32). */
   onLeafLayoutResize?: (id: string, width: number, height: number) => void;
+  onRuntimeDiagnostic?: (diagnostic: RuntimeDiagnostic) => void;
 };
 
 function readLabelProp(node: UiNode): string {
@@ -257,6 +259,7 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
     onToggleSelect,
     onLabelChange,
     onLeafLayoutResize,
+    onRuntimeDiagnostic,
   } = props;
   const root = document.root;
 
@@ -524,6 +527,7 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
         <div ref={measureRef} className="relative w-full min-h-[220px]">
           <RuntimeSurface
             document={document}
+            diagnostics={onRuntimeDiagnostic}
             className="min-h-[200px] w-full rounded-lg border border-border/60 bg-background/40"
           />
 

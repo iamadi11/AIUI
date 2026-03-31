@@ -1,10 +1,15 @@
 import type { AiuiDocument } from "@aiui/dsl-schema";
-import { render, type RuntimeHandle } from "@aiui/runtime-core";
+import {
+  render,
+  type DiagnosticsSink,
+  type RuntimeHandle,
+} from "@aiui/runtime-core";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
 export type AiuiRuntimeProps = {
   document: AiuiDocument;
   className?: string;
+  diagnostics?: DiagnosticsSink;
 };
 
 /**
@@ -13,7 +18,7 @@ export type AiuiRuntimeProps = {
  * width, `destroy` on unmount.
  */
 export function AiuiRuntime(props: AiuiRuntimeProps) {
-  const { document, className } = props;
+  const { document, className, diagnostics } = props;
   const hostRef = useRef<HTMLDivElement>(null);
   const runtimeRef = useRef<RuntimeHandle | null>(null);
   const docRef = useRef(document);
@@ -23,11 +28,15 @@ export function AiuiRuntime(props: AiuiRuntimeProps) {
     const el = hostRef.current;
     if (!el) return;
     if (!runtimeRef.current) {
-      runtimeRef.current = render({ container: el, config: document });
+      runtimeRef.current = render({
+        container: el,
+        config: document,
+        diagnostics,
+      });
     } else {
       runtimeRef.current.update(document);
     }
-  }, [document]);
+  }, [document, diagnostics]);
 
   useEffect(() => {
     const el = hostRef.current;

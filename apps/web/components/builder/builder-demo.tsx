@@ -11,6 +11,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { UiNode } from "@aiui/dsl-schema";
+import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,8 @@ import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
 import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
+import { createRuntimeIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
+import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
 import { Redo2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -75,6 +78,7 @@ export function BuilderDemo() {
   const toggleNode = useSelectionStore((s) => s.toggleNode);
   const setSelection = useSelectionStore((s) => s.setSelection);
   const clearSelection = useSelectionStore((s) => s.clearSelection);
+  const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
 
   const rootId = document.root.id;
 
@@ -133,6 +137,15 @@ export function BuilderDemo() {
 
   function handleDragCancel() {
     setActivePalette(null);
+  }
+
+  function handleRuntimeDiagnostic(diagnostic: RuntimeDiagnostic) {
+    recordIssue(
+      createRuntimeIssueTelemetryEnvelope({
+        diagnostic,
+        documentVersion: document.version,
+      }),
+    );
   }
 
   return (
@@ -281,6 +294,7 @@ export function BuilderDemo() {
 
             <BuilderCanvas
               document={document}
+              onRuntimeDiagnostic={handleRuntimeDiagnostic}
               selectedId={selectedNodeId}
               onSelect={selectNode}
               onToggleSelect={toggleNode}

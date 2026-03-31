@@ -6,8 +6,8 @@ Provide a Cursor-compatible MCP server that helps developers diagnose and safely
 
 ## Version
 
-- Spec version: `0.2.0`
-- Status: aligned with runtime diagnostics envelope integration
+- Spec version: `0.2.1`
+- Status: aligned with builder + runtime issue telemetry envelope integration
 
 ## Runtime diagnostics envelope alignment
 

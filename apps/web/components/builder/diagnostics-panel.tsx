@@ -2,8 +2,11 @@
 
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 import { safeParseDocument } from "@aiui/dsl-schema";
+import { useEffect } from "react";
 import { collectLayoutWarnings } from "@/lib/builder/layout-warnings";
 import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
+import { createIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
+import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
 
 function countTree(root: UiNode): {
   nodeCount: number;
@@ -41,10 +44,83 @@ export function DiagnosticsPanel(props: {
   redoDepth: number;
 }) {
   const { document, selectedCount, undoDepth, redoDepth } = props;
+  const issues = useIssueTelemetryStore((s) => s.issues);
+  const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
   const parse = safeParseDocument(document);
   const tree = countTree(document.root);
   const layoutWarnings = collectLayoutWarnings(document.root);
   const viewportParity = buildViewportParityReport(document.root);
+  const failingParityRows = viewportParity.rows.filter(
+    (row) => row.invalidRectCount > 0 || !row.deterministic,
+  );
+
+  useEffect(() => {
+    if (!parse.success) {
+      recordIssue(
+        createIssueTelemetryEnvelope({
+          source: "builder",
+          severity: "error",
+          category: "schema",
+          code: "BUILDER_SCHEMA_INVALID",
+          summary: "Builder document failed schema validation",
+          userMessage: "Document structure is invalid. Please review diagnostics.",
+          developerMessage: parse.error.issues.map((i) => i.message).join("; "),
+          documentVersion: document.version,
+          details: {
+            issueCount: parse.error.issues.length,
+            firstIssue: parse.error.issues[0]?.message,
+          },
+        }),
+      );
+    }
+  }, [document.version, parse, recordIssue]);
+
+  useEffect(() => {
+    if (layoutWarnings.length === 0) return;
+    recordIssue(
+      createIssueTelemetryEnvelope({
+        source: "builder",
+        severity: "warn",
+        category: "layout",
+        code: "BUILDER_LAYOUT_WARNINGS",
+        summary: `Builder detected ${layoutWarnings.length} layout warning(s)`,
+        userMessage: "Layout warnings were detected for one or more viewports.",
+        developerMessage: layoutWarnings[0]?.message ?? "Layout warning detected",
+        documentVersion: document.version,
+        details: {
+          warningCount: layoutWarnings.length,
+          firstWarningCode: layoutWarnings[0]?.code,
+          firstWarningNodeId: layoutWarnings[0]?.nodeId,
+        },
+      }),
+    );
+  }, [document.version, layoutWarnings, recordIssue]);
+
+  useEffect(() => {
+    if (failingParityRows.length === 0) return;
+    recordIssue(
+      createIssueTelemetryEnvelope({
+        source: "builder",
+        severity: "warn",
+        category: "layout",
+        code: "VIEWPORT_PARITY_FAILED",
+        summary: "Viewport parity checks reported failures",
+        userMessage:
+          "Preview parity differs across one or more viewport presets.",
+        developerMessage: failingParityRows
+          .map(
+            (row) =>
+              `${row.viewportId}: invalidRects=${row.invalidRectCount}, deterministic=${row.deterministic}`,
+          )
+          .join("; "),
+        documentVersion: document.version,
+        details: {
+          failingViewports: failingParityRows.map((row) => row.viewportId),
+          failureCount: failingParityRows.length,
+        },
+      }),
+    );
+  }, [document.version, failingParityRows, recordIssue]);
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
@@ -140,6 +216,28 @@ export function DiagnosticsPanel(props: {
             </li>
           ))}
         </ul>
+      </div>
+      <div className="mt-3 rounded-lg border border-border/70 bg-muted/10 p-2">
+        <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
+          Issue telemetry ({issues.length})
+        </p>
+        {issues.length === 0 ? (
+          <p className="mt-1 text-[0.68rem] text-muted-foreground">
+            No telemetry issues emitted yet.
+          </p>
+        ) : (
+          <ul className="mt-1 space-y-1">
+            {issues.slice(0, 5).map((issue) => (
+              <li key={issue.issueId} className="text-[0.68rem] leading-snug">
+                <span className="font-mono text-foreground/80">{issue.severity}</span>{" "}
+                <span className="text-foreground/90">{issue.summary}</span>{" "}
+                <span className="text-muted-foreground">
+                  ({issue.source}, x{issue.occurrences})
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

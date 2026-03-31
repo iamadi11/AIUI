@@ -63,7 +63,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 7 - Diagnostics and Cursor MCP
 
-- [ ] Add issue telemetry envelope in runtime and builder.
+- [x] Add issue telemetry envelope in runtime and builder.
 - [ ] Add diagnostics panel with trace drilldown for developers.
 - [ ] Implement MCP server endpoints from `docs/mcp/debug-mcp-spec.md`.
 - [ ] Add redaction policy and sensitive-data masking.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 7 issue telemetry envelope wired across runtime + builder:
+  - Added shared telemetry envelope model (`issueId`, `contextRef`, category/source/severity, fingerprint) with automatic sensitive-key redaction for details payloads.
+  - Routed `@aiui/runtime-core` diagnostics through runtime React/app surfaces so builder canvas and preview runtime both emit structured issues.
+  - Added in-memory issue telemetry store with fingerprint-based deduplication and surfaced recent telemetry events in builder diagnostics.
 - **2026-03-31** - Phase 5 preview mode now hides editor chrome by default:
   - `/preview` now opens in a runtime-first chrome-hidden surface without editor diagnostics panels.
   - Added opt-in developer mode (`/preview?dev=1`) to keep schema status and viewport controls available when needed.
