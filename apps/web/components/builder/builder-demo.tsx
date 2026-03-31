@@ -39,6 +39,16 @@ import {
   isPaletteDragData,
 } from "./dnd-types";
 
+function collectNodeIds(root: UiNode): string[] {
+  const ids: string[] = [];
+  function walk(node: UiNode) {
+    ids.push(node.id);
+    for (const child of node.children ?? []) walk(child);
+  }
+  walk(root);
+  return ids;
+}
+
 export function BuilderDemo() {
   const document = useDocumentStore((s) => s.document);
   const appendChildOfType = useDocumentStore((s) => s.appendChildOfType);
@@ -59,6 +69,7 @@ export function BuilderDemo() {
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const selectNode = useSelectionStore((s) => s.selectNode);
   const toggleNode = useSelectionStore((s) => s.toggleNode);
+  const setSelection = useSelectionStore((s) => s.setSelection);
   const clearSelection = useSelectionStore((s) => s.clearSelection);
 
   const rootId = document.root.id;
@@ -102,6 +113,11 @@ export function BuilderDemo() {
         }
         return;
       }
+      if (meta && (e.key === "a" || e.key === "A")) {
+        e.preventDefault();
+        setSelection(collectNodeIds(document.root));
+        return;
+      }
       if (e.key === "Delete" || e.key === "Backspace") {
         const targets = selectedIds.filter((id) => id !== rootId);
         if (targets.length === 0) return;
@@ -121,10 +137,12 @@ export function BuilderDemo() {
     undo,
     redo,
     clearSelection,
+    setSelection,
     duplicateNode,
     removeNode,
     selectedIds,
     rootId,
+    document.root,
   ]);
 
   function handleDragStart(event: DragStartEvent) {

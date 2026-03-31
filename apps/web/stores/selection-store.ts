@@ -9,6 +9,8 @@ type SelectionState = {
   selectNode: (id: string | null) => void;
   /** Toggle a node in the current selection (multi-select). */
   toggleNode: (id: string) => void;
+  /** Replace selection with many ids; last id becomes primary. */
+  setSelection: (ids: string[]) => void;
   /** Clear all selection. */
   clearSelection: () => void;
 };
@@ -37,6 +39,18 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
       const nextIds = [...selectedIds, id];
       set({ selectedIds: nextIds, selectedNodeId: id });
     }
+  },
+
+  setSelection: (ids) => {
+    const normalized = Array.from(new Set(ids.filter(Boolean)));
+    if (normalized.length === 0) {
+      set({ selectedIds: [], selectedNodeId: null });
+      return;
+    }
+    set({
+      selectedIds: normalized,
+      selectedNodeId: normalized[normalized.length - 1] ?? null,
+    });
   },
 
   clearSelection: () => {
