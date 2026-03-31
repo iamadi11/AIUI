@@ -63,6 +63,10 @@ const EN_MESSAGES = {
     "Your page is empty. Drag from the palette onto the canvas below, or onto the screen map above to add another screen. You can also use More → Add Box or Stack.",
   "builder.singlePageAddScreenHint":
     "One page — add another screen from a template to show the screen map and wire navigation.",
+  "builder.screenMapEntryTitle":
+    "Multiple screens available. Keep page editing primary, and open the screen map only when you need wiring.",
+  "builder.openScreenMap": "Open screen map",
+  "builder.hideScreenMap": "Hide screen map",
   "builder.nearEmptyState":
     "Nice start. Add one more section to make your layout easier to work with.",
   "builder.tree": "Tree",

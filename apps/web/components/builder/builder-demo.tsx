@@ -123,7 +123,14 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
     [document, activeScreenId],
   );
   const screenCount = Object.keys(document.screens).length;
-  const showScreenGraph = screenCount > 1;
+  const hasMultipleScreens = screenCount > 1;
+  const [screenMapOpen, setScreenMapOpen] = useState(false);
+  useEffect(() => {
+    if (!hasMultipleScreens) {
+      setScreenMapOpen(false);
+    }
+  }, [hasMultipleScreens]);
+  const showScreenGraph = hasMultipleScreens && screenMapOpen;
   const rootId = editorDoc.root.id;
   const userLayerCount = Math.max(0, countNodes(editorDoc.root) - 1);
   const performance = useMemo(
@@ -560,7 +567,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
               </div>
             ) : null}
 
-            {!showScreenGraph ? (
+            {!hasMultipleScreens ? (
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <select
                   className="h-8 max-w-[min(100%,260px)] truncate rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground shadow-sm"
@@ -592,6 +599,23 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                 <p className="text-xs text-muted-foreground">
                   {msg("builder.singlePageAddScreenHint")}
                 </p>
+              </div>
+            ) : null}
+            {hasMultipleScreens ? (
+              <div className="flex shrink-0 flex-wrap items-center gap-2 rounded-lg border border-border/70 bg-muted/15 p-2">
+                <p className="text-xs text-muted-foreground">
+                  {msg("builder.screenMapEntryTitle")}
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={showScreenGraph ? "outline" : "secondary"}
+                  onClick={() => setScreenMapOpen((v) => !v)}
+                >
+                  {showScreenGraph
+                    ? msg("builder.hideScreenMap")
+                    : msg("builder.openScreenMap")}
+                </Button>
               </div>
             ) : null}
 

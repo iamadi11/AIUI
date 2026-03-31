@@ -57,7 +57,7 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 8+ — Multi-screen (optional)
 
-- [ ] If product needs it: reconcile **screen graph** with single-page clarity (mode switch or secondary entry); avoid confusing single-page users.
+- [x] Reconcile **screen graph** with single-page clarity: multi-screen docs now default to page-canvas editing with an explicit **Open/Hide screen map** toggle (secondary entry), so navigation wiring is opt-in.
 
 ---
 

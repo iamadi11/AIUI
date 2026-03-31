@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-04-01 - Multi-screen clarity:** Even when `screenCount > 1`, keep the **screen graph** behind an explicit toggle and default to the page canvas; this preserves the single-page mental model while still exposing graph wiring as a secondary tool.
 - **2026-04-01 - Preview parity CI guard:** Keep automated parity checks on the shared `buildViewportParityReport` path (used by builder diagnostics and `/preview`), and snapshot stable row fields (`viewportId`, `width`, `nodeCount`, `invalidRectCount`, `deterministic`) to avoid brittle pixel-level tests.
 - **2026-04-01 - Phase 7 hardening:** Keep **document performance** copy out of `document-performance.ts` — return **`perfSummary`** + **`guardrailIds`** and map to **`msg()`** in **`document-performance-ui.ts`** so diagnostics and the large-doc banner stay i18n-ready without pulling i18n into pure metrics code.
 - **2026-04-01 - Actions UX (Phase 6):** Keep **registry `interactionPresets`** as the template source; gate **React Flow** previews (**JSON flow** under Actions, **Logic map** in Diagnostics) behind **`?dev=1`** so default users see steps + ordering without graph chrome.
