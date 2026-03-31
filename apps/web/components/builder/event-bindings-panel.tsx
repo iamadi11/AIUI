@@ -2,7 +2,14 @@
 
 import type { Action, UiNode } from "@aiui/dsl-schema";
 import { safeParseActionsArray } from "@aiui/dsl-schema";
-import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -419,10 +426,25 @@ function SimpleActionRow(props: {
   index: number;
   onChange: (next: Action) => void;
   onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   onBlurCommit: () => void;
   canRemove: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
 }) {
-  const { action, index, onChange, onRemove, onBlurCommit, canRemove } = props;
+  const {
+    action,
+    index,
+    onChange,
+    onRemove,
+    onMoveUp,
+    onMoveDown,
+    onBlurCommit,
+    canRemove,
+    canMoveUp,
+    canMoveDown,
+  } = props;
 
   if (action.type === "condition") {
     return (
@@ -444,18 +466,42 @@ function SimpleActionRow(props: {
           <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
             Update state
           </span>
-          {canRemove ? (
+          <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-7 text-muted-foreground hover:text-destructive"
-              title="Remove step"
-              onClick={onRemove}
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step up"
+              onClick={onMoveUp}
+              disabled={!canMoveUp}
             >
-              <Trash2 className="size-3.5" aria-hidden />
+              <ArrowUp className="size-3.5" aria-hidden />
             </Button>
-          ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step down"
+              onClick={onMoveDown}
+              disabled={!canMoveDown}
+            >
+              <ArrowDown className="size-3.5" aria-hidden />
+            </Button>
+            {canRemove ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-7 text-muted-foreground hover:text-destructive"
+                title="Remove step"
+                onClick={onRemove}
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+              </Button>
+            ) : null}
+          </div>
         </div>
         <div className="space-y-2">
           <div>
@@ -515,18 +561,42 @@ function SimpleActionRow(props: {
           <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
             Open URL
           </span>
-          {canRemove ? (
+          <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-7 text-muted-foreground hover:text-destructive"
-              title="Remove step"
-              onClick={onRemove}
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step up"
+              onClick={onMoveUp}
+              disabled={!canMoveUp}
             >
-              <Trash2 className="size-3.5" aria-hidden />
+              <ArrowUp className="size-3.5" aria-hidden />
             </Button>
-          ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step down"
+              onClick={onMoveDown}
+              disabled={!canMoveDown}
+            >
+              <ArrowDown className="size-3.5" aria-hidden />
+            </Button>
+            {canRemove ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-7 text-muted-foreground hover:text-destructive"
+                title="Remove step"
+                onClick={onRemove}
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+              </Button>
+            ) : null}
+          </div>
         </div>
         <label
           className="mb-0.5 block text-[0.65rem] text-muted-foreground"
@@ -557,18 +627,42 @@ function SimpleActionRow(props: {
           <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
             HTTP
           </span>
-          {canRemove ? (
+          <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-7 text-muted-foreground hover:text-destructive"
-              title="Remove step"
-              onClick={onRemove}
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step up"
+              onClick={onMoveUp}
+              disabled={!canMoveUp}
             >
-              <Trash2 className="size-3.5" aria-hidden />
+              <ArrowUp className="size-3.5" aria-hidden />
             </Button>
-          ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground disabled:opacity-40"
+              title="Move step down"
+              onClick={onMoveDown}
+              disabled={!canMoveDown}
+            >
+              <ArrowDown className="size-3.5" aria-hidden />
+            </Button>
+            {canRemove ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-7 text-muted-foreground hover:text-destructive"
+                title="Remove step"
+                onClick={onRemove}
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+              </Button>
+            ) : null}
+          </div>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           <div>
@@ -834,6 +928,22 @@ export function EventBindingsPanel(props: {
     });
   }
 
+  function moveSimpleAction(rowId: string, index: number, direction: -1 | 1) {
+    setRows((prev) => {
+      const mapped = prev.map((row) => {
+        if (row.id !== rowId) return row;
+        const nextIndex = index + direction;
+        if (nextIndex < 0 || nextIndex >= row.simpleActions.length) return row;
+        const copy = [...row.simpleActions];
+        const [moved] = copy.splice(index, 1);
+        copy.splice(nextIndex, 0, moved);
+        return { ...row, simpleActions: copy };
+      });
+      queueMicrotask(() => commitFromRows(mapped));
+      return mapped;
+    });
+  }
+
   return (
     <div className="mt-4 border-t border-border pt-4">
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -999,10 +1109,14 @@ export function EventBindingsPanel(props: {
                             action={action}
                             index={i}
                             canRemove={row.simpleActions.length > 1}
+                            canMoveUp={i > 0}
+                            canMoveDown={i < row.simpleActions.length - 1}
                             onChange={(next) =>
                               updateSimpleAction(row.id, i, next)
                             }
                             onRemove={() => removeSimpleAction(row.id, i)}
+                            onMoveUp={() => moveSimpleAction(row.id, i, -1)}
+                            onMoveDown={() => moveSimpleAction(row.id, i, 1)}
                             onBlurCommit={handleBlur}
                           />
                         ))}

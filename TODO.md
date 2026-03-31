@@ -38,7 +38,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 4 - Side effects and workflow orchestration
 
-- [ ] Ship simple action-list mode for common workflows.
+- [x] Ship simple action-list mode for common workflows.
 - [ ] Ship React Flow advanced mode for branching logic.
 - [ ] Add action blocks: fetch, set state, transform, condition, modal open/close, notify, navigate.
 - [ ] Add scenario template: button click -> fetch -> populate table.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 4 simple action-list mode shipped for common workflows:
+  - Added a beginner-first visual event action editor with simple/advanced mode switching.
+  - Added visual step controls for common actions (`setState`, `navigate`, `http`, one-level `condition`) without JSON editing.
+  - Added action step reordering controls so users can adjust execution order directly in simple mode.
 - **2026-03-31** - Phase 3 broken-binding validation + user messages added:
   - Added per-mode binding validation for query/state/expression descriptors.
   - Added draft-time validation messaging with clear success/warning feedback.
