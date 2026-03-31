@@ -1,6 +1,7 @@
 "use client";
 
 import type { Action, UiNode } from "@aiui/dsl-schema";
+import type { InteractionPreset } from "@aiui/registry";
 import { safeParseActionsArray } from "@aiui/dsl-schema";
 import {
   ArrowDown,
@@ -33,6 +34,7 @@ import {
   parseValueInput,
 } from "@/lib/builder/event-actions";
 import { eventsToFlowElements } from "@/lib/logic/events-to-flow";
+import { actionsForInteractionPreset } from "@/lib/builder/interaction-preset-actions";
 import { cn } from "@/lib/utils";
 
 const controlClass =
@@ -966,8 +968,10 @@ export function EventBindingsPanel(props: {
   nodeId: string;
   events: UiNode["events"];
   onApply: (next: Record<string, Action[]> | undefined) => void;
+  /** Registry-driven quick actions; when absent, generic table templates are shown. */
+  interactionPresets?: readonly InteractionPreset[];
 }) {
-  const { nodeId, events, onApply } = props;
+  const { nodeId, events, onApply, interactionPresets } = props;
   const serialized = useMemo(() => JSON.stringify(events ?? {}), [events]);
   const [rows, setRows] = useState<EventBindingRow[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -1051,6 +1055,46 @@ export function EventBindingsPanel(props: {
                 mode: "simple",
                 simpleActions: template.actions,
                 jsonText: JSON.stringify(template.actions, null, 2),
+              }
+            : row,
+        );
+      } else {
+        nextRows = [...prev, nextRow];
+      }
+      queueMicrotask(() => commitFromRows(nextRows));
+      return nextRows;
+    });
+  }
+
+  function applyInteractionPreset(preset: InteractionPreset) {
+    const actions = actionsForInteractionPreset(preset);
+    const eventName = preset.eventName;
+    setRows((prev) => {
+      const existingIndex = prev.findIndex((row) => row.name === eventName);
+      const namePreset = (COMMON_EVENT_NAMES as readonly string[]).includes(
+        eventName,
+      )
+        ? (eventName as (typeof COMMON_EVENT_NAMES)[number])
+        : "custom";
+      const nextRow: EventBindingRow = {
+        id: newRowId(),
+        name: eventName,
+        namePreset,
+        mode: "simple",
+        simpleActions: actions,
+        jsonText: JSON.stringify(actions, null, 2),
+      };
+      let nextRows: EventBindingRow[];
+      if (existingIndex >= 0) {
+        nextRows = prev.map((row, index) =>
+          index === existingIndex
+            ? {
+                ...row,
+                mode: "simple",
+                simpleActions: actions,
+                jsonText: JSON.stringify(actions, null, 2),
+                name: eventName,
+                namePreset,
               }
             : row,
         );
@@ -1260,24 +1304,43 @@ export function EventBindingsPanel(props: {
         logic.
       </p>
       <div className="mb-3 flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="h-7 text-[0.65rem]"
-          onClick={applyButtonFetchTemplate}
-        >
-          Template: click -&gt; fetch -&gt; populate table
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="h-7 text-[0.65rem]"
-          onClick={applyRowActionTemplate}
-        >
-          Template: row action -&gt; modal -&gt; submit -&gt; refresh
-        </Button>
+        {interactionPresets?.length
+          ? interactionPresets.map((p) => (
+              <Button
+                key={p.id}
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="h-7 text-[0.65rem]"
+                title={p.description}
+                onClick={() => applyInteractionPreset(p)}
+              >
+                + {p.label}
+              </Button>
+            ))
+          : null}
+        {!interactionPresets?.length ? (
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="h-7 text-[0.65rem]"
+              onClick={applyButtonFetchTemplate}
+            >
+              Template: click -&gt; fetch -&gt; populate table
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="h-7 text-[0.65rem]"
+              onClick={applyRowActionTemplate}
+            >
+              Template: row action -&gt; modal -&gt; submit -&gt; refresh
+            </Button>
+          </>
+        ) : null}
       </div>
       {formError ? (
         <p className="mb-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs text-destructive">

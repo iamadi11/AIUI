@@ -1,17 +1,17 @@
-# AIUI Debug MCP Specification
+# AIUI Debug MCP specification
 
 ## Purpose
 
-Provide a Cursor-compatible MCP server that helps developers diagnose and safely fix AIUI builder/runtime issues without exposing technical complexity to end users.
+Cursor-facing MCP server for diagnosing and fixing builder/runtime issues **without** exposing technical detail to end users.
 
 ## Version
 
-- Spec version: `0.2.1`
-- Status: aligned with builder + runtime issue telemetry envelope integration
+- **Spec:** `0.2.1`
+- **Status:** aligned with runtime issue telemetry envelope
 
-## Runtime diagnostics envelope alignment
+## Runtime diagnostics envelope
 
-Runtime issues emitted from `@aiui/runtime-core` should map to this envelope:
+Issues from `@aiui/runtime-core` should map to:
 
 ```json
 {
@@ -24,188 +24,35 @@ Runtime issues emitted from `@aiui/runtime-core` should map to this envelope:
 }
 ```
 
-## Design goals
+## Issue model (summary)
 
-- Fast issue discovery with structured context.
-- Safe, auditable remediation workflow.
-- Strict redaction for sensitive payloads.
-- Separation between user-facing messages and developer traces.
+| Field | Notes |
+|-------|--------|
+| `issueId`, `source`, `severity`, `category`, `summary` | Required for list/filter |
+| `userMessage` / `developerMessage` | Split UX |
+| `timestamp`, `documentVersion`, `contextRef` | Traceability |
 
-## Issue model
-
-```json
-{
-  "issueId": "iss_01J...",
-  "source": "builder|runtime|export|layout|logic",
-  "severity": "info|warn|error|critical",
-  "category": "binding|schema|action|layout|performance|security",
-  "summary": "Table rows binding path not found",
-  "userMessage": "Data source is disconnected. Reconnect a data source for this table.",
-  "developerMessage": "Binding path queries.customers.data does not exist in current state snapshot.",
-  "timestamp": "2026-03-31T00:00:00.000Z",
-  "documentVersion": "0.2.0",
-  "contextRef": "ctx_01J..."
-}
-```
+Full JSON shape is unchanged from prior revisions; see `packages/debug-mcp` types for authoritative fields.
 
 ## MCP tools
 
-### `list_issues`
+| Tool | Role |
+|------|------|
+| `list_issues` | Filtered summaries (`severity`, `category`, `source`, `limit`, `cursor`) |
+| `get_issue_context` | One issue: DSL fragment, traces, snapshots (redacted) |
+| `suggest_fix` | Candidates with `risk`, `confidence`, `patchPreview` |
+| `apply_safe_fix_patch` | Scoped apply; supports `dryRun`; returns `safetyChecks` |
+| `validate_fix` | Regression / parity notes |
 
-Returns filtered issue summaries.
+Request/response bodies follow the JSON patterns in `packages/debug-mcp` Zod schemas (single source of truth for field names).
 
-**Input**
+## Redaction and safety
 
-```json
-{
-  "severity": ["error", "critical"],
-  "category": ["binding", "action"],
-  "source": ["runtime", "builder"],
-  "limit": 50,
-  "cursor": null
-}
-```
+- Redact secrets, auth headers, tokens; hash sensitive keys when logging.
+- Automated fixes: schema validation, parity checks, forbidden paths, audit trail; non-destructive by default.
 
-**Output**
+## Integration
 
-```json
-{
-  "items": [
-    {
-      "issueId": "iss_01J...",
-      "summary": "Table rows binding path not found",
-      "severity": "error",
-      "source": "runtime",
-      "timestamp": "2026-03-31T00:00:00.000Z"
-    }
-  ],
-  "nextCursor": null
-}
-```
-
-### `get_issue_context`
-
-Returns expanded, redacted context for one issue.
-
-**Input**
-
-```json
-{
-  "issueId": "iss_01J..."
-}
-```
-
-**Output**
-
-```json
-{
-  "issueId": "iss_01J...",
-  "dslFragment": {},
-  "actionTrace": [],
-  "layoutSnapshot": {},
-  "stateSnapshot": {},
-  "redactions": ["queryToken", "authorizationHeader"]
-}
-```
-
-### `suggest_fix`
-
-Returns candidate fix strategies with confidence and risk score.
-
-**Input**
-
-```json
-{
-  "issueId": "iss_01J...",
-  "strategy": "conservative"
-}
-```
-
-**Output**
-
-```json
-{
-  "candidates": [
-    {
-      "fixId": "fix_01J...",
-      "title": "Update binding path to query result root",
-      "description": "Replace rows binding from queries.customers.data to queries.customers.rows",
-      "risk": "low",
-      "confidence": 0.88,
-      "patchPreview": []
-    }
-  ]
-}
-```
-
-### `apply_safe_fix_patch`
-
-Applies an approved, scope-limited patch.
-
-**Input**
-
-```json
-{
-  "fixId": "fix_01J...",
-  "dryRun": true
-}
-```
-
-**Output**
-
-```json
-{
-  "applied": false,
-  "dryRun": true,
-  "changedFiles": ["apps/web/src/..."],
-  "safetyChecks": {
-    "schemaValid": true,
-    "testsPassed": false,
-    "forbiddenPathsTouched": false
-  }
-}
-```
-
-### `validate_fix`
-
-Validates fix impact and regression status.
-
-**Input**
-
-```json
-{
-  "fixId": "fix_01J..."
-}
-```
-
-**Output**
-
-```json
-{
-  "issueResolved": true,
-  "newIssues": [],
-  "parityCheck": "pass",
-  "notes": "No regression in preview/runtime parity snapshots."
-}
-```
-
-## Redaction and privacy
-
-- Always redact secrets, auth headers, and raw tokens.
-- Hash sensitive keys before transport.
-- Strip user-entered PII fields unless explicitly allowed by policy.
-
-## Safety rules for automated fixes
-
-- Disallow edits outside approved project scope.
-- Block destructive operations by default.
-- Require schema validation and parity checks before marking a fix as successful.
-- Keep full audit trail of requested, suggested, and applied fixes.
-
-## Integration notes
-
-- End-user UI surfaces only `userMessage`.
-- Developer diagnostics panel surfaces trace + issue ids + recommended fixes.
-- Cursor consumes MCP tools to inspect issues and execute guarded repair loops.
-- Current repository implementation lives in `packages/debug-mcp` (`@aiui/debug-mcp`).
-- Tool handlers expose first-pass structured responses and dry-run safety checks; patch application is intentionally scope-limited and non-destructive by default.
+- Product UI: `userMessage` only.
+- Developer surfaces: traces + ids + MCP workflow.
+- Implementation: [`packages/debug-mcp`](../../packages/debug-mcp) (`@aiui/debug-mcp`).

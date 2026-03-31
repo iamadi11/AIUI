@@ -106,6 +106,190 @@ function applyPrimitiveStyle(el: HTMLElement, node: UiNode): void {
   }
 }
 
+const AIUI_CONTENT_MARK = "data-aiui-content";
+
+function clearPrimitiveContent(el: HTMLElement): void {
+  el.querySelectorAll(`[${AIUI_CONTENT_MARK}="1"]`).forEach((n) => n.remove());
+}
+
+/**
+ * Renders readable labels / sample markup for primitives. Layout children use
+ * `data-aiui-id` only; decorative content is marked with `data-aiui-content`.
+ */
+function applyPrimitiveContent(el: HTMLElement, node: UiNode): void {
+  if (!isRegisteredType(node.type)) return;
+  clearPrimitiveContent(el);
+  const props = node.props as Record<string, unknown>;
+  const hasKids = (node.children?.length ?? 0) > 0;
+
+  if (node.type === BUTTON_TYPE) {
+    el.style.display = "flex";
+    el.style.alignItems = "center";
+    el.style.justifyContent = "center";
+    el.style.padding = "0 12px";
+    el.style.fontSize = "13px";
+    el.style.fontWeight = "500";
+    el.style.color = "rgba(30, 58, 138, 0.95)";
+    const span = document.createElement("span");
+    span.setAttribute(AIUI_CONTENT_MARK, "1");
+    span.style.pointerEvents = "none";
+    span.textContent = String(props.label ?? "Button");
+    el.appendChild(span);
+    return;
+  }
+
+  if (node.type === INPUT_TYPE) {
+    el.style.display = "flex";
+    el.style.alignItems = "center";
+    const wrap = document.createElement("div");
+    wrap.setAttribute(AIUI_CONTENT_MARK, "1");
+    wrap.style.flex = "1";
+    wrap.style.minWidth = "0";
+    wrap.style.display = "flex";
+    wrap.style.alignItems = "center";
+    wrap.style.padding = "0 10px";
+    const hint = document.createElement("span");
+    hint.style.opacity = "0.45";
+    hint.style.fontSize = "13px";
+    hint.style.whiteSpace = "nowrap";
+    hint.style.overflow = "hidden";
+    hint.style.textOverflow = "ellipsis";
+    hint.textContent = String(props.placeholder ?? props.label ?? "Input");
+    wrap.appendChild(hint);
+    el.appendChild(wrap);
+    return;
+  }
+
+  if (node.type === BADGE_TYPE) {
+    el.style.display = "flex";
+    el.style.alignItems = "center";
+    el.style.justifyContent = "center";
+    el.style.padding = "0 10px";
+    const span = document.createElement("span");
+    span.setAttribute(AIUI_CONTENT_MARK, "1");
+    span.style.fontSize = "12px";
+    span.style.fontWeight = "500";
+    span.textContent = String(props.label ?? "Badge");
+    el.appendChild(span);
+    return;
+  }
+
+  if (node.type === CARD_TYPE) {
+    if (hasKids) return;
+    el.style.display = "flex";
+    el.style.flexDirection = "column";
+    el.style.padding = "12px";
+    el.style.gap = "4px";
+    el.style.boxSizing = "border-box";
+    el.style.justifyContent = "center";
+    const wrap = document.createElement("div");
+    wrap.setAttribute(AIUI_CONTENT_MARK, "1");
+    wrap.style.display = "flex";
+    wrap.style.flexDirection = "column";
+    wrap.style.gap = "4px";
+    wrap.style.minHeight = "0";
+    const title = document.createElement("div");
+    title.style.fontSize = "14px";
+    title.style.fontWeight = "600";
+    title.textContent = String(props.label ?? "Card");
+    const desc = document.createElement("div");
+    desc.style.fontSize = "12px";
+    desc.style.opacity = "0.7";
+    desc.textContent = String(props.description ?? "");
+    wrap.appendChild(title);
+    wrap.appendChild(desc);
+    el.appendChild(wrap);
+    return;
+  }
+
+  if (node.type === TABLE_TYPE) {
+    el.style.overflow = "hidden";
+    if (hasKids) {
+      const cap = document.createElement("div");
+      cap.setAttribute(AIUI_CONTENT_MARK, "1");
+      cap.style.position = "absolute";
+      cap.style.left = "8px";
+      cap.style.top = "6px";
+      cap.style.fontSize = "11px";
+      cap.style.fontWeight = "600";
+      cap.style.color = "rgba(15, 23, 42, 0.85)";
+      cap.style.pointerEvents = "none";
+      cap.textContent = String(props.label ?? "Table");
+      el.appendChild(cap);
+      return;
+    }
+    const wrap = document.createElement("div");
+    wrap.setAttribute(AIUI_CONTENT_MARK, "1");
+    wrap.style.display = "flex";
+    wrap.style.flexDirection = "column";
+    wrap.style.flex = "1";
+    wrap.style.minHeight = "0";
+    wrap.style.gap = "0";
+    wrap.style.padding = "8px";
+    wrap.style.boxSizing = "border-box";
+    wrap.style.height = "100%";
+    const labelEl = document.createElement("div");
+    labelEl.style.fontSize = "11px";
+    labelEl.style.fontWeight = "600";
+    labelEl.style.marginBottom = "6px";
+    labelEl.textContent = String(props.label ?? "Table");
+    const table = document.createElement("table");
+    table.style.width = "100%";
+    table.style.borderCollapse = "collapse";
+    table.style.fontSize = "11px";
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+    trh.style.background = "rgba(0,0,0,0.04)";
+    for (const h of ["Name", "Status", "Value"]) {
+      const th = document.createElement("th");
+      th.style.textAlign = "left";
+      th.style.padding = "6px 8px";
+      th.style.borderBottom = "1px solid rgba(0,0,0,0.12)";
+      th.textContent = h;
+      trh.appendChild(th);
+    }
+    thead.appendChild(trh);
+    const tbody = document.createElement("tbody");
+    for (const row of [
+      ["Acme", "Ok", "42"],
+      ["Globex", "Pending", "—"],
+    ]) {
+      const tr = document.createElement("tr");
+      for (const cell of row) {
+        const td = document.createElement("td");
+        td.style.padding = "6px 8px";
+        td.style.borderBottom = "1px solid rgba(0,0,0,0.08)";
+        td.textContent = cell;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    const foot = document.createElement("div");
+    foot.style.display = "flex";
+    foot.style.justifyContent = "space-between";
+    foot.style.alignItems = "center";
+    foot.style.marginTop = "6px";
+    foot.style.paddingTop = "6px";
+    foot.style.borderTop = "1px solid rgba(0,0,0,0.1)";
+    foot.style.fontSize = "10px";
+    foot.style.color = "rgba(0,0,0,0.55)";
+    const emptyText = document.createElement("span");
+    emptyText.textContent = String(props.emptyState ?? "No rows yet");
+    const pager = document.createElement("span");
+    pager.textContent = "Prev · Next";
+    foot.appendChild(emptyText);
+    foot.appendChild(pager);
+    wrap.appendChild(labelEl);
+    wrap.appendChild(table);
+    wrap.appendChild(foot);
+    el.style.display = "flex";
+    el.style.flexDirection = "column";
+    el.appendChild(wrap);
+  }
+}
+
 function findDirectChildByAiuiId(
   parent: HTMLElement,
   id: string,
@@ -221,6 +405,7 @@ function mountSubtree(
     el.style.width = `${rect.width}px`;
     el.style.height = `${rect.height}px`;
     applyPrimitiveStyle(el, node);
+    applyPrimitiveContent(el, node);
     bindEvents(el, node);
     parentEl.appendChild(el);
   } catch (e) {
@@ -429,6 +614,7 @@ export function render(options: RenderOptions): RuntimeHandle {
     el.style.height = `${rect.height}px`;
     el.dataset.aiuiType = newNode.type;
     applyPrimitiveStyle(el, newNode);
+    applyPrimitiveContent(el, newNode);
     if (!eventsEqual(oldNode.events, newNode.events)) {
       bindEvents(el, newNode);
     }

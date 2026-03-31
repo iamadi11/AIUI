@@ -1,4 +1,8 @@
 const EN_MESSAGES = {
+  "navbar.brand": "AIUI",
+  "navbar.more": "More",
+  "navbar.closeMenu": "Close menu",
+  "navbar.advanced": "Advanced",
   "builder.componentPaletteAriaLabel": "Component palette",
   "builder.workspaceHeading": "Builder workspace",
   "builder.actionsAriaLabel": "Builder actions",
@@ -13,6 +17,9 @@ const EN_MESSAGES = {
   "builder.duplicate": "Duplicate",
   "builder.duplicateTitle": "Duplicate layer (⌘D / Ctrl+D)",
   "builder.removeSelected": "Remove selected",
+  "builder.contextConfigure": "Configure in panel",
+  "builder.contextDuplicate": "Duplicate",
+  "builder.contextRemove": "Remove layer",
   "builder.largeDocumentGuardrailsActive": "Large document guardrails active",
   "builder.selectionLabel": "Selection:",
   "builder.selectionNone": "none",
@@ -94,7 +101,18 @@ const EN_MESSAGES = {
   "shortcuts.ignoredWhileTyping":
     "Shortcuts are ignored while typing in inputs and text areas.",
   "preview.runtimePreviewAriaLabel": "Runtime preview",
-  "preview.openBuilderControls": "Open builder controls",
+  "preview.openBuilderControls": "Edit document",
+  "preview.developerPreview": "Developer preview",
+  "preview.downloadJson": "Download JSON",
+  "preview.copyJson": "Copy JSON",
+  "preview.importJson": "Import JSON…",
+  "preview.migrationTitle": "Migration assistant",
+  "preview.migrationVersionLine":
+    "This file uses DSL version {from}. It will be migrated to {to} before import.",
+  "preview.migrationNoVersion":
+    "This file has no explicit DSL version. It will be migrated to {to} before import.",
+  "preview.migrationConfirm": "Migrate and import",
+  "preview.migrationCancel": "Cancel",
   "preview.title": "Preview (Developer mode)",
   "preview.runtimeUses":
     "Runtime preview uses @aiui/runtime-core; the React panel below is a dev host via @aiui/registry. Same in-memory document as the builder.",

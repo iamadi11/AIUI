@@ -101,12 +101,23 @@ export type InspectorField =
       scope?: InspectorFieldScope;
     };
 
+/** Quick-add recipes for the builder actions panel (mapped to concrete Action[] in the app). */
+export type InteractionPreset = {
+  id: string;
+  label: string;
+  description?: string;
+  eventName: string;
+  templateKey: "buttonFetchTable" | "rowModalSubmit" | "notify";
+};
+
 export type ComponentCapabilities = {
   supportsDataSource?: boolean;
   supportsActions?: boolean;
   supportsRowActions?: boolean;
   supportsVisibilityRules?: boolean;
   supportedLayoutModes?: readonly ("flow" | "stack" | "grid" | "absolute")[];
+  /** Optional one-click side-effect starters for this component type. */
+  interactionPresets?: readonly InteractionPreset[];
 };
 
 export const COMPONENT_CAPABILITY_SCHEMA = {
@@ -236,6 +247,78 @@ export type UiAdapterDefinition = {
   getDefinition: (type: string) => ComponentDefinition | undefined;
   /** Lists all component definitions this adapter provides. */
   listDefinitions: () => readonly ComponentDefinition[];
+};
+
+/**
+ * Dropped `Table` / `Card` nodes get a starter subtree so users can configure
+ * toolbar, body, and pagination (or card sections) as separate layers.
+ * IDs are templates — `createNodeFromType` assigns fresh ids per insert.
+ */
+const TABLE_DROP_IN_REGIONS: UiNode = {
+  id: "tpl-table-regions",
+  type: STACK_TYPE,
+  props: {
+    direction: "column",
+    gap: 8,
+    label: "Table regions",
+  },
+  children: [
+    {
+      id: "tpl-table-toolbar",
+      type: BOX_TYPE,
+      props: { label: "Header / toolbar" },
+    },
+    {
+      id: "tpl-table-body",
+      type: BOX_TYPE,
+      props: { label: "Rows" },
+    },
+    {
+      id: "tpl-table-pagination",
+      type: STACK_TYPE,
+      props: { direction: "row", gap: 8, label: "Pagination" },
+      children: [
+        {
+          id: "tpl-table-prev",
+          type: BUTTON_TYPE,
+          props: { label: "Prev" },
+        },
+        {
+          id: "tpl-table-page",
+          type: BOX_TYPE,
+          props: { label: "Page 1 of 3" },
+        },
+        {
+          id: "tpl-table-next",
+          type: BUTTON_TYPE,
+          props: { label: "Next" },
+        },
+      ],
+    },
+  ],
+};
+
+const CARD_DROP_IN_REGIONS: UiNode = {
+  id: "tpl-card-regions",
+  type: STACK_TYPE,
+  props: { direction: "column", gap: 8, label: "Card sections" },
+  children: [
+    {
+      id: "tpl-card-title",
+      type: BOX_TYPE,
+      props: { label: "Title row" },
+    },
+    {
+      id: "tpl-card-body",
+      type: BOX_TYPE,
+      props: { label: "Body" },
+    },
+    {
+      id: "tpl-card-meta",
+      type: BADGE_TYPE,
+      props: { label: "Meta" },
+    },
+  ],
 };
 
 export const primitives: Record<string, ComponentDefinition> = {
@@ -391,6 +474,21 @@ export const primitives: Record<string, ComponentDefinition> = {
         supportsActions: true,
         supportsVisibilityRules: true,
         supportedLayoutModes: ["flow", "stack", "grid"],
+        interactionPresets: [
+          {
+            id: "btn-fetch-table",
+            label: "Click → fetch table data",
+            description: "GET example API and store rows in state",
+            eventName: "click",
+            templateKey: "buttonFetchTable",
+          },
+          {
+            id: "btn-notify",
+            label: "Click → toast",
+            eventName: "click",
+            templateKey: "notify",
+          },
+        ],
       },
       inspector: {
         defaultSection: "content",
@@ -451,6 +549,7 @@ export const primitives: Record<string, ComponentDefinition> = {
     type: CARD_TYPE,
     displayName: "Card",
     defaultProps: { label: "Card", description: "Card description" },
+    defaultChildren: [CARD_DROP_IN_REGIONS],
     ux: {
       palette: {
         category: "display",
@@ -486,6 +585,7 @@ export const primitives: Record<string, ComponentDefinition> = {
     type: TABLE_TYPE,
     displayName: "Table",
     defaultProps: { label: "Table", emptyState: "No rows yet" },
+    defaultChildren: [TABLE_DROP_IN_REGIONS],
     ux: {
       palette: {
         category: "data",
@@ -498,6 +598,21 @@ export const primitives: Record<string, ComponentDefinition> = {
         supportsRowActions: true,
         supportsVisibilityRules: true,
         supportedLayoutModes: ["flow", "stack", "grid"],
+        interactionPresets: [
+          {
+            id: "table-refresh",
+            label: "Click → fetch table data",
+            description: "Example GET and assign to state",
+            eventName: "click",
+            templateKey: "buttonFetchTable",
+          },
+          {
+            id: "table-row-modal",
+            label: "Row action → modal + refresh",
+            eventName: "rowAction",
+            templateKey: "rowModalSubmit",
+          },
+        ],
       },
       inspector: {
         defaultSection: "data",

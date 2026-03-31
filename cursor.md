@@ -39,11 +39,14 @@ After each phase or sub-milestone:
 
 ## Current focus
 
-- Execute Phase 1 to Phase 8 from `PLAN.md` in order.
-- Maintain parity-first and non-technical UX-first acceptance criteria.
+- Roadmap phases 0–8 are complete; iterate on product UX (minimal shell, export on preview, registry presets, runtime fidelity).
+- Keep parity-first and non-technical UX-first acceptance criteria for new work.
 
 ## Learnings
 
+- **2026-03-31 - Minimal builder shell:** Navbar holds palette + Preview + overflow actions; walkthrough, export panel, live JSON, and deep diagnostics stay behind `/?dev=1`; default `/preview` carries golden JSON import/export.
+- **2026-03-31 - Registry drop-ins:** `defaultChildren` provides composed starter trees (fresh ids via `cloneUiSubtreeWithNewIds`); `interactionPresets` lists beginner-friendly `Action[]` starters resolved in the app (`interaction-preset-actions.ts`).
+- **2026-03-31 - Runtime primitive content:** Decorative labels and table markup use `data-aiui-content`; positioned `data-aiui-id` nodes remain the layout engine’s responsibility.
 - **2026-03-31 - i18n readiness pattern:** Keep user-facing copy behind stable message keys and a tiny interpolation helper early, even for single-locale apps, so localization can be introduced incrementally without touching feature logic.
 - **2026-03-31 - Canonical planning reset:** When roadmap intent changes, prefer replacing fragmented historical details with one phase-gated source of truth in `PLAN.md` plus executable checkpoints in `TODO.md`.
 - **2026-03-31 - UX guardrail:** Non-technical users need template-driven action language and minimal cognitive load; advanced graph/JSON controls must remain opt-in.

@@ -13,9 +13,7 @@ import {
 import type { UiNode } from "@aiui/dsl-schema";
 import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { msg } from "@/lib/i18n/messages";
+import { Button } from "@/components/ui/button";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { analyzeDocumentPerformance } from "@/lib/builder/document-performance";
 import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
@@ -24,11 +22,10 @@ import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { createRuntimeIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
 import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
-import { Redo2, Undo2 } from "lucide-react";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
-import { BuilderShortcutsHelp } from "./builder-shortcuts-help";
+import { BuilderNavbar } from "./builder-navbar";
 import { canvasPointerCollision } from "./builder-collision";
 import { DocumentExportPanel } from "./document-export-panel";
 import { DocumentStatePanel } from "./document-state-panel";
@@ -46,7 +43,9 @@ import {
 } from "./dnd-types";
 import { DRAG_COPY } from "./drag-copy";
 import { NodeTree } from "./node-tree";
+import { BuilderShortcutsHelp } from "./builder-shortcuts-help";
 import { useBuilderShortcuts } from "./use-builder-shortcuts";
+import { msg } from "@/lib/i18n/messages";
 
 function collectNodeIds(root: UiNode): string[] {
   const ids: string[] = [];
@@ -68,7 +67,8 @@ function countNodes(root: UiNode): number {
   return total;
 }
 
-export function BuilderDemo() {
+function BuilderDemoShell(props: { builderDevMode: boolean }) {
+  const { builderDevMode } = props;
   const document = useDocumentStore((s) => s.document);
   const appendChildOfType = useDocumentStore((s) => s.appendChildOfType);
   const reset = useDocumentStore((s) => s.reset);
@@ -180,123 +180,43 @@ export function BuilderDemo() {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,200px)_1fr_minmax(0,260px)]">
-          <aside aria-label={msg("builder.componentPaletteAriaLabel")}>
-            <ComponentPalette />
-          </aside>
-          <main className="min-w-0 space-y-4" aria-labelledby="builder-workspace-heading">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <BuilderNavbar
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={() => undo()}
+          onRedo={() => redo()}
+          onReset={() => reset()}
+          onAddBoxToRoot={() => appendChildOfType(rootId, BOX_TYPE)}
+          onAddStackToRoot={() => appendChildOfType(rootId, STACK_TYPE)}
+          onInsertTemplate={(templateId) => {
+            const tpl = BUILDER_DOCUMENT_TEMPLATES.find((t) => t.id === templateId);
+            if (!tpl) return;
+            const parentId = selectedNodeId ?? rootId;
+            insertChild(parentId, tpl.create());
+          }}
+          showAdvancedDevLink={!builderDevMode}
+        />
+
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 lg:grid-cols-[1fr_minmax(260px,320px)]">
+          <main
+            className="flex min-h-0 min-w-0 flex-col gap-3 overflow-auto p-3"
+            aria-labelledby="builder-workspace-heading"
+          >
             <h2 id="builder-workspace-heading" className="sr-only">
               {msg("builder.workspaceHeading")}
             </h2>
-            <div
-              className="flex flex-wrap gap-2"
-              role="toolbar"
-              aria-label={msg("builder.actionsAriaLabel")}
-            >
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-                disabled={!canUndo}
-                onClick={() => undo()}
-                title={msg("builder.undoTitle")}
-              >
-                <Undo2 className="size-3.5" aria-hidden />
-                {msg("builder.undo")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-                disabled={!canRedo}
-                onClick={() => redo()}
-                title={msg("builder.redoTitle")}
-              >
-                <Redo2 className="size-3.5" aria-hidden />
-                {msg("builder.redo")}
-              </Button>
-              <Link
-                href="/preview"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-              >
-                {msg("builder.preview")}
-              </Link>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendChildOfType(rootId, BOX_TYPE)}
-              >
-                {msg("builder.addBoxToRoot")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendChildOfType(rootId, STACK_TYPE)}
-              >
-                {msg("builder.addStackToRoot")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => reset()}
-              >
-                {msg("builder.resetDocument")}
-              </Button>
-              {selectedIds.some((id) => id !== rootId) ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      for (const id of selectedIds) {
-                        if (id !== rootId) duplicateNode(id);
-                      }
-                    }}
-                    title={msg("builder.duplicateTitle")}
-                  >
-                    {msg("builder.duplicate")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      for (const id of selectedIds) {
-                        if (id !== rootId) removeNode(id);
-                      }
-                    }}
-                  >
-                    {msg("builder.removeSelected")}
-                  </Button>
-                </>
-              ) : null}
-              {BUILDER_DOCUMENT_TEMPLATES.map((tpl) => (
-                <Button
-                  key={tpl.id}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  title={tpl.description}
-                  onClick={() => {
-                    const parentId = selectedNodeId ?? rootId;
-                    insertChild(parentId, tpl.create());
-                  }}
-                >
-                  {tpl.label}
-                </Button>
-              ))}
-            </div>
 
-            <BuilderShortcutsHelp />
+            {builderDevMode ? (
+              <aside
+                aria-label={msg("builder.componentPaletteAriaLabel")}
+                className="rounded-lg border border-border bg-card p-3 lg:hidden"
+              >
+                <ComponentPalette />
+              </aside>
+            ) : null}
 
-            {performance.isLargeDocument ? (
+            {performance.isLargeDocument && builderDevMode ? (
               <div className="rounded-xl border border-amber-300/70 bg-amber-50/70 p-3">
                 <p className="text-xs font-medium text-amber-900">
                   {msg("builder.largeDocumentGuardrailsActive")}
@@ -308,56 +228,101 @@ export function BuilderDemo() {
               </div>
             ) : null}
 
-            <FirstTimeWalkthroughPanel
-              document={document}
-              selectedCount={selectedIds.length}
-              onAddBox={() => appendChildOfType(rootId, BOX_TYPE)}
-              onAddStack={() => appendChildOfType(rootId, STACK_TYPE)}
-              onInsertStarterTemplate={() => {
-                if (!starterDashboardTemplate) return;
-                const parentId = selectedNodeId ?? rootId;
-                insertChild(parentId, starterDashboardTemplate.create());
-              }}
-            />
+            {builderDevMode ? (
+              <FirstTimeWalkthroughPanel
+                document={document}
+                selectedCount={selectedIds.length}
+                onAddBox={() => appendChildOfType(rootId, BOX_TYPE)}
+                onAddStack={() => appendChildOfType(rootId, STACK_TYPE)}
+                onInsertStarterTemplate={() => {
+                  if (!starterDashboardTemplate) return;
+                  const parentId = selectedNodeId ?? rootId;
+                  insertChild(parentId, starterDashboardTemplate.create());
+                }}
+              />
+            ) : null}
 
-            <p className="text-xs text-muted-foreground" aria-live="polite">
-              {msg("builder.selectionLabel")}{" "}
-              <span className="text-foreground">
-                {selectedIds.length === 0
-                  ? msg("builder.selectionNone")
-                  : selectedIds.length === 1
-                    ? (() => {
-                        const path = getPathToNode(document.root, selectedNodeId!);
-                        return path?.map(formatNodeTitle).join(" › ") ?? "—";
-                      })()
-                    : msg("builder.selectionMany", { count: selectedIds.length })}
-              </span>
-              {" · "}
-              {msg("builder.selectionHelp")}
-            </p>
+            {builderDevMode ? (
+              <>
+                <p className="text-xs text-muted-foreground" aria-live="polite">
+                  {msg("builder.selectionLabel")}{" "}
+                  <span className="text-foreground">
+                    {selectedIds.length === 0
+                      ? msg("builder.selectionNone")
+                      : selectedIds.length === 1
+                        ? (() => {
+                            const path = getPathToNode(
+                              document.root,
+                              selectedNodeId!,
+                            );
+                            return path?.map(formatNodeTitle).join(" › ") ?? "—";
+                          })()
+                        : msg("builder.selectionMany", {
+                            count: selectedIds.length,
+                          })}
+                  </span>
+                  {" · "}
+                  {msg("builder.selectionHelp")}
+                </p>
+                {selectedIds.some((id) => id !== rootId) ? (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        for (const id of selectedIds) {
+                          if (id !== rootId) duplicateNode(id);
+                        }
+                      }}
+                      title={msg("builder.duplicateTitle")}
+                    >
+                      {msg("builder.duplicate")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        for (const id of selectedIds) {
+                          if (id !== rootId) removeNode(id);
+                        }
+                      }}
+                    >
+                      {msg("builder.removeSelected")}
+                    </Button>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
 
-            <BuilderCanvas
-              document={document}
-              onRuntimeDiagnostic={handleRuntimeDiagnostic}
-              selectedId={selectedNodeId}
-              onSelect={selectNode}
-              onToggleSelect={toggleNode}
-              onLabelChange={(id, label) =>
-                updateNode(id, (n) => ({
-                  ...n,
-                  props: { ...n.props, label },
-                }))
-              }
-              onLeafLayoutResize={(id, width, height) =>
-                updateNode(id, (n) => {
-                  const prev = n.layout ? { ...n.layout } : {};
-                  const next = { ...prev } as Record<string, unknown>;
-                  next.width = width;
-                  next.height = height;
-                  return { ...n, layout: next };
-                })
-              }
-            />
+            <div className="min-h-[min(70vh,560px)] flex-1">
+              <BuilderCanvas
+                document={document}
+                onRuntimeDiagnostic={handleRuntimeDiagnostic}
+                selectedId={selectedNodeId}
+                onSelect={selectNode}
+                onToggleSelect={toggleNode}
+                onLabelChange={(id, label) =>
+                  updateNode(id, (n) => ({
+                    ...n,
+                    props: { ...n.props, label },
+                  }))
+                }
+                onLeafLayoutResize={(id, width, height) =>
+                  updateNode(id, (n) => {
+                    const prev = n.layout ? { ...n.layout } : {};
+                    const next = { ...prev } as Record<string, unknown>;
+                    next.width = width;
+                    next.height = height;
+                    return { ...n, layout: next };
+                  })
+                }
+                rootId={rootId}
+                onDuplicateNode={(id) => duplicateNode(id)}
+                onRemoveNode={(id) => removeNode(id)}
+              />
+            </div>
 
             {userLayerCount === 0 ? (
               <div className="rounded-xl border border-dashed border-primary/40 bg-primary/4 p-4">
@@ -368,7 +333,7 @@ export function BuilderDemo() {
                   {msg("builder.emptyStateBody")}
                 </p>
               </div>
-            ) : userLayerCount <= 2 ? (
+            ) : userLayerCount <= 2 && builderDevMode ? (
               <div className="rounded-xl border border-border/80 bg-muted/20 p-3">
                 <p className="text-xs text-muted-foreground">
                   {msg("builder.nearEmptyState")}
@@ -376,81 +341,119 @@ export function BuilderDemo() {
               </div>
             ) : null}
 
-            <section className="space-y-2" aria-labelledby="builder-tree-heading">
-              <p
-                id="builder-tree-heading"
-                className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-              >
-                {msg("builder.tree")}
-              </p>
-              <NodeTree
-                node={document.root}
-                depth={0}
-                selectedIds={selectedIds}
-                onSelect={selectNode}
-                onToggle={toggleNode}
-                onRangeSelect={(targetId) => {
-                  if (!selectedNodeId) {
-                    selectNode(targetId);
-                    return;
-                  }
-                  const ids = collectNodeIds(document.root);
-                  const a = ids.indexOf(selectedNodeId);
-                  const b = ids.indexOf(targetId);
-                  if (a < 0 || b < 0) {
-                    selectNode(targetId);
-                    return;
-                  }
-                  const from = Math.min(a, b);
-                  const to = Math.max(a, b);
-                  setSelection(ids.slice(from, to + 1));
-                }}
-                rootId={rootId}
-                labelledById="builder-tree-heading"
-              />
-            </section>
+            {builderDevMode ? (
+              <>
+                <BuilderShortcutsHelp />
+                <section className="space-y-2" aria-labelledby="builder-tree-heading">
+                  <p
+                    id="builder-tree-heading"
+                    className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                  >
+                    {msg("builder.tree")}
+                  </p>
+                  <NodeTree
+                    node={document.root}
+                    depth={0}
+                    selectedIds={selectedIds}
+                    onSelect={selectNode}
+                    onToggle={toggleNode}
+                    onRangeSelect={(targetId) => {
+                      if (!selectedNodeId) {
+                        selectNode(targetId);
+                        return;
+                      }
+                      const ids = collectNodeIds(document.root);
+                      const a = ids.indexOf(selectedNodeId);
+                      const b = ids.indexOf(targetId);
+                      if (a < 0 || b < 0) {
+                        selectNode(targetId);
+                        return;
+                      }
+                      const from = Math.min(a, b);
+                      const to = Math.max(a, b);
+                      setSelection(ids.slice(from, to + 1));
+                    }}
+                    rootId={rootId}
+                    labelledById="builder-tree-heading"
+                  />
+                </section>
 
-            <DocumentExportPanel document={document} />
+                <DocumentExportPanel document={document} />
 
-            <DocumentStatePanel />
+                <DocumentStatePanel />
 
-            <LayoutDebugPanel
-              root={document.root}
-              documentLayoutVersion={document.layoutVersion}
-            />
+                <LayoutDebugPanel
+                  root={document.root}
+                  documentLayoutVersion={document.layoutVersion}
+                />
 
-            <LogicFlowPanel root={document.root} selectedId={selectedNodeId} />
+                <LogicFlowPanel root={document.root} selectedId={selectedNodeId} />
 
-            <DiagnosticsPanel
-              document={document}
-              selectedCount={selectedIds.length}
-              undoDepth={undoDepth}
-              redoDepth={redoDepth}
-            />
+                <DiagnosticsPanel
+                  document={document}
+                  selectedCount={selectedIds.length}
+                  undoDepth={undoDepth}
+                  redoDepth={redoDepth}
+                />
 
-            <section
-              className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm"
-              aria-labelledby="live-document-heading"
-            >
-              <p
-                id="live-document-heading"
-                className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
-              >
-                {msg("builder.liveDocument")}
-              </p>
-              {performance.scaleLevel === "very_large" ? (
-                <p className="text-xs text-muted-foreground">
-                  {msg("builder.liveDocumentHidden")}
-                </p>
-              ) : (
-                <pre className="max-h-64 overflow-auto text-sm leading-relaxed">
-                  {JSON.stringify(document, null, 2)}
-                </pre>
-              )}
-            </section>
+                <section
+                  className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm"
+                  aria-labelledby="live-document-heading"
+                >
+                  <p
+                    id="live-document-heading"
+                    className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                  >
+                    {msg("builder.liveDocument")}
+                  </p>
+                  {performance.scaleLevel === "very_large" ? (
+                    <p className="text-xs text-muted-foreground">
+                      {msg("builder.liveDocumentHidden")}
+                    </p>
+                  ) : (
+                    <pre className="max-h-64 overflow-auto text-sm leading-relaxed">
+                      {JSON.stringify(document, null, 2)}
+                    </pre>
+                  )}
+                </section>
+              </>
+            ) : null}
+
+            {!builderDevMode && selectedIds.some((id) => id !== rootId) ? (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    for (const id of selectedIds) {
+                      if (id !== rootId) duplicateNode(id);
+                    }
+                  }}
+                  title={msg("builder.duplicateTitle")}
+                >
+                  {msg("builder.duplicate")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    for (const id of selectedIds) {
+                      if (id !== rootId) removeNode(id);
+                    }
+                  }}
+                >
+                  {msg("builder.removeSelected")}
+                </Button>
+              </div>
+            ) : null}
           </main>
 
-          <aside aria-label={msg("builder.propertiesInspectorAriaLabel")}>
+          <aside
+            aria-label={msg("builder.propertiesInspectorAriaLabel")}
+            className="min-h-0 overflow-auto border-t border-border bg-muted/15 p-3 lg:border-l lg:border-t-0"
+          >
             <PropertiesInspector
               root={document.root}
               selectedId={selectedNodeId}
@@ -469,4 +472,11 @@ export function BuilderDemo() {
       </DragOverlay>
     </DndContext>
   );
+}
+
+export function BuilderDemo() {
+  const searchParams = useSearchParams();
+  const builderDevMode = searchParams.get("dev") === "1";
+
+  return <BuilderDemoShell builderDevMode={builderDevMode} />;
 }

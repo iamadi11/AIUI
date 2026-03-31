@@ -2,11 +2,11 @@
 
 import type { AiuiDocument } from "@aiui/dsl-schema";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Upload } from "lucide-react";
 import { useGoldenDocumentExport } from "@/lib/builder/use-golden-document-export";
+import { msg } from "@/lib/i18n/messages";
+import { Copy, Download, Upload } from "lucide-react";
 
-export function DocumentExportPanel(props: { document: AiuiDocument }) {
-  const { document } = props;
+export function PreviewExportToolbar(props: { document: AiuiDocument }) {
   const {
     error,
     notice,
@@ -18,19 +18,11 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
     applyPendingImport,
     cancelPendingImport,
     fileInputRef,
-  } = useGoldenDocumentExport(document);
+  } = useGoldenDocumentExport(props.document);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
-      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Golden export / import
-      </p>
-      <p className="mb-3 text-xs text-muted-foreground leading-relaxed">
-        Export runs <code className="font-mono text-[0.65rem]">safeParseDocument</code>{" "}
-        so the file matches the shared Zod schema. Import replaces the document and
-        clears undo history. Older documents open a migration assistant before import.
-      </p>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button
           type="button"
           variant="outline"
@@ -39,7 +31,7 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
           onClick={handleExportDownload}
         >
           <Download className="size-3.5" aria-hidden />
-          Download JSON
+          {msg("preview.downloadJson")}
         </Button>
         <Button
           type="button"
@@ -49,7 +41,7 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
           onClick={() => void handleCopy()}
         >
           <Copy className="size-3.5" aria-hidden />
-          Copy JSON
+          {msg("preview.copyJson")}
         </Button>
         <Button
           type="button"
@@ -59,7 +51,7 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
           onClick={handlePickFile}
         >
           <Upload className="size-3.5" aria-hidden />
-          Import JSON…
+          {msg("preview.importJson")}
         </Button>
         <input
           ref={fileInputRef}
@@ -70,18 +62,29 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
         />
       </div>
       {notice ? (
-        <p className="mt-2 text-xs font-medium text-primary" role="status">
+        <p className="text-xs font-medium text-primary" role="status">
           {notice}
         </p>
       ) : null}
+      {error ? (
+        <p className="max-w-full truncate text-xs text-destructive" title={error}>
+          {error}
+        </p>
+      ) : null}
       {pendingImport ? (
-        <div className="mt-3 rounded-lg border border-amber-300/70 bg-amber-50/60 p-3">
-          <p className="text-xs font-medium text-amber-900">Migration assistant</p>
+        <div className="w-full rounded-lg border border-amber-300/70 bg-amber-50/60 p-3 text-left">
+          <p className="text-xs font-medium text-amber-900">
+            {msg("preview.migrationTitle")}
+          </p>
           <p className="mt-1 text-[0.7rem] leading-relaxed text-amber-900/90">
             {pendingImport.originalVersion
-              ? `This file uses DSL version ${pendingImport.originalVersion}.`
-              : "This file has no explicit DSL version."}{" "}
-            It will be migrated to {pendingImport.migratedVersion} before import.
+              ? msg("preview.migrationVersionLine", {
+                  from: pendingImport.originalVersion,
+                  to: pendingImport.migratedVersion,
+                })
+              : msg("preview.migrationNoVersion", {
+                  to: pendingImport.migratedVersion,
+                })}
           </p>
           {pendingImport.warnings.length > 0 ? (
             <ul className="mt-2 space-y-1">
@@ -97,7 +100,7 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
           ) : null}
           <div className="mt-3 flex flex-wrap gap-2">
             <Button type="button" size="sm" onClick={applyPendingImport}>
-              Migrate and import
+              {msg("preview.migrationConfirm")}
             </Button>
             <Button
               type="button"
@@ -105,15 +108,10 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
               size="sm"
               onClick={cancelPendingImport}
             >
-              Cancel
+              {msg("preview.migrationCancel")}
             </Button>
           </div>
         </div>
-      ) : null}
-      {error ? (
-        <pre className="mt-2 max-h-40 overflow-auto rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive whitespace-pre-wrap">
-          {error}
-        </pre>
       ) : null}
     </div>
   );

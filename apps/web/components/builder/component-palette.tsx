@@ -95,6 +95,48 @@ function PaletteItem(props: { definition: ComponentDefinition }) {
   );
 }
 
+/** Compact draggable chip for the top builder navbar (horizontal scroll). */
+function NavbarPaletteItem(props: { definition: ComponentDefinition }) {
+  const { definition } = props;
+  const Icon = iconForType[definition.type] ?? BoxIcon;
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `palette-${definition.type}`,
+      data: {
+        kind: "palette",
+        componentType: definition.type,
+      } satisfies PaletteDragData,
+    });
+
+  const style = transform
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
+    : undefined;
+
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      style={style}
+      {...listeners}
+      {...attributes}
+      title={DRAG_COPY.paletteItemTitle(definition.displayName, definition.type)}
+      className={cn(
+        "flex shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1.5 text-left text-xs font-medium shadow-sm transition-colors",
+        "hover:border-primary/45 hover:bg-muted/45",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        isDragging && "cursor-grabbing opacity-60",
+        !isDragging && "cursor-grab active:cursor-grabbing",
+      )}
+    >
+      <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="max-w-[7rem] truncate text-card-foreground">
+        {definition.displayName}
+      </span>
+    </button>
+  );
+}
+
 function groupByCategory(
   defs: ComponentDefinition[],
 ): Map<PaletteCategory, ComponentDefinition[]> {
@@ -207,5 +249,61 @@ export function ComponentPalette() {
           : msg("palette.noComponentsAvailable")}
       </p>
     </section>
+  );
+}
+
+/**
+ * Horizontal palette for the builder navbar: search + draggable component chips.
+ */
+export function ComponentPaletteNavbar() {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const all = listPaletteDefinitions();
+    return all.filter((d) => matchesPaletteSearch(d, query));
+  }, [query]);
+
+  const hasAnyMatch = filtered.length > 0;
+  const queryActive = query.trim().length > 0;
+
+  return (
+    <div
+      className="flex min-w-0 flex-1 items-center gap-2"
+      aria-label={msg("builder.componentPaletteAriaLabel")}
+    >
+      <div className="relative w-32 shrink-0 sm:w-40">
+        <Search
+          className="pointer-events-none absolute left-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <input
+          type="search"
+          className="h-8 w-full rounded-md border border-input bg-background py-1 pl-7 pr-2 text-xs text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          placeholder={msg("palette.searchPlaceholder")}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label={msg("palette.searchAriaLabel")}
+          autoComplete="off"
+        />
+      </div>
+      <div
+        className="flex min-w-0 flex-1 gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5"
+        role="list"
+      >
+        {!hasAnyMatch ? (
+          <span className="px-2 py-1 text-xs text-muted-foreground">
+            {queryActive
+              ? msg("palette.noSearchMatch")
+              : msg("palette.noComponentsRegistered")}
+          </span>
+        ) : (
+          filtered.map((def) => (
+            <span key={def.type} role="listitem" className="shrink-0">
+              <NavbarPaletteItem definition={def} />
+            </span>
+          ))
+        )}
+      </div>
+    </div>
   );
 }

@@ -19,6 +19,8 @@ import { GripVertical } from "lucide-react";
 import { findNodeById } from "@/lib/document/tree";
 import { cn } from "@/lib/utils";
 import { RuntimeSurface } from "@/components/runtime/runtime-surface";
+import { Button } from "@/components/ui/button";
+import { msg } from "@/lib/i18n/messages";
 import type { CanvasDropData, CanvasSiblingData } from "./dnd-types";
 import { DRAG_COPY } from "./drag-copy";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -43,6 +45,10 @@ type BuilderCanvasProps = {
   /** Set intrinsic `layout.width` / `layout.height` for empty leaves (snapped to 8px, min 32). */
   onLeafLayoutResize?: (id: string, width: number, height: number) => void;
   onRuntimeDiagnostic?: (diagnostic: RuntimeDiagnostic) => void;
+  /** When set with handlers, right-click opens a compact layer menu. */
+  rootId?: string;
+  onDuplicateNode?: (id: string) => void;
+  onRemoveNode?: (id: string) => void;
 };
 
 function readLabelProp(node: UiNode): string {
@@ -260,6 +266,9 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
     onLabelChange,
     onLeafLayoutResize,
     onRuntimeDiagnostic,
+    rootId,
+    onDuplicateNode,
+    onRemoveNode,
   } = props;
   const root = document.root;
 
@@ -288,6 +297,24 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
     w: number;
     h: number;
   }>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    nodeId: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    function close() {
+      setContextMenu(null);
+    }
+    window.addEventListener("click", close);
+    window.addEventListener("scroll", close, true);
+    return () => {
+      window.removeEventListener("click", close);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [contextMenu]);
 
   useDndMonitor({
     onDragStart: (e) => {
@@ -501,6 +528,22 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
     setEditingLabelId(id);
   }
 
+  function handleContextMenuCapture(e: React.MouseEvent<HTMLDivElement>) {
+    if (!rootId || !onDuplicateNode || !onRemoveNode) return;
+    const t = e.target as HTMLElement | null;
+    if (!t) return;
+    if (t.closest("[data-aiui-builder-chrome]")) return;
+    const hit = t.closest("[data-aiui-id]");
+    const id = hit?.getAttribute("data-aiui-id");
+    if (!id) {
+      setContextMenu(null);
+      return;
+    }
+    e.preventDefault();
+    onSelect(id);
+    setContextMenu({ x: e.clientX, y: e.clientY, nodeId: id });
+  }
+
   const nodeIds = useMemo(() => {
     const ids: string[] = [];
     function walk(n: UiNode) {
@@ -528,6 +571,7 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
         aria-label="Builder canvas runtime surface"
         onPointerDownCapture={handlePointerDownCapture}
         onDoubleClickCapture={handleDoubleClickCapture}
+        onContextMenuCapture={handleContextMenuCapture}
       >
         <div ref={measureRef} className="relative w-full min-h-[220px]">
           <RuntimeSurface
@@ -709,6 +753,74 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
           </div>
         </div>
       </div>
+      {contextMenu && rootId && onDuplicateNode && onRemoveNode ? (
+        <>
+          <div
+            className="fixed inset-0 z-50"
+            aria-hidden
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setContextMenu(null);
+            }}
+          />
+          <div
+            role="menu"
+            className="fixed z-60 min-w-44 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+            style={{
+              left: Math.min(
+                contextMenu.x,
+                typeof window !== "undefined"
+                  ? window.innerWidth - 200
+                  : contextMenu.x,
+              ),
+              top: Math.min(
+                contextMenu.y,
+                typeof window !== "undefined"
+                  ? window.innerHeight - 160
+                  : contextMenu.y,
+              ),
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-full justify-start font-normal"
+              onClick={() => setContextMenu(null)}
+            >
+              {msg("builder.contextConfigure")}
+            </Button>
+            {contextMenu.nodeId !== rootId ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-full justify-start font-normal"
+                  onClick={() => {
+                    onDuplicateNode(contextMenu.nodeId);
+                    setContextMenu(null);
+                  }}
+                >
+                  {msg("builder.contextDuplicate")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-full justify-start font-normal text-destructive hover:text-destructive"
+                  onClick={() => {
+                    onRemoveNode(contextMenu.nodeId);
+                    setContextMenu(null);
+                  }}
+                >
+                  {msg("builder.contextRemove")}
+                </Button>
+              </>
+            ) : null}
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }

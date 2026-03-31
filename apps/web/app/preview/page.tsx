@@ -17,9 +17,10 @@ import { cn } from "@/lib/utils";
 import { useDocumentStore } from "@/stores/document-store";
 import { createRuntimeIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
 import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
-import { useState } from "react";
+import { PreviewExportToolbar } from "@/components/preview/preview-export-toolbar";
+import { Suspense, useState } from "react";
 
-export default function PreviewPage() {
+function PreviewPageContent() {
   const document = useDocumentStore((s) => s.document);
   const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
   const parsed = safeParseDocument(document);
@@ -44,15 +45,29 @@ export default function PreviewPage() {
   if (!developerMode) {
     return (
       <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
-        <main className="flex w-full flex-1 flex-col" aria-label={msg("preview.runtimePreviewAriaLabel")}>
-          <div className="flex justify-end px-4 py-3">
-            <Link
-              href="/?dev=1"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              {msg("preview.openBuilderControls")}
-            </Link>
+        <header className="border-b border-border px-4 py-3">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                href="/"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              >
+                {msg("preview.openBuilderControls")}
+              </Link>
+              <Link
+                href="/preview?dev=1"
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+              >
+                {msg("preview.developerPreview")}
+              </Link>
+            </div>
+            <PreviewExportToolbar document={document} />
           </div>
+        </header>
+        <main
+          className="flex w-full flex-1 flex-col"
+          aria-label={msg("preview.runtimePreviewAriaLabel")}
+        >
           <div className="flex-1 px-0 pb-0 pt-1">
             <RuntimePreview
               document={document}
@@ -194,5 +209,19 @@ export default function PreviewPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function PreviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-full flex-1 items-center justify-center bg-background text-sm text-muted-foreground">
+          Loading preview…
+        </div>
+      }
+    >
+      <PreviewPageContent />
+    </Suspense>
   );
 }

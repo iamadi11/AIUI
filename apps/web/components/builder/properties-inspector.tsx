@@ -335,6 +335,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                         nodeId={editingId}
                         events={node.events}
                         onApply={applyEvents}
+                        interactionPresets={capabilities?.interactionPresets}
                       />
                     </div>
                   ) : null}
