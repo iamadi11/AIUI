@@ -117,6 +117,22 @@ importers:
         specifier: ~5.8.3
         version: 5.8.3
 
+  packages/logic:
+    dependencies:
+      '@aiui/dsl-schema':
+        specifier: workspace:*
+        version: link:../dsl-schema
+      '@aiui/expression':
+        specifier: workspace:*
+        version: link:../expression
+    devDependencies:
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(msw@2.12.14(@types/node@20.19.37)(typescript@5.8.3))
+
   packages/registry:
     dependencies:
       '@aiui/dsl-schema':
