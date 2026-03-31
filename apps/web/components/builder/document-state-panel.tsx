@@ -7,7 +7,7 @@ import {
 } from "@/lib/builder/event-actions";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const controlClass =
   "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -45,10 +45,6 @@ function rowsToState(rows: StateRow[]): Record<string, unknown> | undefined {
 export function DocumentStatePanel() {
   const document = useDocumentStore((s) => s.document);
   const setDocumentState = useDocumentStore((s) => s.setDocumentState);
-  const fingerprint = useMemo(
-    () => JSON.stringify(document.state ?? {}),
-    [document.state],
-  );
   const [rows, setRows] = useState<StateRow[]>([]);
   const rowsRef = useRef(rows);
   useLayoutEffect(() => {
@@ -59,7 +55,7 @@ export function DocumentStatePanel() {
     queueMicrotask(() => {
       setRows(stateToRows(document.state));
     });
-  }, [fingerprint]);
+  }, [document.state]);
 
   function commit() {
     setDocumentState(rowsToState(rowsRef.current));
@@ -123,7 +119,7 @@ export function DocumentStatePanel() {
                 autoComplete="off"
               />
             </div>
-            <div className="min-w-0 flex-[2]">
+            <div className="min-w-0 flex-2">
               <label
                 className="mb-0.5 block text-[0.65rem] text-muted-foreground"
                 htmlFor={`st-val-${row.id}`}

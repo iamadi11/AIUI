@@ -671,7 +671,7 @@ export function EventBindingsPanel(props: {
       setFormError(null);
       setExpanded({});
     });
-  }, [nodeId, serialized]);
+  }, [nodeId, serialized, events]);
 
   function commitFromRows(nextRows: EventBindingRow[]) {
     const built = buildEventsRecord(nextRows);
