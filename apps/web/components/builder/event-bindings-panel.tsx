@@ -27,6 +27,7 @@ import {
   formatValueForInput,
   isBranchAction,
   isSimpleActionsList,
+  buttonClickFetchPopulateTableTemplate,
   parseHttpBodyInput,
   parseValueInput,
 } from "@/lib/builder/event-actions";
@@ -1028,6 +1029,38 @@ export function EventBindingsPanel(props: {
     });
   }
 
+  function applyButtonFetchTemplate() {
+    const template = buttonClickFetchPopulateTableTemplate();
+    setRows((prev) => {
+      const existingIndex = prev.findIndex((row) => row.name === template.eventName);
+      const nextRow: EventBindingRow = {
+        id: newRowId(),
+        name: template.eventName,
+        namePreset: "click",
+        mode: "simple",
+        simpleActions: template.actions,
+        jsonText: JSON.stringify(template.actions, null, 2),
+      };
+      let nextRows: EventBindingRow[];
+      if (existingIndex >= 0) {
+        nextRows = prev.map((row, index) =>
+          index === existingIndex
+            ? {
+                ...row,
+                mode: "simple",
+                simpleActions: template.actions,
+                jsonText: JSON.stringify(template.actions, null, 2),
+              }
+            : row,
+        );
+      } else {
+        nextRows = [...prev, nextRow];
+      }
+      queueMicrotask(() => commitFromRows(nextRows));
+      return nextRows;
+    });
+  }
+
   function removeRow(id: string) {
     setRows((prev) => {
       const nextRows = prev.filter((row) => row.id !== id);
@@ -1193,6 +1226,17 @@ export function EventBindingsPanel(props: {
         for <code className="rounded bg-muted px-0.5">sequence</code> or nested
         logic.
       </p>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="h-7 text-[0.65rem]"
+          onClick={applyButtonFetchTemplate}
+        >
+          Template: click -&gt; fetch -&gt; populate table
+        </Button>
+      </div>
       {formError ? (
         <p className="mb-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs text-destructive">
           {formError}

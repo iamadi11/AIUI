@@ -125,3 +125,20 @@ export function defaultConditionAction(): Action {
     then: { type: "setState", path: "count", value: 0 },
   };
 }
+
+export function buttonClickFetchPopulateTableTemplate(): {
+  eventName: string;
+  actions: Action[];
+} {
+  return {
+    eventName: "click",
+    actions: [
+      {
+        type: "fetch",
+        method: "GET",
+        url: "https://api.example.com/table",
+        assignTo: "table.rows",
+      },
+    ],
+  };
+}

@@ -41,7 +41,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Ship simple action-list mode for common workflows.
 - [x] Ship React Flow advanced mode for branching logic.
 - [x] Add action blocks: fetch, set state, transform, condition, modal open/close, notify, navigate.
-- [ ] Add scenario template: button click -> fetch -> populate table.
+- [x] Add scenario template: button click -> fetch -> populate table.
 - [ ] Add scenario template: row action -> modal -> submit -> refresh table.
 - [ ] Add visibility/interactivity rule builder.
 
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 4 scenario template added (`click -> fetch -> populate table`):
+  - Added one-click workflow template in Events panel for common table-loading flow.
+  - Template seeds/overwrites `click` event with fetch action mapped to `table.rows`.
+  - Keeps template editable in simple visual action-list mode after insertion.
 - **2026-03-31** - Phase 4 action blocks expanded across DSL + runtime + builder:
   - Added action schema/runtime support for `fetch`, `transform`, `modal`, and `notify` alongside existing `setState`, `navigate`, and `condition`.
   - Added visual builder blocks/fields for fetch assignment, transform expressions, modal open/close, and notification messages.
