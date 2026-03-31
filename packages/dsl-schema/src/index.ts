@@ -3,7 +3,13 @@ import type { Action } from "./actions";
 import { actionSchema } from "./actions";
 
 export type { Action };
-export { actionSchema, parseAction, safeParseAction } from "./actions";
+export {
+  actionSchema,
+  actionsArraySchema,
+  parseAction,
+  safeParseAction,
+  safeParseActionsArray,
+} from "./actions";
 
 /** Semantic version of the document format (not layout algorithm). */
 export const DSL_VERSION = "0.1.0";

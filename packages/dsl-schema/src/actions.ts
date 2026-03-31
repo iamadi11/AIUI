@@ -47,10 +47,16 @@ export const actionSchema: z.ZodType<Action> = z.lazy(() =>
   ]),
 ) as z.ZodType<Action>;
 
+export const actionsArraySchema = z.array(actionSchema);
+
 export function parseAction(data: unknown): Action {
   return actionSchema.parse(data);
 }
 
 export function safeParseAction(data: unknown) {
   return actionSchema.safeParse(data);
+}
+
+export function safeParseActionsArray(data: unknown) {
+  return actionsArraySchema.safeParse(data);
 }
