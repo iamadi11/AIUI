@@ -71,3 +71,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Workflow template adoption:** Non-technical action builders need one-click scenario starters (with editable generated steps) to reduce setup friction for common patterns like data-table fetch and hydrate.
 - **2026-03-31 - Multi-step CRUD template:** For row-level CRUD workflows, pre-seeding modal + submit + refresh + feedback actions dramatically reduces event authoring time while keeping generated steps editable.
 - **2026-03-31 - Rule-builder persistence:** Early visibility/interactivity builders should store expression rules on nodes with a stable props key so runtime/parity phases can adopt them without migration churn.
+- **2026-03-31 - Palette visibility contract:** Components appear in the builder left navbar only when they are registered in `@aiui/registry` with `ux.palette` metadata; shadcn adoption should be driven by registry entries, not app-level hardcoded lists.

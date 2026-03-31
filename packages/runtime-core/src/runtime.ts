@@ -8,7 +8,14 @@ import {
 } from "@aiui/layout-engine";
 import type { ActionEnvironment } from "@aiui/logic";
 import { runActions } from "@aiui/logic";
-import { isRegisteredType } from "@aiui/registry";
+import {
+  BADGE_TYPE,
+  BUTTON_TYPE,
+  CARD_TYPE,
+  INPUT_TYPE,
+  TABLE_TYPE,
+  isRegisteredType,
+} from "@aiui/registry";
 import {
   defaultDiagnosticsSink,
   type DiagnosticsSink,
@@ -64,6 +71,38 @@ function applyPrimitiveStyle(el: HTMLElement, node: UiNode): void {
   if (node.type === STACK_TYPE) {
     el.style.border = "1px solid rgba(0, 0, 0, 0.18)";
     el.style.background = "rgba(0, 0, 0, 0.04)";
+    return;
+  }
+  if (node.type === BUTTON_TYPE) {
+    el.style.border = "1px solid rgba(37, 99, 235, 0.45)";
+    el.style.background = "rgba(37, 99, 235, 0.12)";
+    el.style.borderRadius = "8px";
+    return;
+  }
+  if (node.type === INPUT_TYPE) {
+    el.style.border = "1px solid rgba(0, 0, 0, 0.24)";
+    el.style.background = "rgba(255, 255, 255, 0.92)";
+    el.style.borderRadius = "8px";
+    return;
+  }
+  if (node.type === CARD_TYPE) {
+    el.style.border = "1px solid rgba(0, 0, 0, 0.16)";
+    el.style.background = "rgba(255, 255, 255, 0.95)";
+    el.style.borderRadius = "12px";
+    el.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.08)";
+    return;
+  }
+  if (node.type === TABLE_TYPE) {
+    el.style.border = "1px solid rgba(0, 0, 0, 0.2)";
+    el.style.background = "rgba(255, 255, 255, 0.9)";
+    el.style.borderRadius = "10px";
+    return;
+  }
+  if (node.type === BADGE_TYPE) {
+    el.style.border = "1px solid rgba(0, 0, 0, 0.2)";
+    el.style.background = "rgba(0, 0, 0, 0.08)";
+    el.style.borderRadius = "999px";
+    return;
   }
 }
 

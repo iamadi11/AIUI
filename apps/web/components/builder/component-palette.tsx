@@ -1,13 +1,26 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import { BoxIcon, LayersIcon, Search } from "lucide-react";
+import {
+  Badge,
+  BoxIcon,
+  GalleryVerticalEnd,
+  LayersIcon,
+  Search,
+  Table2,
+  Type,
+} from "lucide-react";
 import type { ComponentDefinition } from "@aiui/registry";
 import {
   BOX_TYPE,
+  BUTTON_TYPE,
+  CARD_TYPE,
+  INPUT_TYPE,
   PALETTE_CATEGORY_LABELS,
   PALETTE_CATEGORY_ORDER,
   STACK_TYPE,
+  TABLE_TYPE,
+  BADGE_TYPE,
   listPaletteDefinitions,
   matchesPaletteSearch,
   type PaletteCategory,
@@ -20,6 +33,11 @@ import { useMemo, useState } from "react";
 const iconForType: Partial<Record<string, typeof BoxIcon>> = {
   [BOX_TYPE]: BoxIcon,
   [STACK_TYPE]: LayersIcon,
+  [BUTTON_TYPE]: Type,
+  [INPUT_TYPE]: Type,
+  [CARD_TYPE]: GalleryVerticalEnd,
+  [TABLE_TYPE]: Table2,
+  [BADGE_TYPE]: Badge,
 };
 
 const searchInputClass =

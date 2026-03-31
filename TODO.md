@@ -55,7 +55,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 6 - Component adapter strategy
 
-- [ ] Keep shadcn as production default library.
+- [x] Keep shadcn as production default library.
 - [ ] Define adapter interface for future UI libraries.
 - [ ] Define component capability schema and validator.
 - [ ] Create component certification checklist before user exposure.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 6 shadcn default library baseline enforced:
+  - Expanded registry palette with shadcn-first primitives (`Button`, `Input`, `Card`, `Table`, `Badge`) so they are visible in the builder's left components navbar.
+  - Added inspector metadata/capabilities for new primitives to keep no-code editing beginner-friendly and consistent.
+  - Added runtime primitive styling for the new component types so preview/output remains visibly mapped after placement.
 - **2026-03-31** - Phase 4 visibility/interactivity rule builder added:
   - Added guided rule inputs for `visibleWhen` and `interactiveWhen` expressions in the Visibility section.
   - Persisted rules on the node under a stable props key for later runtime parity consumption.

@@ -2,6 +2,11 @@ import type { UiNode } from "@aiui/dsl-schema";
 
 export const BOX_TYPE = "Box";
 export const STACK_TYPE = "Stack";
+export const BUTTON_TYPE = "Button";
+export const INPUT_TYPE = "Input";
+export const CARD_TYPE = "Card";
+export const TABLE_TYPE = "Table";
+export const BADGE_TYPE = "Badge";
 
 /** Builder palette grouping (ordered left-to-right in the UI). */
 export type PaletteCategory =
@@ -266,6 +271,187 @@ export const primitives: Record<string, ComponentDefinition> = {
             min: 0,
             step: 1,
             scope: "layout",
+          },
+        ],
+      },
+    },
+  },
+  [BUTTON_TYPE]: {
+    type: BUTTON_TYPE,
+    displayName: "Button",
+    defaultProps: { label: "Button", variant: "default" },
+    ux: {
+      palette: {
+        category: "input",
+        keywords: ["shadcn", "button", "cta", "click", "action"],
+        description: "Trigger actions",
+      },
+      capabilities: {
+        supportsActions: true,
+        supportsVisibilityRules: true,
+        supportedLayoutModes: ["flow", "stack", "grid"],
+      },
+      inspector: {
+        defaultSection: "content",
+        sectionOrder: INSPECTOR_SECTION_ORDER,
+        fields: [
+          {
+            kind: "text",
+            key: "label",
+            label: "Label",
+            placeholder: "Button",
+          },
+          {
+            kind: "select",
+            key: "variant",
+            label: "Variant",
+            options: [
+              { value: "default", label: "Default" },
+              { value: "secondary", label: "Secondary" },
+              { value: "outline", label: "Outline" },
+              { value: "ghost", label: "Ghost" },
+              { value: "destructive", label: "Destructive" },
+            ],
+          },
+        ],
+      },
+    },
+  },
+  [INPUT_TYPE]: {
+    type: INPUT_TYPE,
+    displayName: "Input",
+    defaultProps: { placeholder: "Type here..." },
+    ux: {
+      palette: {
+        category: "input",
+        keywords: ["shadcn", "input", "field", "text", "form"],
+        description: "Single-line text field",
+      },
+      capabilities: {
+        supportsActions: true,
+        supportsVisibilityRules: true,
+        supportedLayoutModes: ["flow", "stack", "grid"],
+      },
+      inspector: {
+        defaultSection: "content",
+        sectionOrder: INSPECTOR_SECTION_ORDER,
+        fields: [
+          {
+            kind: "text",
+            key: "placeholder",
+            label: "Placeholder",
+            placeholder: "Type here...",
+          },
+        ],
+      },
+    },
+  },
+  [CARD_TYPE]: {
+    type: CARD_TYPE,
+    displayName: "Card",
+    defaultProps: { label: "Card", description: "Card description" },
+    ux: {
+      palette: {
+        category: "display",
+        keywords: ["shadcn", "card", "panel", "container", "surface"],
+        description: "Grouped surface for content",
+      },
+      capabilities: {
+        supportsActions: true,
+        supportsVisibilityRules: true,
+        supportedLayoutModes: ["flow", "stack", "grid", "absolute"],
+      },
+      inspector: {
+        defaultSection: "content",
+        sectionOrder: INSPECTOR_SECTION_ORDER,
+        fields: [
+          {
+            kind: "text",
+            key: "label",
+            label: "Title",
+            placeholder: "Card",
+          },
+          {
+            kind: "text",
+            key: "description",
+            label: "Description",
+            placeholder: "Card description",
+          },
+        ],
+      },
+    },
+  },
+  [TABLE_TYPE]: {
+    type: TABLE_TYPE,
+    displayName: "Table",
+    defaultProps: { label: "Table", emptyState: "No rows yet" },
+    ux: {
+      palette: {
+        category: "data",
+        keywords: ["shadcn", "table", "rows", "columns", "data-grid"],
+        description: "Tabular data display",
+      },
+      capabilities: {
+        supportsDataSource: true,
+        supportsActions: true,
+        supportsRowActions: true,
+        supportsVisibilityRules: true,
+        supportedLayoutModes: ["flow", "stack", "grid"],
+      },
+      inspector: {
+        defaultSection: "data",
+        sectionOrder: INSPECTOR_SECTION_ORDER,
+        fields: [
+          {
+            kind: "text",
+            key: "label",
+            label: "Title",
+            placeholder: "Table",
+          },
+          {
+            kind: "text",
+            key: "emptyState",
+            label: "Empty state",
+            placeholder: "No rows yet",
+          },
+        ],
+      },
+    },
+  },
+  [BADGE_TYPE]: {
+    type: BADGE_TYPE,
+    displayName: "Badge",
+    defaultProps: { label: "Status", variant: "secondary" },
+    ux: {
+      palette: {
+        category: "display",
+        keywords: ["shadcn", "badge", "status", "tag", "pill"],
+        description: "Small status indicator",
+      },
+      capabilities: {
+        supportsVisibilityRules: true,
+        supportedLayoutModes: ["flow", "stack", "grid"],
+      },
+      inspector: {
+        defaultSection: "content",
+        sectionOrder: INSPECTOR_SECTION_ORDER,
+        fields: [
+          {
+            kind: "text",
+            key: "label",
+            label: "Label",
+            placeholder: "Status",
+          },
+          {
+            kind: "select",
+            key: "variant",
+            label: "Variant",
+            options: [
+              { value: "default", label: "Default" },
+              { value: "secondary", label: "Secondary" },
+              { value: "outline", label: "Outline" },
+              { value: "destructive", label: "Destructive" },
+            ],
           },
         ],
       },
