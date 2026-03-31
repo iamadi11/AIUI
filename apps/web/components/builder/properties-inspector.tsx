@@ -48,6 +48,45 @@ function resolveLayoutNumber(node: UiNode, key: string): number {
   return 0;
 }
 
+type MarginSides = { top: number; right: number; bottom: number; left: number };
+
+function readMarginSides(node: UiNode): MarginSides {
+  const raw = node.layout?.margin as unknown;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    const v = Math.max(0, raw);
+    return { top: v, right: v, bottom: v, left: v };
+  }
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const o = raw as Record<string, unknown>;
+    return {
+      top: Math.max(0, Number(o.top) || 0),
+      right: Math.max(0, Number(o.right) || 0),
+      bottom: Math.max(0, Number(o.bottom) || 0),
+      left: Math.max(0, Number(o.left) || 0),
+    };
+  }
+  return { top: 0, right: 0, bottom: 0, left: 0 };
+}
+
+function applyMarginSidesUpdate(node: UiNode, next: MarginSides): UiNode {
+  const prev = node.layout ? { ...node.layout } : {};
+  const out = { ...prev } as Record<string, unknown>;
+  if (
+    next.top === 0 &&
+    next.right === 0 &&
+    next.bottom === 0 &&
+    next.left === 0
+  ) {
+    delete out.margin;
+  } else {
+    out.margin = next;
+  }
+  return {
+    ...node,
+    layout: Object.keys(out).length ? out : undefined,
+  };
+}
+
 function applyLayoutUpdate(node: UiNode, key: string, value: unknown): UiNode {
   const prev = node.layout ? { ...node.layout } : {};
   const next = { ...prev } as Record<string, unknown>;
@@ -76,6 +115,9 @@ function fieldScope(field: InspectorField): "props" | "layout" {
   return field.scope ?? "props";
 }
 
+const controlClass =
+  "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
 function FieldEditor(props: {
   node: UiNode;
   field: InspectorField;
@@ -84,6 +126,49 @@ function FieldEditor(props: {
 }) {
   const { node, field, defaults, onChange } = props;
   const scope = fieldScope(field);
+
+  if (field.kind === "marginSides" && scope === "layout") {
+    const sides = readMarginSides(node);
+    const edges: { key: keyof MarginSides; short: string }[] = [
+      { key: "top", short: "T" },
+      { key: "right", short: "R" },
+      { key: "bottom", short: "B" },
+      { key: "left", short: "L" },
+    ];
+    return (
+      <div>
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          {field.label}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {edges.map(({ key: sideKey, short }) => (
+            <div key={sideKey}>
+              <label
+                className="mb-1 block text-[0.65rem] text-muted-foreground"
+                htmlFor={`layout-${node.id}-margin-${sideKey}`}
+              >
+                {short}
+              </label>
+              <input
+                id={`layout-${node.id}-margin-${sideKey}`}
+                type="number"
+                className={controlClass}
+                min={field.min}
+                step={field.step ?? "any"}
+                value={sides[sideKey] === 0 ? "" : String(sides[sideKey])}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const n = raw === "" ? 0 : Number(raw);
+                  const v = Number.isFinite(n) ? Math.max(0, n) : 0;
+                  onChange(field, { ...sides, [sideKey]: v });
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (field.kind === "text") {
     if (scope === "layout") {
@@ -212,9 +297,6 @@ function FieldEditor(props: {
   );
 }
 
-const controlClass =
-  "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
-
 export function PropertiesInspector(props: PropertiesInspectorProps) {
   const { root, selectedId, rootId } = props;
   const updateNode = useDocumentStore((s) => s.updateNode);
@@ -255,6 +337,12 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
 
   function applyField(field: InspectorField, value: unknown) {
     const scope = fieldScope(field);
+    if (field.kind === "marginSides" && scope === "layout") {
+      updateNode(editingId, (n) =>
+        applyMarginSidesUpdate(n, value as MarginSides),
+      );
+      return;
+    }
     if (scope === "layout") {
       updateNode(editingId, (n) => applyLayoutUpdate(n, field.key, value));
       return;

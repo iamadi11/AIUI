@@ -47,6 +47,15 @@ export type InspectorField =
       scope?: InspectorFieldScope;
     }
   | {
+      /** Writes `node.layout.margin` as `{ top, right, bottom, left }` (or clears when all zero). */
+      kind: "marginSides";
+      key: "margin";
+      label: string;
+      min?: number;
+      step?: number;
+      scope?: InspectorFieldScope;
+    }
+  | {
       kind: "text";
       key: string;
       label: string;
@@ -94,7 +103,7 @@ export const primitives: Record<string, ComponentDefinition> = {
         scope: "layout",
       },
       {
-        kind: "number",
+        kind: "marginSides",
         key: "margin",
         label: "Margin (px)",
         min: 0,
@@ -166,7 +175,7 @@ export const primitives: Record<string, ComponentDefinition> = {
         scope: "layout",
       },
       {
-        kind: "number",
+        kind: "marginSides",
         key: "margin",
         label: "Margin (px)",
         min: 0,

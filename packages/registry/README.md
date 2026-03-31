@@ -15,6 +15,6 @@ Helpers:
 - `listPaletteDefinitions()` — Primitives sorted by category, then display name.
 - `matchesPaletteSearch(def, query)` — Whitespace-separated tokens; all must match substrings in name, type, keywords, or description.
 
-**Inspector `scope`:** Fields can set `scope: "layout"` so the builder writes to `node.layout` (e.g. `padding`, `width`, `height`) instead of `props`, aligned with `@aiui/layout-engine`.
+**Inspector `scope`:** Fields can set `scope: "layout"` so the builder writes to `node.layout` (e.g. `padding`, `width`, `height`) instead of `props`, aligned with `@aiui/layout-engine`. Use `kind: "marginSides"` for per-side `layout.margin` (`{ top, right, bottom, left }`).
 
 Adding a primitive: register it in `primitives`, set `paletteCategory` and optional keywords/description so the palette stays discoverable without hardcoding lists in `apps/web`.

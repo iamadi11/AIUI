@@ -405,7 +405,7 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 ### Phase 3 — Layout (follow-up, partial)
 
 - **Engine:** `layout.margin` (number or per-side object) — outside the border box; affects sibling spacing in column and row stacks (`parseMargin` in `@aiui/layout-engine`).
-- **Inspector:** Uniform **Margin (px)** on Box/Stack (same pattern as padding).
+- **Inspector:** Per-side **Margin (T / R / B / L px)** on Box/Stack (`InspectorField` `kind: "marginSides"` → `layout.margin` object); uniform numeric `margin` in imported JSON still maps to all sides when editing.
 - **Canvas:** **Resize** handle on selected **empty** leaves — 8px snap, 32px minimum; writes `layout.width` / `layout.height` (matches Properties).
 
 ### Phase 4 — Events (shipped baseline)
