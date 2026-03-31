@@ -39,8 +39,9 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 5 — Bindings
 
-- [ ] Binding authoring matches runtime `kind` model; validation UX next to controls.
-- [ ] Export/import round-trip tests for binding scenarios used in demos.
+- [x] **Schema-first apply:** `validateBindingDescriptorSchema` (`binding-schema.ts`) runs on apply; draft preview shows **DSL** errors (destructive) then **sample** warnings (amber); Apply disabled until schema passes.
+- [x] **Binding draft UI** remounts via `BindingDraftFields` `key` (no setState-in-effect); sample source/path lists include imported paths when needed.
+- [x] **Golden JSON** round-trip test with **four** `BindingDescriptor` kinds on a nested node (`export-roundtrip.test.ts`).
 
 ## Phase 6 — Actions and CTAs
 

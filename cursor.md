@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-04-01 - Bindings panel:** Validate **`BindingDescriptor`** with **`safeParseBindingDescriptor`** before persisting; keep draft editors in a **keyed** sub-tree so form state syncs from the document without effects that trip `react-hooks/set-state-in-effect`.
 - **2026-04-01 - Data & state UX:** One **Sheet** from the navbar holds **initial state**, **sample data source ids** (for binding preview), and a **fetch→table state starter**; avoid a second copy under dev-only stacks so the story stays single-path.
 - **2026-04-01 - Drop defaults:** Registry **`defaultLayout`** (`UiLayout`) merges in **`createNodeFromType`** alongside **`defaultProps`**; keep palette components’ spacing/padding in the registry, not ad hoc in the app.
 - **2026-04-01 - Preview parity:** Extract **`RuntimePreviewHost`** (shared with `/preview`) for the builder canvas; pass **`runtimeDocumentForActiveEditorScreen(doc, activeScreenId)`** into runtime so the edited screen renders while `update()` resets to `initialScreenId` — without mutating the stored document.

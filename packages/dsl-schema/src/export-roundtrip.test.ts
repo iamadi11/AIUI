@@ -90,7 +90,56 @@ describe("migrateDocument", () => {
   });
 });
 
+function docWithBindingsOnChild() {
+  return {
+    version: DSL_VERSION,
+    layoutVersion: LAYOUT_VERSION,
+    screens: {
+      [DEFAULT_SCREEN_ID]: {
+        root: {
+          id: ROOT_ID,
+          type: "Stack",
+          props: { label: "Root", direction: "column", gap: 0 },
+          children: [
+            {
+              id: "20000000-0000-4000-8000-000000000002",
+              type: "Button",
+              props: { label: "Hi" },
+              bindings: {
+                label: { kind: "static", value: "Go" },
+                hint: { kind: "expression", expression: "true" },
+                st: { kind: "state", path: "filters.search" },
+                q: { kind: "query", source: "orders", path: "rows" },
+              },
+            },
+          ],
+        },
+      },
+    },
+    initialScreenId: DEFAULT_SCREEN_ID,
+    flowLayout: {
+      positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+      edges: [],
+    },
+  };
+}
+
 describe("golden JSON", () => {
+  it("round-trips export → import with bindings on a nested node", () => {
+    const doc = docWithBindingsOnChild();
+    const ex = exportGoldenJson(doc);
+    expect(ex.ok).toBe(true);
+    if (!ex.ok) return;
+    const im = importGoldenJson(ex.json);
+    expect(im.ok).toBe(true);
+    if (!im.ok) return;
+    const root = im.document.screens[DEFAULT_SCREEN_ID].root;
+    const child = root.children?.[0];
+    expect(child?.bindings).toEqual(
+      doc.screens[DEFAULT_SCREEN_ID].root.children?.[0]?.bindings,
+    );
+  });
+
   it("round-trips export → import", () => {
     const doc = minimalDoc();
     const ex = exportGoldenJson(doc);
