@@ -330,7 +330,6 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
         ) : (
           <PageFlowCanvas
             root={editorDoc.root}
-            document={document}
             selectedId={selectedNodeId}
             onSelect={selectNodeEx}
           />

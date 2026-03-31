@@ -61,7 +61,7 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 9+ — Forward backlog
 
-- [x] **palette → Page graph:** dnd-kit droppables on each tree node + full pane (`CanvasDropData` with `depth` for collision vs main canvas); **`appendChildOfType`** matches the runtime canvas path; each graph node shows an isolated **`RuntimePreviewHost`** preview (`previewDocumentForSubtree`).
+- [x] **palette → Page graph:** dnd-kit droppables on each tree node + full pane (`CanvasDropData` with `depth` for collision vs main canvas); **`appendChildOfType`** matches the runtime canvas path; each graph node renders a data-driven **React/shadcn preview** (`ShadcnNodePreview`) instead of card-only labels.
 - [ ] Optional: persist **Page graph** node positions (document metadata) across sessions.
 - [ ] Optional: **Page graph** sibling reorder (match canvas `SortableContext` behavior).
 

@@ -319,7 +319,7 @@ export const ScreenFlowCanvas = forwardRef<
       <p className="shrink-0 border-b border-border px-2 py-1.5 text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
         {msg("builder.screenFlowHeading")}
       </p>
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-[220px] flex-1">
         <ReactFlowProvider>
           <ScreenFlowInner ref={ref} {...props} />
         </ReactFlowProvider>
