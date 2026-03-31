@@ -12,6 +12,7 @@ Users should drag, configure, preview, and publish without engineering help.
 - Runtime public API remains:
   - `render({ container, config })`
   - `update(config)`
+  - `relayout()`
   - `destroy()`
 - Creator, preview, and runtime must stay behaviorally identical.
 - Keep shadcn as current component baseline.

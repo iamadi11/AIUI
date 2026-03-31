@@ -4,8 +4,12 @@ import { parseExpression } from "./parser";
 
 const UNSAFE_SEGMENTS = new Set(["__proto__", "constructor", "prototype"]);
 
+export function isUnsafePathSegment(seg: string): boolean {
+  return UNSAFE_SEGMENTS.has(seg);
+}
+
 function assertSafeSegment(seg: string, offset = 0): void {
-  if (UNSAFE_SEGMENTS.has(seg)) {
+  if (isUnsafePathSegment(seg)) {
     throw new ExpressionError(`Invalid path segment: ${seg}`, offset);
   }
 }
@@ -25,7 +29,7 @@ function getPath(root: unknown, segments: string[]): unknown {
   return cur;
 }
 
-function isTruthy(v: unknown): boolean {
+export function isTruthy(v: unknown): boolean {
   if (v === false || v === null || v === undefined) return false;
   if (typeof v === "number" && (v === 0 || Number.isNaN(v))) return false;
   if (v === "") return false;

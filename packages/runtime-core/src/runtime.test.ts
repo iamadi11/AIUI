@@ -151,4 +151,22 @@ describe("render", () => {
     rt.destroy();
     document.body.removeChild(container);
   });
+
+  it("relayout preserves runtime state", async () => {
+    const container = document.createElement("div");
+    container.style.width = "400px";
+    document.body.appendChild(container);
+
+    const rt = render({ container, config: minimalDoc() });
+    const child = container.querySelector(`[data-aiui-id="${CHILD}"]`);
+    child!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await Promise.resolve();
+    expect(rt.getState()).toEqual({ count: 1 });
+
+    rt.relayout();
+    expect(rt.getState()).toEqual({ count: 1 });
+
+    rt.destroy();
+    document.body.removeChild(container);
+  });
 });

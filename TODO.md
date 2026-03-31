@@ -79,6 +79,16 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Aggressive cleanup wave completed across repository:
+  - Builder feature slicing started (`node-tree`, `use-builder-shortcuts`) and `builder-demo` orchestration reduced.
+  - Store architecture improved with command-style `commitDocumentChange` and selection reconciliation API (`reconcileSelection`).
+  - Runtime lifecycle hardened with `relayout()` API to prevent resize-triggered state resets.
+  - Runtime-core diagnostics envelope integrated for schema/layout/logic/runtime failures.
+  - Shared utility cleanup: expression truthiness/path-safety reused by logic package.
+  - Layout parser duplication removed through shared `parseBoxSides` utility.
+  - DSL action validation upgraded to discriminated unions.
+  - Registry capabilities scaffold introduced for future adapter-driven extensibility.
+  - Verification: `pnpm typecheck`, `pnpm test`, `pnpm lint` passed.
 - **2026-03-31** - Phase 0 planning baseline completed:
   - canonical roadmap rewrite
   - non-technical UX-first plan structure

@@ -13,6 +13,8 @@ type SelectionState = {
   setSelection: (ids: string[]) => void;
   /** Clear all selection. */
   clearSelection: () => void;
+  /** Reconcile selection against an external existence predicate. */
+  reconcileSelection: (exists: (id: string) => boolean) => void;
 };
 
 export const useSelectionStore = create<SelectionState>((set, get) => ({
@@ -55,5 +57,22 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
 
   clearSelection: () => {
     set({ selectedNodeId: null, selectedIds: [] });
+  },
+
+  reconcileSelection: (exists) => {
+    const { selectedNodeId, selectedIds } = get();
+    const filtered = selectedIds.filter((id) => exists(id));
+    const nextPrimary =
+      selectedNodeId && exists(selectedNodeId)
+        ? selectedNodeId
+        : (filtered[0] ?? null);
+    if (
+      nextPrimary === selectedNodeId &&
+      filtered.length === selectedIds.length &&
+      filtered.every((id, idx) => id === selectedIds[idx])
+    ) {
+      return;
+    }
+    set({ selectedNodeId: nextPrimary, selectedIds: filtered });
   },
 }));

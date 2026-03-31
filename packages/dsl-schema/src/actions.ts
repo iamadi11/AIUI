@@ -16,24 +16,30 @@ export type Action =
   | { type: "sequence"; steps: Action[] }
   | { type: "condition"; when: string; then: Action; else?: Action };
 
+const setStateActionSchema = z.object({
+  type: z.literal("setState"),
+  path: z.string().min(1),
+  value: z.any(),
+});
+
+const navigateActionSchema = z.object({
+  type: z.literal("navigate"),
+  href: z.string().min(1),
+});
+
+const httpActionSchema = z.object({
+  type: z.literal("http"),
+  method: z.enum(["GET", "POST"]),
+  url: z.string().min(1),
+  headers: z.record(z.string(), z.string()).optional(),
+  body: z.any().optional(),
+});
+
 export const actionSchema: z.ZodType<Action> = z.lazy(() =>
-  z.union([
-    z.object({
-      type: z.literal("setState"),
-      path: z.string().min(1),
-      value: z.any(),
-    }),
-    z.object({
-      type: z.literal("navigate"),
-      href: z.string().min(1),
-    }),
-    z.object({
-      type: z.literal("http"),
-      method: z.enum(["GET", "POST"]),
-      url: z.string().min(1),
-      headers: z.record(z.string(), z.string()).optional(),
-      body: z.any().optional(),
-    }),
+  z.discriminatedUnion("type", [
+    setStateActionSchema,
+    navigateActionSchema,
+    httpActionSchema,
     z.object({
       type: z.literal("sequence"),
       steps: z.array(actionSchema),

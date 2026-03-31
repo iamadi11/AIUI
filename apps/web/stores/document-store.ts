@@ -30,22 +30,9 @@ function truncateFuture(future: AiuiDocument[]): AiuiDocument[] {
 }
 
 function sanitizeSelection(document: AiuiDocument) {
-  const state = useSelectionStore.getState();
-  const { selectedNodeId, selectedIds } = state;
-  const exists = (id: string) => !!findNodeById(document.root, id);
-
-  const filtered = selectedIds.filter((id) => exists(id));
-  let nextPrimary: string | null = selectedNodeId;
-  if (nextPrimary && !exists(nextPrimary)) {
-    nextPrimary = filtered.length > 0 ? filtered[0] : null;
-  }
-
-  if (nextPrimary !== selectedNodeId || filtered.length !== selectedIds.length) {
-    useSelectionStore.setState({
-      selectedNodeId: nextPrimary,
-      selectedIds: filtered,
-    });
-  }
+  useSelectionStore
+    .getState()
+    .reconcileSelection((id) => !!findNodeById(document.root, id));
 }
 
 type DocumentState = {
@@ -72,6 +59,26 @@ type DocumentState = {
 
 const initialDocument = createInitialDocument(STACK_TYPE);
 
+function commitDocumentChange(
+  set: (
+    partial:
+      | Partial<Pick<DocumentState, "document" | "past" | "future">>
+      | ((state: DocumentState) => Partial<DocumentState>),
+  ) => void,
+  get: () => DocumentState,
+  computeNext: (document: AiuiDocument) => AiuiDocument | null,
+): void {
+  const { document, past } = get();
+  const next = computeNext(document);
+  if (!next || next === document) return;
+  set({
+    past: truncatePast([...past, cloneDocument(document)]),
+    future: [],
+    document: next,
+  });
+  sanitizeSelection(next);
+}
+
 export const useDocumentStore = create<DocumentState>((set, get) => ({
   document: initialDocument,
   past: [],
@@ -84,51 +91,34 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   },
 
   setRoot: (root) => {
-    const { document, past } = get();
-    const next = { ...document, root };
-    set({
-      past: truncatePast([...past, cloneDocument(document)]),
-      future: [],
-      document: next,
-    });
-    sanitizeSelection(next);
+    commitDocumentChange(set, get, (document) => ({ ...document, root }));
   },
 
   setDocumentState: (state) => {
-    const { document, past } = get();
-    const next: AiuiDocument = { ...document };
-    if (state === undefined || Object.keys(state).length === 0) {
-      delete next.state;
-    } else {
-      next.state = { ...state };
-    }
-    set({
-      past: truncatePast([...past, cloneDocument(document)]),
-      future: [],
-      document: next,
+    commitDocumentChange(set, get, (document) => {
+      const next: AiuiDocument = { ...document };
+      if (state === undefined || Object.keys(state).length === 0) {
+        delete next.state;
+      } else {
+        next.state = { ...state };
+      }
+      return next;
     });
-    sanitizeSelection(next);
   },
 
   updateNode: (id, updater) => {
-    const { document, past } = get();
-    const nextRoot = updateNodeById(document.root, id, updater);
-    if (nextRoot === document.root) return;
-    set({
-      past: truncatePast([...past, cloneDocument(document)]),
-      future: [],
-      document: { ...document, root: nextRoot },
+    commitDocumentChange(set, get, (document) => {
+      const nextRoot = updateNodeById(document.root, id, updater);
+      if (nextRoot === document.root) return null;
+      return { ...document, root: nextRoot };
     });
   },
 
   insertChild: (parentId, child, index) => {
-    const { document, past } = get();
-    if (!findNodeById(document.root, parentId)) return;
-    const nextRoot = insertChildInTree(document.root, parentId, child, index);
-    set({
-      past: truncatePast([...past, cloneDocument(document)]),
-      future: [],
-      document: { ...document, root: nextRoot },
+    commitDocumentChange(set, get, (document) => {
+      if (!findNodeById(document.root, parentId)) return null;
+      const nextRoot = insertChildInTree(document.root, parentId, child, index);
+      return { ...document, root: nextRoot };
     });
   },
 
@@ -138,57 +128,49 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   },
 
   reorderSibling: (parentId, activeId, overId) => {
-    const { document, past } = get();
-    if (!findNodeById(document.root, parentId)) return;
-    const nextRoot = reorderSiblingInTree(
-      document.root,
-      parentId,
-      activeId,
-      overId,
-    );
-    if (nextRoot === document.root) return;
-    set({
-      past: truncatePast([...past, cloneDocument(document)]),
-      future: [],
-      document: { ...document, root: nextRoot },
+    commitDocumentChange(set, get, (document) => {
+      if (!findNodeById(document.root, parentId)) return null;
+      const nextRoot = reorderSiblingInTree(
+        document.root,
+        parentId,
+        activeId,
+        overId,
+      );
+      if (nextRoot === document.root) return null;
+      return { ...document, root: nextRoot };
     });
   },
 
   removeNode: (id) => {
-    const { document, past } = get();
-    if (document.root.id === id) return;
-    const nextRoot = removeNodeById(document.root, id);
-    if (!nextRoot || nextRoot === document.root) return;
-    set({
-      past: truncatePast([...past, cloneDocument(document)]),
-      future: [],
-      document: { ...document, root: nextRoot },
+    commitDocumentChange(set, get, (document) => {
+      if (document.root.id === id) return null;
+      const nextRoot = removeNodeById(document.root, id);
+      if (!nextRoot || nextRoot === document.root) return null;
+      return { ...document, root: nextRoot };
     });
-    sanitizeSelection(get().document);
   },
 
   duplicateNode: (id) => {
-    const { document, past } = get();
-    if (document.root.id === id) return;
-    const node = findNodeById(document.root, id);
-    if (!node) return;
-    const parent = findParentOf(document.root, id);
-    if (!parent) return;
-    const copy = cloneUiSubtreeWithNewIds(node);
-    const idx = (parent.children ?? []).findIndex((c) => c.id === id);
-    const nextRoot = insertChildInTree(
-      document.root,
-      parent.id,
-      copy,
-      idx + 1,
-    );
-    if (nextRoot === document.root) return;
-    set({
-      past: truncatePast([...past, cloneDocument(document)]),
-      future: [],
-      document: { ...document, root: nextRoot },
+    let duplicatedId: string | null = null;
+    commitDocumentChange(set, get, (document) => {
+      if (document.root.id === id) return null;
+      const node = findNodeById(document.root, id);
+      if (!node) return null;
+      const parent = findParentOf(document.root, id);
+      if (!parent) return null;
+      const copy = cloneUiSubtreeWithNewIds(node);
+      duplicatedId = copy.id;
+      const idx = (parent.children ?? []).findIndex((c) => c.id === id);
+      const nextRoot = insertChildInTree(
+        document.root,
+        parent.id,
+        copy,
+        idx + 1,
+      );
+      if (nextRoot === document.root) return null;
+      return { ...document, root: nextRoot };
     });
-    useSelectionStore.getState().selectNode(copy.id);
+    if (duplicatedId) useSelectionStore.getState().selectNode(duplicatedId);
   },
 
   reset: () => {

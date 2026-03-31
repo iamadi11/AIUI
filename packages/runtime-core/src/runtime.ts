@@ -9,17 +9,24 @@ import {
 import type { ActionEnvironment } from "@aiui/logic";
 import { runActions } from "@aiui/logic";
 import { isRegisteredType } from "@aiui/registry";
+import {
+  defaultDiagnosticsSink,
+  type DiagnosticsSink,
+} from "./diagnostics";
 
 export type RenderOptions = {
   container: HTMLElement;
   config: unknown;
   /** Root layout width in px; defaults to `container.clientWidth` or `320`. */
   layoutWidth?: number;
+  diagnostics?: DiagnosticsSink;
 };
 
 export type RuntimeHandle = {
   /** Replace the document and re-mount. */
   update: (config: unknown) => void;
+  /** Recompute layout for current document without resetting state. */
+  relayout: () => void;
   /** Remove listeners and clear the container. */
   destroy: () => void;
   /** Current logic state (mutable by actions). */
@@ -93,7 +100,25 @@ function eventsEqual(
   a: UiNode["events"] | undefined,
   b: UiNode["events"] | undefined,
 ): boolean {
-  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  if (a === b) return true;
+  if (!a || !b) return !a && !b;
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (!(key in b)) return false;
+    const aEvent = a[key];
+    const bEvent = b[key];
+    if (!aEvent || !bEvent) {
+      if (aEvent !== bEvent) return false;
+      continue;
+    }
+    if (aEvent.length !== bEvent.length) return false;
+    for (let i = 0; i < aEvent.length; i++) {
+      if (JSON.stringify(aEvent[i]) !== JSON.stringify(bEvent[i])) return false;
+    }
+  }
+  return true;
 }
 
 function ensureAiuiChildOrder(
@@ -188,7 +213,11 @@ function showParseError(container: HTMLElement, message: string): void {
 }
 
 export function render(options: RenderOptions): RuntimeHandle {
-  const { container, layoutWidth: layoutWidthOpt } = options;
+  const {
+    container,
+    layoutWidth: layoutWidthOpt,
+    diagnostics = defaultDiagnosticsSink,
+  } = options;
   let config: unknown = options.config;
 
   let disposed = false;
@@ -252,7 +281,17 @@ export function render(options: RenderOptions): RuntimeHandle {
           try {
             await runActions(actions, env);
           } catch (err) {
-            console.error(`[aiui] action error on ${node.id}`, err);
+            diagnostics({
+              code: "ACTION_EXECUTION_FAILED",
+              source: "logic",
+              severity: "error",
+              nodeId: node.id,
+              summary: "Action execution failed",
+              details: {
+                eventName,
+                message: err instanceof Error ? err.message : String(err),
+              },
+            });
           }
           scheduleFlush();
         })();
@@ -363,6 +402,13 @@ export function render(options: RenderOptions): RuntimeHandle {
       clearListenersAndDom();
       prevConfigRef = undefined;
       prevDoc = undefined;
+      diagnostics({
+        code: "DSL_PARSE_FAILED",
+        source: "schema",
+        severity: "error",
+        summary: "Invalid DSL payload",
+        details: { issues: parsed.error.issues.map((i) => i.message) },
+      });
       showParseError(
         container,
         `Invalid DSL: ${parsed.error.issues.map((i) => i.message).join("; ")}`,
@@ -383,6 +429,12 @@ export function render(options: RenderOptions): RuntimeHandle {
       clearListenersAndDom();
       prevConfigRef = undefined;
       prevDoc = undefined;
+      diagnostics({
+        code: "LAYOUT_ROOT_MISSING",
+        source: "layout",
+        severity: "critical",
+        summary: "Layout failed due to missing root rect",
+      });
       showParseError(container, "Layout failed: missing root rect.");
       return;
     }
@@ -437,6 +489,13 @@ export function render(options: RenderOptions): RuntimeHandle {
       prevDoc = doc;
       prevConfigRef = config;
     } catch (e) {
+      diagnostics({
+        code: "RUNTIME_MOUNT_FAILED",
+        source: "runtime",
+        severity: "critical",
+        summary: "Runtime mount failed",
+        details: { message: e instanceof Error ? e.message : String(e) },
+      });
       clearListenersAndDom();
       prevConfigRef = undefined;
       prevDoc = undefined;
@@ -454,6 +513,12 @@ export function render(options: RenderOptions): RuntimeHandle {
     rebuild();
   }
 
+  function relayout(): void {
+    if (disposed) return;
+    shouldResetStateFromDoc = false;
+    rebuild();
+  }
+
   function destroy(): void {
     if (disposed) return;
     disposed = true;
@@ -468,5 +533,5 @@ export function render(options: RenderOptions): RuntimeHandle {
 
   rebuild();
 
-  return { update, destroy, getState };
+  return { update, relayout, destroy, getState };
 }

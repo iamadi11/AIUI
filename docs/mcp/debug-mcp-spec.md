@@ -6,8 +6,23 @@ Provide a Cursor-compatible MCP server that helps developers diagnose and safely
 
 ## Version
 
-- Spec version: `0.1.0`
-- Status: draft for Phase 7 implementation
+- Spec version: `0.2.0`
+- Status: aligned with runtime diagnostics envelope integration
+
+## Runtime diagnostics envelope alignment
+
+Runtime issues emitted from `@aiui/runtime-core` should map to this envelope:
+
+```json
+{
+  "code": "ACTION_EXECUTION_FAILED",
+  "source": "runtime|layout|logic|schema",
+  "severity": "info|warn|error|critical",
+  "summary": "Action execution failed",
+  "nodeId": "optional-node-id",
+  "details": {}
+}
+```
 
 ## Design goals
 

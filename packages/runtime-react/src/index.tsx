@@ -32,8 +32,14 @@ export function AiuiRuntime(props: AiuiRuntimeProps) {
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
+    let pending = false;
     const ro = new ResizeObserver(() => {
-      runtimeRef.current?.update(docRef.current);
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        runtimeRef.current?.relayout();
+      });
     });
     ro.observe(el);
     return () => {

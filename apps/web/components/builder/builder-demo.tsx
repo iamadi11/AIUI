@@ -16,12 +16,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
-import { findParentOf, getPathToNode } from "@/lib/document/tree";
+import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { Redo2, Undo2 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { BuilderShortcutsHelp } from "./builder-shortcuts-help";
 import { canvasPointerCollision } from "./builder-collision";
@@ -38,6 +38,8 @@ import {
   isCanvasSiblingData,
   isPaletteDragData,
 } from "./dnd-types";
+import { NodeTree } from "./node-tree";
+import { useBuilderShortcuts } from "./use-builder-shortcuts";
 
 function collectNodeIds(root: UiNode): string[] {
   const ids: string[] = [];
@@ -84,75 +86,19 @@ export function BuilderDemo() {
     }),
   );
 
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      const target = e.target as HTMLElement | null;
-      if (
-        target?.closest?.("input, textarea, select, [contenteditable=true]")
-      ) {
-        return;
-      }
-      const meta = e.metaKey || e.ctrlKey;
-      if (meta && e.key === "z") {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-        return;
-      }
-      if (meta && (e.key === "y" || e.key === "Y")) {
-        e.preventDefault();
-        redo();
-        return;
-      }
-      if (meta && (e.key === "d" || e.key === "D")) {
-        e.preventDefault();
-        const targets = selectedIds.filter((id) => id !== rootId);
-        if (targets.length === 0) return;
-        for (const id of targets) {
-          duplicateNode(id);
-        }
-        return;
-      }
-      if (meta && (e.key === "a" || e.key === "A")) {
-        e.preventDefault();
-        setSelection(collectNodeIds(document.root));
-        return;
-      }
-      if (e.altKey && e.key === "ArrowUp") {
-        e.preventDefault();
-        if (!selectedNodeId) return;
-        const parent = findParentOf(document.root, selectedNodeId);
-        if (parent) selectNode(parent.id);
-        return;
-      }
-      if (e.key === "Delete" || e.key === "Backspace") {
-        const targets = selectedIds.filter((id) => id !== rootId);
-        if (targets.length === 0) return;
-        e.preventDefault();
-        for (const id of targets) {
-          removeNode(id);
-        }
-        return;
-      }
-      if (e.key === "Escape") {
-        clearSelection();
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [
-    undo,
-    redo,
-    clearSelection,
-    setSelection,
-    selectNode,
-    duplicateNode,
-    removeNode,
+  useBuilderShortcuts({
+    documentRoot: document.root,
     selectedIds,
     selectedNodeId,
     rootId,
-    document.root,
-  ]);
+    undo,
+    redo,
+    duplicateNode,
+    removeNode,
+    setSelection,
+    selectNode,
+    clearSelection,
+  });
 
   function handleDragStart(event: DragStartEvent) {
     const data = event.active.data.current;
@@ -422,65 +368,5 @@ export function BuilderDemo() {
         ) : null}
       </DragOverlay>
     </DndContext>
-  );
-}
-
-function NodeTree(props: {
-  node: UiNode;
-  depth: number;
-  selectedIds: string[];
-  onSelect: (id: string | null) => void;
-  onToggle: (id: string) => void;
-  onRangeSelect: (id: string) => void;
-  rootId: string;
-}) {
-  const { node, depth, selectedIds, onSelect, onToggle, onRangeSelect, rootId } =
-    props;
-  const pad = depth * 12;
-  const isRoot = node.id === rootId;
-  const title = formatNodeTitle(node);
-
-  return (
-    <div className="text-sm">
-      <button
-        type="button"
-        title={node.id}
-        className={cn(
-          "flex w-full rounded-md border border-transparent px-2 py-1.5 text-left transition-colors",
-          "hover:border-border hover:bg-muted/50",
-          selectedIds.includes(node.id) &&
-            "border-primary/40 bg-muted/80 shadow-sm",
-        )}
-        style={{ paddingLeft: pad + 8 }}
-        onClick={(e) => {
-          if (e.shiftKey) {
-            onRangeSelect(node.id);
-          } else if (e.metaKey || e.ctrlKey) {
-            onToggle(node.id);
-          } else {
-            onSelect(node.id);
-          }
-        }}
-      >
-        <span className="shrink-0 font-medium text-foreground">{title}</span>
-        {isRoot ? (
-          <span className="ml-2 shrink-0 text-[0.65rem] uppercase tracking-wide text-muted-foreground">
-            Root
-          </span>
-        ) : null}
-      </button>
-      {node.children?.map((child) => (
-        <NodeTree
-          key={child.id}
-          node={child}
-          depth={depth + 1}
-          selectedIds={selectedIds}
-          onSelect={onSelect}
-          onToggle={onToggle}
-          onRangeSelect={onRangeSelect}
-          rootId={rootId}
-        />
-      ))}
-    </div>
   );
 }

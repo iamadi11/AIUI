@@ -5,6 +5,16 @@
 AIUI is a visual dashboard operating system for non-technical users.
 Users drag and drop components, connect data and side effects, and publish working dashboards without writing code.
 
+## Refactor status (2026-03-31)
+
+- Completed aggressive architecture cleanup baseline across builder/runtime/schema layers.
+- Builder now uses extracted feature modules for shortcuts and tree rendering.
+- Document/selection coupling reduced via explicit selection reconciliation API.
+- Runtime gained `relayout()` to avoid state reset during resize-driven layout changes.
+- Shared logic/expression safety and truthiness primitives are consolidated.
+- Registry now exposes capability metadata contract for future adapter expansion.
+- Runtime diagnostics envelope is formalized and connected to render-time failures.
+
 ## Core principles
 
 - Creator canvas and generated runtime must use the same rendering pipeline.
@@ -84,6 +94,7 @@ flowchart LR
 
 **Acceptance gate**
 - New user creates a simple header + table + button dashboard without raw JSON.
+- Status: In progress with builder decomposition and UX command-path cleanup.
 
 ---
 
@@ -197,6 +208,7 @@ flowchart LR
 
 **Acceptance gate**
 - Parity tests pass for all critical components and key interactions.
+- Status: Improved with `relayout()` path and runtime state preservation test.
 
 ---
 
@@ -224,6 +236,7 @@ flowchart LR
 
 **Acceptance gate**
 - New components are onboarded by metadata and adapter compliance, not one-off editor coding.
+- Status: Capability metadata scaffold added in registry.
 
 ---
 
@@ -260,6 +273,7 @@ flowchart LR
 
 **Acceptance gate**
 - Developers can inspect and resolve common issues through MCP-guided workflows.
+- Status: Runtime diagnostics envelope (`code`, `source`, `severity`, `summary`) wired.
 
 ---
 

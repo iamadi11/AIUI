@@ -1,5 +1,5 @@
 import type { Action } from "@aiui/dsl-schema";
-import { evaluateExpression } from "@aiui/expression";
+import { evaluateExpression, isTruthy } from "@aiui/expression";
 import { setPathImmutable } from "./path";
 
 export type ActionEnvironment = {
@@ -8,13 +8,6 @@ export type ActionEnvironment = {
   navigate: (href: string) => void;
   fetch: typeof fetch;
 };
-
-function isTruthy(v: unknown): boolean {
-  if (v === false || v === null || v === undefined) return false;
-  if (typeof v === "number" && (v === 0 || Number.isNaN(v))) return false;
-  if (v === "") return false;
-  return true;
-}
 
 export async function runAction(
   action: Action,

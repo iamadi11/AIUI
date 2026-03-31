@@ -77,6 +77,17 @@ export type ComponentDefinition = {
   defaultChildren?: UiNode[];
   /** Builder-only hints for the properties panel (not serialized separately). */
   inspectorFields?: readonly InspectorField[];
+  /**
+   * Capability contract consumed by builder/runtime to decide which editing
+   * affordances are available for this component type.
+   */
+  capabilities?: {
+    supportsDataSource?: boolean;
+    supportsActions?: boolean;
+    supportsRowActions?: boolean;
+    supportsVisibilityRules?: boolean;
+    supportedLayoutModes?: readonly ("flow" | "stack" | "grid" | "absolute")[];
+  };
 };
 
 export const primitives: Record<string, ComponentDefinition> = {
@@ -87,6 +98,11 @@ export const primitives: Record<string, ComponentDefinition> = {
     paletteKeywords: ["box", "container", "group", "frame", "div"],
     paletteDescription: "Simple container",
     defaultProps: { label: "" },
+    capabilities: {
+      supportsActions: true,
+      supportsVisibilityRules: true,
+      supportedLayoutModes: ["flow", "stack", "grid", "absolute"],
+    },
     inspectorFields: [
       {
         kind: "text",
@@ -143,6 +159,11 @@ export const primitives: Record<string, ComponentDefinition> = {
     ],
     paletteDescription: "Row or column with gap",
     defaultProps: { direction: "column" as const, gap: 0, label: "" },
+    capabilities: {
+      supportsActions: true,
+      supportsVisibilityRules: true,
+      supportedLayoutModes: ["flow", "stack", "grid"],
+    },
     inspectorFields: [
       {
         kind: "text",
@@ -214,6 +235,10 @@ export function getInspectorFields(
   type: string,
 ): readonly InspectorField[] | undefined {
   return getDefinition(type)?.inspectorFields;
+}
+
+export function getCapabilities(type: string) {
+  return getDefinition(type)?.capabilities;
 }
 
 /** All registered primitives in stable palette order (category, then name). */

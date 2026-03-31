@@ -1,4 +1,4 @@
-const UNSAFE = new Set(["__proto__", "constructor", "prototype"]);
+import { isUnsafePathSegment } from "@aiui/expression";
 
 /**
  * Immutable dot-path write into a plain object tree (for document `state`).
@@ -14,7 +14,7 @@ export function setPathImmutable(
     throw new Error("Invalid path");
   }
   for (const seg of segments) {
-    if (UNSAFE.has(seg)) {
+    if (isUnsafePathSegment(seg)) {
       throw new Error(`Invalid path segment: ${seg}`);
     }
   }

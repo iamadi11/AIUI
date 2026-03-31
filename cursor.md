@@ -46,3 +46,7 @@ After each phase or sub-milestone:
 
 - **2026-03-31 - Canonical planning reset:** When roadmap intent changes, prefer replacing fragmented historical details with one phase-gated source of truth in `PLAN.md` plus executable checkpoints in `TODO.md`.
 - **2026-03-31 - UX guardrail:** Non-technical users need template-driven action language and minimal cognitive load; advanced graph/JSON controls must remain opt-in.
+- **2026-03-31 - Builder maintainability:** Extracting keyboard orchestration (`use-builder-shortcuts`) and recursive tree rendering (`node-tree`) from `builder-demo` reduces blast radius and makes feature work safer.
+- **2026-03-31 - Store coupling:** Avoid direct cross-store mutation with raw `setState`; expose explicit reconciliation APIs (`reconcileSelection`) and route document mutations through a command-style commit helper.
+- **2026-03-31 - Runtime lifecycle:** Resize handling should call `relayout()` instead of `update(document)` to preserve interaction state; keep state reset reserved for actual config updates.
+- **2026-03-31 - Shared semantics:** Keep truthiness and unsafe path-segment checks in one package (`@aiui/expression`) and reuse from logic to prevent subtle divergence.
