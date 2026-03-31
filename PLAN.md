@@ -10,6 +10,8 @@ Baseline cleanup across builder, runtime, schema, registry; shared shortcuts/tre
 
 **Screen graph (2026-03-31):** DSL supports multiple `screens` and a React Flow `flowLayout` (positions + prototype edges); runtime routes with `navigateScreen` and a modal overlay stack; builder edits one screen at a time via `activeScreenId` while the graph shows all screens.
 
+**Flow-first builder (2026-03-31):** Default builder layout is **palette (left) + main workspace** only. The workspace splits **screen graph (React Flow)** and **per-screen dashboard canvas** with a vertical resizable divider. **Properties** and **events** live in a **shadcn Sheet** (slide-over), not a third column. **Prototype edges** can be selected on the graph; **trigger component** (`sourceNodeId`) is edited in the sheet and synced via `reassignPrototypeEdgeTrigger` in `apps/web/lib/builder/prototype-edge.ts`. The read-only **logic map** (React Flow of events) moved under **Diagnostics** (`?dev=1`) instead of a separate Design/Logic tab.
+
 ## Core principles
 
 - Creator canvas and generated runtime share one rendering pipeline.
@@ -50,6 +52,7 @@ flowchart LR
 | 6 | Adapter contract + certification for new components | Onboard via metadata, not ad-hoc app code |
 | 7 | Diagnostics + MCP (`docs/mcp/debug-mcp-spec.md`) | MCP-guided inspect/fix with redaction |
 | 8 | Onboarding, migration, perf, a11y, i18n | First-time publish path + large-doc stability |
+| 9+ | Flow-first shell polish (optional) | Mobile breakpoints (tabs vs split), in-node screen previews, ToggleGroup edge-kind toolbar |
 
 ## Execution policy
 

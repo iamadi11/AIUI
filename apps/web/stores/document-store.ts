@@ -13,7 +13,10 @@ import {
   createNodeFromType,
   DEFAULT_SCREEN_ID,
 } from "@/lib/document/model";
-import { applyPrototypeEdgeToDocument } from "@/lib/builder/prototype-edge";
+import {
+  applyPrototypeEdgeToDocument,
+  reassignPrototypeEdgeTrigger,
+} from "@/lib/builder/prototype-edge";
 import { newNodeId } from "@/lib/id";
 import {
   findNodeById,
@@ -105,6 +108,11 @@ type DocumentState = {
     source: string,
     target: string,
     kind: PrototypeEdgeKind,
+  ) => void;
+  /** Reassign which component on the source screen fires this edge’s action. */
+  updatePrototypeEdgeSourceNode: (
+    edgeId: string,
+    sourceNodeId: string | undefined,
   ) => void;
   reset: () => void;
   undo: () => void;
@@ -329,7 +337,8 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       if (ids.length <= 1) return null;
       if (!document.screens[screenId]) return null;
 
-      const { [screenId]: _removed, ...restScreens } = document.screens;
+      const restScreens = { ...document.screens };
+      delete restScreens[screenId];
       const positions = { ...(document.flowLayout?.positions ?? {}) };
       delete positions[screenId];
       const edges = (document.flowLayout?.edges ?? []).filter(
@@ -388,6 +397,12 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       next = applyPrototypeEdgeToDocument(next, edge);
       return next;
     });
+  },
+
+  updatePrototypeEdgeSourceNode: (edgeId, sourceNodeId) => {
+    commitDocumentChange(set, get, (document) =>
+      reassignPrototypeEdgeTrigger(document, edgeId, sourceNodeId),
+    );
   },
 
   reset: () => {

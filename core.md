@@ -21,6 +21,7 @@ Users should drag, configure, preview, and publish without engineering help.
 ## User experience constraints
 
 - UI must be intuitive for non-technical users.
+- Builder default: **palette + screen graph + page canvas**; inspector and edge wiring in overlays (e.g. Sheet), not permanent third rails.
 - Keep controls clean and contextual; avoid exposing raw internals by default.
 - Provide visual side-effects and visibility logic builders.
 - Include guided templates for common workflows:

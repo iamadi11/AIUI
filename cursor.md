@@ -39,17 +39,18 @@ After each phase or sub-milestone:
 
 ## Current focus
 
-- Roadmap phases 0–8 are complete; iterate on product UX (minimal shell, export on preview, registry presets, runtime fidelity).
+- Roadmap phases 0–8 are complete; **flow-first builder** (palette + resizable screen graph + canvas, inspector in Sheet) is shipped; optional follow-ups in [`TODO.md`](TODO.md) phase 9+.
 - Keep parity-first and non-technical UX-first acceptance criteria for new work.
 
 ## Learnings
 
+- **2026-03-31 - Flow-first builder + Sheet inspector:** Use exclusive selection between **prototype edges** and **canvas nodes** (`selectedEdgeId` vs `selection-store`); closing the Sheet clears via one helper (`clearSelectionEx`). **`react-resizable-panels` v4** uses **`orientation`** on `Group`, not `direction`. Edge trigger changes use **`reassignPrototypeEdgeTrigger`** to strip the old navigate/modal action from the previous trigger before **`applyPrototypeEdgeToDocument`** on the new trigger.
 - **2026-03-31 - shadcn MCP + pnpm workspaces:** `shadcn mcp init` runs `pnpm add -D shadcn@latest` at the repo root without `-w`, which pnpm blocks by default; set `ignore-workspace-root-check=true` in root `.npmrc` (or pass `-w` manually only works for your own installs, not the CLI’s internal step).
 - **2026-03-31 - Screen templates:** Keep composed multi-layer roots next to `createNodeFromType` in the app (`screen-template-builders.ts`) while `SCREEN_TEMPLATE_LABELS` stays in `@aiui/registry` for a single list of ids + human labels shared by the store title and the builder select.
 - **2026-03-31 - navigateScreen in visual events:** Treat `navigateScreen` as a first-class branch action (with `isBranchAction` + `defaultBranchAction`) and pass `screenOptions` from the document store into `EventBindingsPanel` so the step picker stays aligned with `document.screens` without JSON edits.
 - **2026-03-31 - Multi-screen documents:** Prefer `screens` + `initialScreenId` + `flowLayout` as the source of truth; use `editorDocumentView(doc, activeScreenId)` wherever the builder still expects a single `root`; legacy `root`-only JSON is normalized in `migrateDocument` via `normalizeLegacyRootToScreens`.
 - **2026-03-31 - Screen graph + dnd-kit:** Bridge palette drops to React Flow coordinates with a ref to `screenToFlowPosition` and a document-level `pointermove` listener while dragging so drop placement is stable.
-- **2026-03-31 - Minimal builder shell:** Navbar is Preview + undo/redo + overflow actions; **component palette** lives in a **left sidebar**; **Design / Logic** tabs (dev mode) promote the React Flow logic map; walkthrough and document templates were removed from the UI; export panel, live JSON, and deep diagnostics stay behind `/?dev=1`; default `/preview` carries golden JSON import/export.
+- **2026-03-31 - Minimal builder shell:** Navbar is Preview + undo/redo + overflow actions; **component palette** lives in a **left sidebar**; **properties and edge wiring** open in a **Sheet**; the read-only **logic map** (`LogicFlowPanel`) sits under **Diagnostics** when `/?dev=1`; export panel, live JSON, and deep diagnostics stay behind `/?dev=1`; default `/preview` carries golden JSON import/export.
 - **2026-03-31 - Registry drop-ins:** `defaultChildren` provides composed starter trees (fresh ids via `cloneUiSubtreeWithNewIds`); `interactionPresets` lists beginner-friendly `Action[]` starters resolved in the app (`interaction-preset-actions.ts`).
 - **2026-03-31 - Runtime primitive content:** Decorative labels and table markup use `data-aiui-content`; positioned `data-aiui-id` nodes remain the layout engine’s responsibility.
 - **2026-03-31 - i18n readiness pattern:** Keep user-facing copy behind stable message keys and a tiny interpolation helper early, even for single-locale apps, so localization can be introduced incrementally without touching feature logic.

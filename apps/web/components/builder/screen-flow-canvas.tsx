@@ -4,6 +4,7 @@ import type {
   AiuiDocument,
   PrototypeEdge,
   PrototypeEdgeKind,
+  UiNode,
 } from "@aiui/dsl-schema";
 import {
   applyEdgeChanges,
@@ -35,6 +36,22 @@ import {
 import { useDocumentStore } from "@/stores/document-store";
 import { cn } from "@/lib/utils";
 import { msg } from "@/lib/i18n/messages";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+function countUiLayers(root: UiNode): number {
+  let total = 0;
+  function walk(n: UiNode) {
+    total += 1;
+    for (const c of n.children ?? []) walk(c);
+  }
+  walk(root);
+  return Math.max(0, total - 1);
+}
 
 export type ScreenFlowHandle = {
   screenToFlowPosition: (p: { x: number; y: number }) => {
@@ -47,12 +64,17 @@ export type ScreenFlowHandle = {
 
 function ScreenNode(props: NodeProps) {
   const { data, selected } = props;
-  const d = data as { title: string; screenId: string };
+  const d = data as {
+    title: string;
+    screenId: string;
+    layerCount: number;
+  };
   return (
-    <div
+    <Card
       className={cn(
-        "min-w-[160px] rounded-lg border border-border bg-card px-3 py-2 shadow-sm",
-        selected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+        "min-w-[180px] max-w-[260px] gap-0 border-border py-0 shadow-sm transition-shadow",
+        selected &&
+          "ring-2 ring-primary ring-offset-2 ring-offset-background",
       )}
     >
       <Handle
@@ -60,22 +82,32 @@ function ScreenNode(props: NodeProps) {
         position={Position.Top}
         className="!size-2 !border-border !bg-muted-foreground"
       />
-      <p className="truncate text-xs font-medium text-foreground">{d.title}</p>
-      <p className="truncate font-mono text-[0.65rem] text-muted-foreground">
-        {d.screenId}
-      </p>
+      <CardHeader className="gap-1 px-3 py-2.5">
+        <CardTitle className="text-xs font-semibold leading-tight">
+          {d.title}
+        </CardTitle>
+        <CardDescription className="font-mono text-[0.65rem]">
+          {d.screenId}
+        </CardDescription>
+        <p className="text-[0.65rem] text-muted-foreground">
+          {msg("builder.screenNodeLayerCount", { count: d.layerCount })}
+        </p>
+      </CardHeader>
       <Handle
         type="source"
         position={Position.Bottom}
         className="!size-2 !border-border !bg-muted-foreground"
       />
-    </div>
+    </Card>
   );
 }
 
 const nodeTypes = { screen: ScreenNode };
 
-function prototypeToRfEdges(edges: PrototypeEdge[] | undefined): Edge[] {
+function prototypeToRfEdges(
+  edges: PrototypeEdge[] | undefined,
+  selectedEdgeId: string | null,
+): Edge[] {
   if (!edges?.length) return [];
   return edges.map((e) => ({
     id: e.id,
@@ -84,6 +116,7 @@ function prototypeToRfEdges(edges: PrototypeEdge[] | undefined): Edge[] {
     label: e.kind === "modal" ? "modal" : "nav",
     data: { kind: e.kind },
     markerEnd: { type: MarkerType.ArrowClosed },
+    selected: e.id === selectedEdgeId,
   }));
 }
 
@@ -107,6 +140,7 @@ function buildScreenNodes(
       data: {
         title: def.title ?? screenId,
         screenId,
+        layerCount: countUiLayers(def.root),
       },
       selected: screenId === activeScreenId,
     };
@@ -118,12 +152,20 @@ type InnerProps = {
   activeScreenId: string;
   nextEdgeKind: PrototypeEdgeKind;
   onSelectScreen: (id: string) => void;
+  selectedEdgeId: string | null;
+  onSelectEdge: (id: string | null) => void;
 };
 
 const ScreenFlowInner = forwardRef<ScreenFlowHandle | null, InnerProps>(
   function ScreenFlowInner(props, ref) {
-    const { document: doc, activeScreenId, nextEdgeKind, onSelectScreen } =
-      props;
+    const {
+      document: doc,
+      activeScreenId,
+      nextEdgeKind,
+      onSelectScreen,
+      selectedEdgeId,
+      onSelectEdge,
+    } = props;
     const { screenToFlowPosition, getNodes } = useReactFlow();
     const setFlowPositions = useDocumentStore((s) => s.setFlowPositions);
     const setFlowEdges = useDocumentStore((s) => s.setFlowEdges);
@@ -162,20 +204,20 @@ const ScreenFlowInner = forwardRef<ScreenFlowHandle | null, InnerProps>(
       [doc, activeScreenId],
     );
     const builtEdges = useMemo(
-      () => prototypeToRfEdges(doc.flowLayout?.edges),
-      [doc.flowLayout?.edges],
+      () => prototypeToRfEdges(doc.flowLayout?.edges, selectedEdgeId),
+      [doc.flowLayout?.edges, selectedEdgeId],
     );
 
     const [nodes, setNodes, onNodesChange] = useNodesState(builtNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(builtEdges);
+    const [edges, setEdges] = useEdgesState(builtEdges);
 
     useEffect(() => {
       setNodes(buildScreenNodes(doc, activeScreenId));
     }, [doc, activeScreenId, setNodes]);
 
     useEffect(() => {
-      setEdges(prototypeToRfEdges(doc.flowLayout?.edges));
-    }, [doc.flowLayout?.edges, setEdges]);
+      setEdges(prototypeToRfEdges(doc.flowLayout?.edges, selectedEdgeId));
+    }, [doc.flowLayout?.edges, selectedEdgeId, setEdges]);
 
     const onNodeDragStop = useCallback(() => {
       const positions: Record<string, { x: number; y: number }> = {};
@@ -218,7 +260,14 @@ const ScreenFlowInner = forwardRef<ScreenFlowHandle | null, InnerProps>(
         onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}
         onNodeClick={(_, n) => {
+          onSelectEdge(null);
           onSelectScreen(n.id);
+        }}
+        onEdgeClick={(_, edge) => {
+          onSelectEdge(edge.id);
+        }}
+        onPaneClick={() => {
+          onSelectEdge(null);
         }}
         fitView
         fitViewOptions={{ padding: 0.2 }}
@@ -246,6 +295,8 @@ export type ScreenFlowCanvasProps = {
   activeScreenId: string;
   nextEdgeKind: PrototypeEdgeKind;
   onSelectScreen: (id: string) => void;
+  selectedEdgeId: string | null;
+  onSelectEdge: (id: string | null) => void;
 };
 
 export const ScreenFlowCanvas = forwardRef<
@@ -261,14 +312,14 @@ export const ScreenFlowCanvas = forwardRef<
     <div
       ref={setNodeRef}
       className={cn(
-        "nodrag nopan flex min-h-[220px] w-full flex-1 flex-col overflow-hidden rounded-lg border border-border bg-muted/15",
+        "nodrag nopan flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-lg border border-border bg-muted/15",
         isOver && "ring-2 ring-primary/50",
       )}
     >
-      <p className="border-b border-border px-2 py-1.5 text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+      <p className="shrink-0 border-b border-border px-2 py-1.5 text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
         {msg("builder.screenFlowHeading")}
       </p>
-      <div className="relative min-h-[min(320px,40vh)] flex-1">
+      <div className="relative min-h-0 flex-1">
         <ReactFlowProvider>
           <ScreenFlowInner ref={ref} {...props} />
         </ReactFlowProvider>

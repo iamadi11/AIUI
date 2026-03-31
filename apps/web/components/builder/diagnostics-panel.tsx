@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { AiuiDocument } from "@aiui/dsl-schema";
 import { getRuntimeScreenRoot, safeParseDocument } from "@aiui/dsl-schema";
 import { useEffect, useMemo, useState } from "react";
@@ -36,8 +37,11 @@ export function DiagnosticsPanel(props: {
   selectedCount: number;
   undoDepth: number;
   redoDepth: number;
+  /** Developer-only slot (e.g. read-only logic map). */
+  logicMapSlot?: ReactNode;
 }) {
-  const { document, selectedCount, undoDepth, redoDepth } = props;
+  const { document, selectedCount, undoDepth, redoDepth, logicMapSlot } =
+    props;
   const issues = useIssueTelemetryStore((s) => s.issues);
   const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
@@ -188,7 +192,12 @@ export function DiagnosticsPanel(props: {
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         Diagnostics
       </p>
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      {logicMapSlot ? (
+        <div className="mt-2 rounded-lg border border-border/70 bg-muted/15 p-2">
+          {logicMapSlot}
+        </div>
+      ) : null}
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
         <div className="rounded border border-border/70 bg-muted/25 px-2 py-1">
           <span className="text-muted-foreground">Schema</span>
           <p className="font-medium text-foreground">

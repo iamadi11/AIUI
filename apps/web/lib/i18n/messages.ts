@@ -9,6 +9,7 @@ const EN_MESSAGES = {
   "builder.workspaceTabLogic": "Logic",
   "builder.workspaceTabList": "Workspace",
   "builder.screenFlowHeading": "Screens (React Flow)",
+  "builder.screenNodeLayerCount": "{count} layer(s) on page",
   "builder.edgeKindNavigate": "Next connection: navigate",
   "builder.edgeKindModal": "Next connection: modal",
   "builder.removeScreen": "Remove screen",
@@ -43,6 +44,21 @@ const EN_MESSAGES = {
   "builder.liveDocumentHidden":
     "Hidden by default for very large documents. Use export panel for targeted JSON inspection to avoid expensive rerenders.",
   "builder.propertiesInspectorAriaLabel": "Properties inspector",
+  "builder.inspectorSheetTitle": "Selection",
+  "builder.inspectorSheetDescription":
+    "Edit properties, events, and bindings for the selected layer.",
+  "builder.edgeInspectorSheetTitle": "Screen connection",
+  "builder.edgeInspectorTitle": "Connection",
+  "builder.edgeInspectorIntro":
+    "Choose which component on the source screen runs the navigation or modal action.",
+  "builder.edgeInspectorFrom": "From",
+  "builder.edgeInspectorTo": "To",
+  "builder.edgeInspectorKind": "Kind",
+  "builder.edgeInspectorTriggerLabel": "Trigger component",
+  "builder.edgeInspectorTriggerDefault": "First button (default)",
+  "builder.edgeInspectorTriggerHelp":
+    "Default uses the first Button on the source screen. Pick another layer to wire a specific control.",
+  "builder.edgeInspectorDone": "Done",
   "builder.selectionHelp":
     "Click canvas or tree; double-click a label to rename. Esc clears selection. Root cannot be removed. Delete/Backspace removes the selection; ⌘/Ctrl+D duplicates. Undo/redo: ⌘Z / ⌘⇧Z (Ctrl+Z / Ctrl+Shift+Z or Ctrl+Y). Alt+↑ selects parent. See the Keyboard shortcuts panel below.",
   "logic.title": "Logic map",
