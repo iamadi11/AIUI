@@ -1,0 +1,11 @@
+---
+description: Single root pnpm lockfile and workspace for correct workspace:* resolution.
+alwaysApply: true
+---
+
+# Single pnpm lockfile (monorepo root)
+
+- **One lockfile:** `pnpm-lock.yaml` only at the repo root (`AIUI/`). Do not add `pnpm-lock.yaml` under `apps/web`, `packages/*`, or `examples/*`.
+- **One workspace file:** `pnpm-workspace.yaml` only at the repo root. A nested `pnpm-workspace.yaml` under `apps/web` (or similar) breaks `workspace:*` and `pnpm add` from app folders.
+- **Scaffolding:** If `create-next-app` or another tool creates `apps/web/pnpm-lock.yaml`, delete it and install dependencies from the repo root with `pnpm install`.
+- **CI / local:** `pnpm test` runs `scripts/check-single-repo-lockfile.mjs`; keep it green.

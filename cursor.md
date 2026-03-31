@@ -17,6 +17,10 @@ A **UI runtime platform**: visual builder → **Universal JSON DSL** + **JavaScr
 
 Use **one repository at the repo root**. Do not keep `apps/<name>/.git` (nested repos break `workspace:*` and confuse Source Control). If a tool creates a nested repo, remove that `.git` directory and commit the app files into the root repo.
 
+## pnpm (monorepo)
+
+Use **one** `pnpm-lock.yaml` and **one** `pnpm-workspace.yaml` at the repo root only. Nested lockfiles or workspace files under `apps/` break `workspace:*` resolution. `pnpm test` runs `pnpm run check:repo` (`scripts/check-single-repo-lockfile.mjs`).
+
 ## Repository pointers
 
 | Path | Purpose |
