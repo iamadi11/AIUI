@@ -2,6 +2,7 @@
 
 import type { AiuiDocument } from "@aiui/dsl-schema";
 import type { DiagnosticsSink } from "@aiui/runtime-core";
+import { msg } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
 import type { ViewportPreset } from "@/lib/builder/viewport-presets";
 import { RuntimeSurface } from "@/components/runtime/runtime-surface";
@@ -22,7 +23,7 @@ export function RuntimePreview(props: {
       {hideChrome ? null : (
         <div className="flex items-center justify-between text-[0.7rem] text-muted-foreground">
           <span>
-            Simulated viewport:{" "}
+            {msg("runtime.simulatedViewport")}{" "}
             <span className="font-medium text-foreground">{props.viewport.label}</span>
           </span>
           <span className="font-mono">{props.viewport.width}px</span>

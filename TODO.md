@@ -75,10 +75,14 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Add migration assistant for older dashboard DSL versions.
 - [x] Add performance hardening path for large documents.
 - [x] Complete accessibility pass.
-- [ ] Complete internationalization readiness pass.
+- [x] Complete internationalization readiness pass.
 
 ## Done
 
+- **2026-03-31** - Phase 8 internationalization readiness pass completed for current builder/preview surfaces:
+  - Added centralized message-key dictionary + formatter in web app (`apps/web/lib/i18n/messages.ts`) to decouple UI copy from component logic.
+  - Migrated major hardcoded labels and helper copy in builder shell/onboarding/palette/inspector/tree/shortcuts plus preview/runtime chrome to message keys.
+  - Preserved behavior while making UI strings localization-ready through keyed lookups and lightweight variable interpolation.
 - **2026-03-31** - Phase 8 accessibility pass completed for builder/preview UI:
   - Added semantic landmarks and region labeling across builder shell and preview surfaces (`main`, `aside`, section labels, and toolbar semantics).
   - Improved assistive-tech clarity with explicit tree semantics (`role="tree"`/`treeitem` + selection state), live status announcements, and viewport toggle state (`aria-pressed`).

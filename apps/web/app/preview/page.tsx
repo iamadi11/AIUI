@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { RuntimePreview } from "@/components/preview/runtime-preview";
 import { buttonVariants } from "@/components/ui/button";
 import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
+import { msg } from "@/lib/i18n/messages";
 import {
   VIEWPORT_PRESETS,
   getViewportPreset,
@@ -43,13 +44,13 @@ export default function PreviewPage() {
   if (!developerMode) {
     return (
       <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
-        <main className="flex w-full flex-1 flex-col" aria-label="Runtime preview">
+        <main className="flex w-full flex-1 flex-col" aria-label={msg("preview.runtimePreviewAriaLabel")}>
           <div className="flex justify-end px-4 py-3">
             <Link
               href="/?dev=1"
               className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
             >
-              Open builder controls
+              {msg("preview.openBuilderControls")}
             </Link>
           </div>
           <div className="flex-1 px-0 pb-0 pt-1">
@@ -72,20 +73,17 @@ export default function PreviewPage() {
           <div>
             <p className="text-xs font-medium text-muted-foreground">AIUI</p>
             <h1 id="preview-page-title" className="text-lg font-semibold tracking-tight">
-              Preview (Developer mode)
+              {msg("preview.title")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Runtime preview uses <code className="font-mono text-xs">@aiui/runtime-core</code>
-              ; the React panel below is a dev host via{" "}
-              <code className="font-mono text-xs">@aiui/registry</code>. Same in-memory document
-              as the builder.
+              {msg("preview.runtimeUses")}
             </p>
           </div>
           <Link
             href="/preview"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
-            Hide preview chrome
+            {msg("preview.hideChrome")}
           </Link>
         </div>
       </header>
@@ -97,11 +95,11 @@ export default function PreviewPage() {
           </span>
           {parsed.success ? (
             <span className="rounded-md bg-primary/10 px-2 py-0.5 font-medium text-primary">
-              Valid against schema
+              {msg("preview.validSchema")}
             </span>
           ) : (
             <span className="rounded-md bg-destructive/10 px-2 py-0.5 font-medium text-destructive">
-              Schema validation failed
+              {msg("preview.invalidSchema")}
             </span>
           )}
         </div>
@@ -113,7 +111,7 @@ export default function PreviewPage() {
         ) : null}
         <section className="space-y-2">
           <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Parity diagnostics
+            {msg("preview.parityDiagnostics")}
           </h2>
           <div
             className={cn(
@@ -139,15 +137,17 @@ export default function PreviewPage() {
                 >
                   {row.viewportLabel} ({row.width}px):{" "}
                   {row.invalidRectCount === 0 && row.deterministic
-                    ? "ok"
-                    : `${row.invalidRectCount} invalid rect(s), deterministic=${row.deterministic}`}
+                    ? msg("preview.parityOk")
+                    : msg("preview.parityFail", {
+                        count: row.invalidRectCount,
+                        deterministic: row.deterministic,
+                      })}
                 </li>
               ))}
             </ul>
             {failingParityRows.length > 0 ? (
               <p className="mt-2 text-[0.7rem] text-amber-900">
-                Action: inspect node layout constraints for the failing viewport presets and rerun
-                preview diagnostics after updates.
+                {msg("preview.parityAction")}
               </p>
             ) : null}
           </div>
@@ -156,12 +156,12 @@ export default function PreviewPage() {
         <section className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Runtime preview (DOM)
+              {msg("preview.runtimeDom")}
             </h2>
             <div
               className="ml-auto flex flex-wrap gap-1"
               role="group"
-              aria-label="Select simulated viewport"
+              aria-label={msg("preview.selectViewportAriaLabel")}
             >
               {VIEWPORT_PRESETS.map((preset) => (
                 <button
@@ -175,7 +175,7 @@ export default function PreviewPage() {
                   )}
                   title={preset.description}
                   aria-pressed={preset.id === viewportId}
-                  aria-label={`${preset.label} viewport`}
+                  aria-label={msg("preview.viewportAriaLabel", { label: preset.label })}
                   onClick={() => setViewportId(preset.id)}
                 >
                   {preset.label}

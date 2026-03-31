@@ -15,6 +15,7 @@ import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { msg } from "@/lib/i18n/messages";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { analyzeDocumentPerformance } from "@/lib/builder/document-performance";
 import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
@@ -181,14 +182,18 @@ export function BuilderDemo() {
     >
       <div className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,200px)_1fr_minmax(0,260px)]">
-          <aside aria-label="Component palette">
+          <aside aria-label={msg("builder.componentPaletteAriaLabel")}>
             <ComponentPalette />
           </aside>
           <main className="min-w-0 space-y-4" aria-labelledby="builder-workspace-heading">
             <h2 id="builder-workspace-heading" className="sr-only">
-              Builder workspace
+              {msg("builder.workspaceHeading")}
             </h2>
-            <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Builder actions">
+            <div
+              className="flex flex-wrap gap-2"
+              role="toolbar"
+              aria-label={msg("builder.actionsAriaLabel")}
+            >
               <Button
                 type="button"
                 variant="outline"
@@ -196,10 +201,10 @@ export function BuilderDemo() {
                 className="gap-1.5"
                 disabled={!canUndo}
                 onClick={() => undo()}
-                title="Undo (⌘Z / Ctrl+Z)"
+                title={msg("builder.undoTitle")}
               >
                 <Undo2 className="size-3.5" aria-hidden />
-                Undo
+                {msg("builder.undo")}
               </Button>
               <Button
                 type="button"
@@ -208,16 +213,16 @@ export function BuilderDemo() {
                 className="gap-1.5"
                 disabled={!canRedo}
                 onClick={() => redo()}
-                title="Redo (⌘⇧Z / Ctrl+Y)"
+                title={msg("builder.redoTitle")}
               >
                 <Redo2 className="size-3.5" aria-hidden />
-                Redo
+                {msg("builder.redo")}
               </Button>
               <Link
                 href="/preview"
                 className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
               >
-                Preview
+                {msg("builder.preview")}
               </Link>
               <Button
                 type="button"
@@ -225,7 +230,7 @@ export function BuilderDemo() {
                 size="sm"
                 onClick={() => appendChildOfType(rootId, BOX_TYPE)}
               >
-                Add Box to root
+                {msg("builder.addBoxToRoot")}
               </Button>
               <Button
                 type="button"
@@ -233,7 +238,7 @@ export function BuilderDemo() {
                 size="sm"
                 onClick={() => appendChildOfType(rootId, STACK_TYPE)}
               >
-                Add Stack to root
+                {msg("builder.addStackToRoot")}
               </Button>
               <Button
                 type="button"
@@ -241,7 +246,7 @@ export function BuilderDemo() {
                 size="sm"
                 onClick={() => reset()}
               >
-                Reset document
+                {msg("builder.resetDocument")}
               </Button>
               {selectedIds.some((id) => id !== rootId) ? (
                 <>
@@ -254,9 +259,9 @@ export function BuilderDemo() {
                         if (id !== rootId) duplicateNode(id);
                       }
                     }}
-                    title="Duplicate layer (⌘D / Ctrl+D)"
+                    title={msg("builder.duplicateTitle")}
                   >
-                    Duplicate
+                    {msg("builder.duplicate")}
                   </Button>
                   <Button
                     type="button"
@@ -268,7 +273,7 @@ export function BuilderDemo() {
                       }
                     }}
                   >
-                    Remove selected
+                    {msg("builder.removeSelected")}
                   </Button>
                 </>
               ) : null}
@@ -294,7 +299,7 @@ export function BuilderDemo() {
             {performance.isLargeDocument ? (
               <div className="rounded-xl border border-amber-300/70 bg-amber-50/70 p-3">
                 <p className="text-xs font-medium text-amber-900">
-                  Large document guardrails active
+                  {msg("builder.largeDocumentGuardrailsActive")}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-amber-900/90">
                   {performance.summary} Some heavy diagnostics are deferred by
@@ -316,23 +321,19 @@ export function BuilderDemo() {
             />
 
             <p className="text-xs text-muted-foreground" aria-live="polite">
-              Selection:{" "}
+              {msg("builder.selectionLabel")}{" "}
               <span className="text-foreground">
                 {selectedIds.length === 0
-                  ? "none"
+                  ? msg("builder.selectionNone")
                   : selectedIds.length === 1
                     ? (() => {
                         const path = getPathToNode(document.root, selectedNodeId!);
                         return path?.map(formatNodeTitle).join(" › ") ?? "—";
                       })()
-                    : `${selectedIds.length} layers selected`}
+                    : msg("builder.selectionMany", { count: selectedIds.length })}
               </span>
               {" · "}
-              Click canvas or tree; double-click a label to rename. Esc clears
-              selection. Root cannot be removed. Delete/Backspace removes the
-              selection; ⌘/Ctrl+D duplicates. Undo/redo: ⌘Z / ⌘⇧Z (Ctrl+Z /
-              Ctrl+Shift+Z or Ctrl+Y). Alt+↑ selects parent. See the Keyboard
-              shortcuts panel below.
+              {msg("builder.selectionHelp")}
             </p>
 
             <BuilderCanvas
@@ -360,17 +361,17 @@ export function BuilderDemo() {
 
             {userLayerCount === 0 ? (
               <div className="rounded-xl border border-dashed border-primary/40 bg-primary/4 p-4">
-                <p className="text-sm font-medium text-foreground">Start with one small step</p>
+                <p className="text-sm font-medium text-foreground">
+                  {msg("builder.emptyStateTitle")}
+                </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Your page is empty. Add a Box, add a Stack, or drop in a starter
-                  dashboard from above to begin.
+                  {msg("builder.emptyStateBody")}
                 </p>
               </div>
             ) : userLayerCount <= 2 ? (
               <div className="rounded-xl border border-border/80 bg-muted/20 p-3">
                 <p className="text-xs text-muted-foreground">
-                  Nice start. Add one more section to make your layout easier to
-                  work with.
+                  {msg("builder.nearEmptyState")}
                 </p>
               </div>
             ) : null}
@@ -380,7 +381,7 @@ export function BuilderDemo() {
                 id="builder-tree-heading"
                 className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
               >
-                Tree
+                {msg("builder.tree")}
               </p>
               <NodeTree
                 node={document.root}
@@ -435,12 +436,11 @@ export function BuilderDemo() {
                 id="live-document-heading"
                 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
               >
-                Live document (Zustand)
+                {msg("builder.liveDocument")}
               </p>
               {performance.scaleLevel === "very_large" ? (
                 <p className="text-xs text-muted-foreground">
-                  Hidden by default for very large documents. Use export panel
-                  for targeted JSON inspection to avoid expensive rerenders.
+                  {msg("builder.liveDocumentHidden")}
                 </p>
               ) : (
                 <pre className="max-h-64 overflow-auto text-sm leading-relaxed">
@@ -450,7 +450,7 @@ export function BuilderDemo() {
             </section>
           </main>
 
-          <aside aria-label="Properties inspector">
+          <aside aria-label={msg("builder.propertiesInspectorAriaLabel")}>
             <PropertiesInspector
               root={document.root}
               selectedId={selectedNodeId}

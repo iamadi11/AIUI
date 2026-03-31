@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-03-31 - i18n readiness pattern:** Keep user-facing copy behind stable message keys and a tiny interpolation helper early, even for single-locale apps, so localization can be introduced incrementally without touching feature logic.
 - **2026-03-31 - Canonical planning reset:** When roadmap intent changes, prefer replacing fragmented historical details with one phase-gated source of truth in `PLAN.md` plus executable checkpoints in `TODO.md`.
 - **2026-03-31 - UX guardrail:** Non-technical users need template-driven action language and minimal cognitive load; advanced graph/JSON controls must remain opt-in.
 - **2026-03-31 - Builder maintainability:** Extracting keyboard orchestration (`use-builder-shortcuts`) and recursive tree rendering (`node-tree`) from `builder-demo` reduces blast radius and makes feature work safer.

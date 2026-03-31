@@ -10,6 +10,7 @@ import {
   getCapabilities,
   type InspectorField,
 } from "@aiui/registry";
+import { msg } from "@/lib/i18n/messages";
 import { findNodeById } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { DataBindingPanel } from "./data-binding-panel";
@@ -85,15 +86,11 @@ function inferFieldSection(
 }
 
 function helperCopyForSection(section: InspectorSectionId): string | null {
-  if (section === "content") return "Primary labels and visible text.";
-  if (section === "actions")
-    return "What happens when users interact with this component.";
-  if (section === "layout")
-    return "Spacing and sizing rules that shape this component.";
-  if (section === "data")
-    return "Data source and binding controls appear here.";
-  if (section === "visibility")
-    return "Show/hide and enable/disable rules appear here.";
+  if (section === "content") return msg("inspector.contentHelper");
+  if (section === "actions") return msg("inspector.actionsHelper");
+  if (section === "layout") return msg("inspector.layoutHelper");
+  if (section === "data") return msg("inspector.dataHelper");
+  if (section === "visibility") return msg("inspector.visibilityHelper");
   return null;
 }
 
@@ -141,10 +138,10 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
     return (
       <div className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Properties
+          {msg("inspector.properties")}
         </p>
         <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
-          Select a node in the tree or canvas to edit properties.
+          {msg("inspector.selectNode")}
         </div>
       </div>
     );
@@ -154,10 +151,10 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
     return (
       <div className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Properties
+          {msg("inspector.properties")}
         </p>
         <div className="rounded-xl border border-destructive/30 bg-card p-4 text-sm text-destructive shadow-sm">
-          Selected node is no longer in the document.
+          {msg("inspector.nodeMissing")}
         </div>
       </div>
     );
@@ -249,7 +246,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Properties
+        {msg("inspector.properties")}
       </p>
       <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
         <div className="mb-3 border-b border-border pb-2 text-xs text-muted-foreground">
@@ -258,12 +255,12 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
             {node.id}
           </span>
           {node.id === rootId ? (
-            <span className="mt-1 inline-block text-[0.65rem]">Root</span>
+            <span className="mt-1 inline-block text-[0.65rem]">{msg("inspector.root")}</span>
           ) : null}
         </div>
         {!hasSectionContent ? (
           <p className="text-sm text-muted-foreground">
-            No editable properties for this component.
+            {msg("inspector.noEditableProps")}
           </p>
         ) : (
           <div className="space-y-4">
@@ -331,7 +328,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                     <div className="mt-3">
                       {!capabilities?.supportsActions && !hasActions ? (
                         <p className="text-xs text-muted-foreground">
-                          This component does not currently expose action triggers.
+                          {msg("inspector.noActionTriggers")}
                         </p>
                       ) : null}
                       <EventBindingsPanel
@@ -364,14 +361,14 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                           className="mb-1 block text-[0.65rem] font-medium text-muted-foreground"
                           htmlFor={`visible-rule-${editingId}`}
                         >
-                          Visible when (expression)
+                          {msg("inspector.visibleWhen")}
                         </label>
                         <input
                           id={`visible-rule-${editingId}`}
                           type="text"
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           value={nodeRules.visibleWhen ?? ""}
-                          placeholder={'status === "active"'}
+                          placeholder={msg("inspector.visibleWhenPlaceholder")}
                           onChange={(e) =>
                             applyVisibilityRules({
                               visibleWhen: e.target.value.trim() || undefined,
@@ -385,14 +382,14 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                           className="mb-1 block text-[0.65rem] font-medium text-muted-foreground"
                           htmlFor={`interactive-rule-${editingId}`}
                         >
-                          Interactive when (expression)
+                          {msg("inspector.interactiveWhen")}
                         </label>
                         <input
                           id={`interactive-rule-${editingId}`}
                           type="text"
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           value={nodeRules.interactiveWhen ?? ""}
-                          placeholder="permissions.canEdit"
+                          placeholder={msg("inspector.interactiveWhenPlaceholder")}
                           onChange={(e) =>
                             applyVisibilityRules({
                               visibleWhen: nodeRules.visibleWhen,
@@ -403,8 +400,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                         />
                       </div>
                       <p className="text-[0.65rem] leading-snug text-muted-foreground">
-                        Rules are saved with this node as expressions and can be
-                        interpreted by runtime parity tooling in later phases.
+                        {msg("inspector.visibilityRulesHelp")}
                       </p>
                     </div>
                   ) : null}

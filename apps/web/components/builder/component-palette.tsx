@@ -25,6 +25,7 @@ import {
   matchesPaletteSearch,
   type PaletteCategory,
 } from "@aiui/registry";
+import { msg } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
 import type { PaletteDragData } from "./dnd-types";
 import { DRAG_COPY } from "./drag-copy";
@@ -131,7 +132,7 @@ export function ComponentPalette() {
           id="component-palette-heading"
           className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
         >
-          Components
+          {msg("palette.components")}
         </p>
         <div className="relative">
           <Search
@@ -141,10 +142,10 @@ export function ComponentPalette() {
           <input
             type="search"
             className={searchInputClass}
-            placeholder="Search…"
+            placeholder={msg("palette.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search components"
+            aria-label={msg("palette.searchAriaLabel")}
             autoComplete="off"
           />
         </div>
@@ -154,8 +155,8 @@ export function ComponentPalette() {
         {!hasAnyMatch ? (
           <p className="rounded-lg border border-dashed border-border bg-muted/20 px-2 py-4 text-center text-xs text-muted-foreground leading-relaxed">
             {queryActive
-              ? "No components match your search. Try another word or clear the filter."
-              : "No components registered."}
+              ? msg("palette.noSearchMatch")
+              : msg("palette.noComponentsRegistered")}
           </p>
         ) : (
           PALETTE_CATEGORY_ORDER.map((category) => {
@@ -171,8 +172,7 @@ export function ComponentPalette() {
                     {PALETTE_CATEGORY_LABELS[category]}
                   </h3>
                   <p className="rounded-md border border-border/60 bg-muted/15 px-2 py-2 text-[0.65rem] leading-snug text-muted-foreground">
-                    Nothing here yet — primitives in this group will appear when
-                    added to the registry.
+                    {msg("palette.emptyCategory")}
                   </p>
                 </section>
               );
@@ -201,8 +201,10 @@ export function ComponentPalette() {
       </p>
       <p className="sr-only" aria-live="polite">
         {hasAnyMatch
-          ? `${filtered.length} component${filtered.length === 1 ? "" : "s"} available`
-          : "No components available"}
+          ? filtered.length === 1
+            ? msg("palette.componentAvailable")
+            : msg("palette.componentsAvailable", { count: filtered.length })
+          : msg("palette.noComponentsAvailable")}
       </p>
     </section>
   );

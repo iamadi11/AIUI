@@ -1,6 +1,7 @@
 "use client";
 
 import type { UiNode } from "@aiui/dsl-schema";
+import { msg } from "@/lib/i18n/messages";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +56,7 @@ export function NodeTree(props: NodeTreeProps) {
         <span className="shrink-0 font-medium text-foreground">{title}</span>
         {isRoot ? (
           <span className="ml-2 shrink-0 text-[0.65rem] uppercase tracking-wide text-muted-foreground">
-            Root
+            {msg("tree.root")}
           </span>
         ) : null}
       </button>

@@ -5,6 +5,7 @@ import { CheckCircle2, Circle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { msg } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
 
 type WalkthroughStep = {
@@ -75,27 +76,27 @@ export function FirstTimeWalkthroughPanel(props: {
     () => [
       {
         id: "first-layer",
-        label: "Add your first block",
+        label: msg("walkthrough.stepFirstLayer"),
         done: userLayerCount >= 1,
-        hint: "Start simple: add one Box from Quick actions.",
+        hint: msg("walkthrough.stepFirstLayerHint"),
       },
       {
         id: "structure",
-        label: "Build a simple layout",
+        label: msg("walkthrough.stepStructure"),
         done: nestedLayout || userLayerCount >= 3,
-        hint: "Try a starter layout to get a complete screen quickly.",
+        hint: msg("walkthrough.stepStructureHint"),
       },
       {
         id: "select",
-        label: "Click a block to edit it",
+        label: msg("walkthrough.stepSelect"),
         done: hasSelection,
-        hint: "After selecting, use the right panel to change text and spacing.",
+        hint: msg("walkthrough.stepSelectHint"),
       },
       {
         id: "name",
-        label: "Give one block a clear name",
+        label: msg("walkthrough.stepName"),
         done: namedLayer,
-        hint: "Double-click a label in canvas or tree to rename it.",
+        hint: msg("walkthrough.stepNameHint"),
       },
     ],
     [hasSelection, namedLayer, nestedLayout, userLayerCount],
@@ -108,11 +109,11 @@ export function FirstTimeWalkthroughPanel(props: {
   const nextHint = steps.find((step) => !step.done)?.hint;
 
   const quickActions: QuickAction[] = [
-    { id: "box", label: "Add Box", onClick: onAddBox },
-    { id: "stack", label: "Add Stack", onClick: onAddStack },
+    { id: "box", label: msg("walkthrough.addBox"), onClick: onAddBox },
+    { id: "stack", label: msg("walkthrough.addStack"), onClick: onAddStack },
     {
       id: "starter",
-      label: "Use Starter dashboard",
+      label: msg("walkthrough.useStarterDashboard"),
       onClick: onInsertStarterTemplate,
     },
   ];
@@ -121,7 +122,7 @@ export function FirstTimeWalkthroughPanel(props: {
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Quick start
+          {msg("walkthrough.quickStart")}
         </p>
         <span className="rounded-full border border-border px-2 py-0.5 text-[0.65rem] text-muted-foreground">
           {doneCount}/{steps.length}
@@ -129,7 +130,7 @@ export function FirstTimeWalkthroughPanel(props: {
       </div>
 
       <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-        Build your first screen in a few small steps.
+        {msg("walkthrough.buildFirstScreen")}
       </p>
 
       <ul className="space-y-2">
@@ -160,16 +161,15 @@ export function FirstTimeWalkthroughPanel(props: {
       <div className="mt-3 rounded-md border border-border/70 bg-muted/10 px-2.5 py-2 text-xs">
         {complete ? (
           <p className="text-emerald-700">
-            Nice momentum. Open Preview to check your layout as a user would see
-            it.
+            {msg("walkthrough.momentum")}
           </p>
         ) : isEmpty ? (
           <p className="text-muted-foreground">
-            Your canvas is empty. Add one block or start from a ready-made layout.
+            {msg("walkthrough.canvasEmpty")}
           </p>
         ) : isNearEmpty ? (
           <p className="text-muted-foreground">
-            Great start. Add one more section to shape your page structure.
+            {msg("walkthrough.canvasNearEmpty")}
           </p>
         ) : (
           <p className="text-muted-foreground">{nextHint}</p>
@@ -178,7 +178,7 @@ export function FirstTimeWalkthroughPanel(props: {
 
       <div className="mt-4 border-t border-border pt-3">
         <p className="mb-2 text-xs font-medium text-muted-foreground">
-          Quick actions
+          {msg("walkthrough.quickActions")}
         </p>
         <div className="flex flex-wrap gap-2">
           {quickActions.map((action) => (
@@ -201,7 +201,7 @@ export function FirstTimeWalkthroughPanel(props: {
             )}
           >
             <Sparkles className="size-3.5" aria-hidden />
-            Preview
+            {msg("builder.preview")}
           </Link>
         </div>
       </div>
