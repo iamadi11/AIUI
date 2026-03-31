@@ -39,7 +39,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 ### Phase 4 - Side effects and workflow orchestration
 
 - [x] Ship simple action-list mode for common workflows.
-- [ ] Ship React Flow advanced mode for branching logic.
+- [x] Ship React Flow advanced mode for branching logic.
 - [ ] Add action blocks: fetch, set state, transform, condition, modal open/close, notify, navigate.
 - [ ] Add scenario template: button click -> fetch -> populate table.
 - [ ] Add scenario template: row action -> modal -> submit -> refresh table.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 4 React Flow advanced mode shipped for branching logic:
+  - Added an inline advanced flow graph panel directly in event JSON editor mode.
+  - Reused flow expansion logic so `condition`/branching actions render as a visual path map.
+  - Kept graph mode read-only and synchronized with JSON edits for deterministic behavior.
 - **2026-03-31** - Phase 4 simple action-list mode shipped for common workflows:
   - Added a beginner-first visual event action editor with simple/advanced mode switching.
   - Added visual step controls for common actions (`setState`, `navigate`, `http`, one-level `condition`) without JSON editing.

@@ -66,3 +66,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Registry-driven editor scaling:** Keep field rendering in reusable primitives (`text/select/number/layout`) and let inspector sections orchestrate composition, so new components can be added via registry metadata without duplicating UI logic.
 - **2026-03-31 - Binding error UX:** Validation should live next to binding authoring and display user-facing fixes (missing source/path, unresolved sample tokens) so broken bindings are corrected before runtime.
 - **2026-03-31 - Action-list workflow ergonomics:** In non-technical event editors, step order must be directly manipulable (move up/down) in visual mode; forcing JSON edits for ordering breaks beginner flow.
+- **2026-03-31 - Advanced flow usability:** Branching logic is easier to validate when advanced JSON editing and React Flow visualization are co-located and auto-synced, instead of split across distant panels.

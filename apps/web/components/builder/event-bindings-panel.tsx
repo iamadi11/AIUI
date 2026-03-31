@@ -10,6 +10,12 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import {
+  Background,
+  Controls,
+  ReactFlow,
+  ReactFlowProvider,
+} from "@xyflow/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +30,7 @@ import {
   parseHttpBodyInput,
   parseValueInput,
 } from "@/lib/builder/event-actions";
+import { eventsToFlowElements } from "@/lib/logic/events-to-flow";
 import { cn } from "@/lib/utils";
 
 const controlClass =
@@ -42,6 +49,60 @@ type EventBindingRow = {
   simpleActions: Action[];
   jsonText: string;
 };
+
+function AdvancedFlowPreview(props: { eventName: string; jsonText: string }) {
+  const { eventName, jsonText } = props;
+  const parsed = useMemo(() => {
+    try {
+      const raw = JSON.parse(jsonText);
+      const result = safeParseActionsArray(raw);
+      if (!result.success) return null;
+      return result.data;
+    } catch {
+      return null;
+    }
+  }, [jsonText]);
+  const graph = useMemo(
+    () => eventsToFlowElements(parsed ? { [eventName || "event"]: parsed } : undefined),
+    [eventName, parsed],
+  );
+
+  if (!parsed) {
+    return (
+      <p className="text-[0.65rem] text-muted-foreground">
+        Fix JSON to preview flow graph mode.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="h-56 overflow-hidden rounded-md border border-border/70 bg-muted/20">
+        <ReactFlowProvider>
+          <ReactFlow
+            className="h-full w-full"
+            defaultNodes={graph.nodes}
+            defaultEdges={graph.edges}
+            fitView
+            fitViewOptions={{ padding: 0.2 }}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable={false}
+            nodesFocusable={false}
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background gap={16} size={1} />
+            <Controls showInteractive={false} />
+          </ReactFlow>
+        </ReactFlowProvider>
+      </div>
+      <p className="text-[0.6rem] leading-snug text-muted-foreground">
+        Advanced flow mode is read-only for branching preview. Edit JSON above to
+        update graph structure.
+      </p>
+    </div>
+  );
+}
 
 function newRowId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -1181,6 +1242,15 @@ export function EventBindingsPanel(props: {
                           }
                           onBlur={handleBlur}
                         />
+                        <div className="mt-2">
+                          <p className="mb-1 text-[0.65rem] font-medium text-muted-foreground">
+                            Advanced flow mode
+                          </p>
+                          <AdvancedFlowPreview
+                            eventName={row.name.trim()}
+                            jsonText={row.jsonText}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
