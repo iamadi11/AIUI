@@ -74,6 +74,39 @@ function findDirectChildByAiuiId(
   return null;
 }
 
+function getDirectAiuiChildren(parent: HTMLElement): HTMLElement[] {
+  const out: HTMLElement[] = [];
+  for (const c of parent.children) {
+    if (c instanceof HTMLElement && c.dataset.aiuiId) out.push(c);
+  }
+  return out;
+}
+
+function walkUiNodes(node: UiNode, visit: (n: UiNode) => void): void {
+  visit(node);
+  for (const c of node.children ?? []) walkUiNodes(c, visit);
+}
+
+function eventsEqual(
+  a: UiNode["events"] | undefined,
+  b: UiNode["events"] | undefined,
+): boolean {
+  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+}
+
+function ensureAiuiChildOrder(
+  parentEl: HTMLElement,
+  orderedIds: string[],
+): void {
+  for (let i = 0; i < orderedIds.length; i++) {
+    const el = findDirectChildByAiuiId(parentEl, orderedIds[i]);
+    if (!el) continue;
+    const uiKids = getDirectAiuiChildren(parentEl);
+    if (uiKids[i] === el) continue;
+    parentEl.insertBefore(el, uiKids[i] ?? null);
+  }
+}
+
 function patchSubtree(
   node: UiNode,
   parentEl: HTMLElement,
@@ -162,7 +195,9 @@ export function render(options: RenderOptions): RuntimeHandle {
   let shouldResetStateFromDoc = true;
   /** Same `config` reference as last successful full mount → layout-only fast path. */
   let prevConfigRef: unknown;
-  const listenerDisposers: (() => void)[] = [];
+  /** Last successfully rendered document (for structural sync on new `config` references). */
+  let prevDoc: AiuiDocument | undefined;
+  const disposersByNodeId = new Map<string, (() => void)[]>();
 
   let flushPending = false;
   function scheduleFlush(): void {
@@ -175,9 +210,22 @@ export function render(options: RenderOptions): RuntimeHandle {
     });
   }
 
+  function clearListenersForNodeId(nodeId: string): void {
+    const list = disposersByNodeId.get(nodeId);
+    if (!list) return;
+    for (const d of list) d();
+    disposersByNodeId.delete(nodeId);
+  }
+
+  function disposeListenersForSubtree(node: UiNode): void {
+    walkUiNodes(node, (n) => clearListenersForNodeId(n.id));
+  }
+
   function clearListenersAndDom(): void {
-    for (const d of listenerDisposers) d();
-    listenerDisposers.length = 0;
+    for (const list of disposersByNodeId.values()) {
+      for (const d of list) d();
+    }
+    disposersByNodeId.clear();
     container.replaceChildren();
   }
 
@@ -193,6 +241,8 @@ export function render(options: RenderOptions): RuntimeHandle {
   };
 
   function bindEvents(el: HTMLElement, node: UiNode): void {
+    clearListenersForNodeId(node.id);
+    const list: (() => void)[] = [];
     for (const [eventName, actions] of Object.entries(node.events ?? {})) {
       if (!actions?.length) continue;
       const handler = (): void => {
@@ -206,10 +256,9 @@ export function render(options: RenderOptions): RuntimeHandle {
         })();
       };
       el.addEventListener(eventName, handler);
-      listenerDisposers.push(() =>
-        el.removeEventListener(eventName, handler),
-      );
+      list.push(() => el.removeEventListener(eventName, handler));
     }
+    if (list.length) disposersByNodeId.set(node.id, list);
   }
 
   function onNodeError(node: UiNode, err: unknown): HTMLElement {
@@ -231,11 +280,87 @@ export function render(options: RenderOptions): RuntimeHandle {
     return box;
   }
 
+  function syncChildren(
+    oldChildren: UiNode[] | undefined,
+    newChildren: UiNode[] | undefined,
+    parentEl: HTMLElement,
+    parentRect: Rect,
+    rects: Map<string, Rect>,
+  ): void {
+    const oldList = oldChildren ?? [];
+    const newList = newChildren ?? [];
+    const oldById = new Map(oldList.map((c) => [c.id, c]));
+    const newIds = new Set(newList.map((c) => c.id));
+
+    for (const old of oldList) {
+      if (!newIds.has(old.id)) {
+        const el = findDirectChildByAiuiId(parentEl, old.id);
+        if (el) {
+          disposeListenersForSubtree(old);
+          el.remove();
+        }
+      }
+    }
+
+    for (const newChild of newList) {
+      const oldChild = oldById.get(newChild.id);
+      if (oldChild) {
+        syncNode(oldChild, newChild, parentEl, parentRect, rects);
+      } else {
+        mountSubtree(newChild, parentEl, parentRect, rects, bindEvents, onNodeError);
+      }
+    }
+
+    ensureAiuiChildOrder(parentEl, newList.map((c) => c.id));
+  }
+
+  function syncNode(
+    oldNode: UiNode | null,
+    newNode: UiNode,
+    parentEl: HTMLElement,
+    parentRect: Rect,
+    rects: Map<string, Rect>,
+  ): void {
+    if (oldNode === null) {
+      mountSubtree(newNode, parentEl, parentRect, rects, bindEvents, onNodeError);
+      return;
+    }
+    if (oldNode.id !== newNode.id) {
+      const oldEl = findDirectChildByAiuiId(parentEl, oldNode.id);
+      if (oldEl) {
+        disposeListenersForSubtree(oldNode);
+        oldEl.remove();
+      }
+      mountSubtree(newNode, parentEl, parentRect, rects, bindEvents, onNodeError);
+      return;
+    }
+
+    const rect = rects.get(newNode.id);
+    if (!rect) return;
+    const el = findDirectChildByAiuiId(parentEl, newNode.id);
+    if (!el) {
+      mountSubtree(newNode, parentEl, parentRect, rects, bindEvents, onNodeError);
+      return;
+    }
+
+    el.style.left = `${rect.x - parentRect.x}px`;
+    el.style.top = `${rect.y - parentRect.y}px`;
+    el.style.width = `${rect.width}px`;
+    el.style.height = `${rect.height}px`;
+    el.dataset.aiuiType = newNode.type;
+    applyPrimitiveStyle(el, newNode);
+    if (!eventsEqual(oldNode.events, newNode.events)) {
+      bindEvents(el, newNode);
+    }
+    syncChildren(oldNode.children, newNode.children, el, rect, rects);
+  }
+
   function rebuild(): void {
     const parsed = safeParseDocumentWithMigration(config);
     if (!parsed.success) {
       clearListenersAndDom();
       prevConfigRef = undefined;
+      prevDoc = undefined;
       showParseError(
         container,
         `Invalid DSL: ${parsed.error.issues.map((i) => i.message).join("; ")}`,
@@ -255,13 +380,13 @@ export function render(options: RenderOptions): RuntimeHandle {
     if (!rootRect) {
       clearListenersAndDom();
       prevConfigRef = undefined;
+      prevDoc = undefined;
       showParseError(container, "Layout failed: missing root rect.");
       return;
     }
 
     const origin: Rect = { x: 0, y: 0, width: 0, height: 0 };
-    const canLayoutOnly =
-      prevConfigRef === config && listenerDisposers.length > 0;
+    const canLayoutOnly = prevConfigRef === config && prevDoc !== undefined;
 
     if (canLayoutOnly) {
       container.style.minHeight = `${rootRect.height}px`;
@@ -269,7 +394,29 @@ export function render(options: RenderOptions): RuntimeHandle {
       return;
     }
 
+    const canSync =
+      prevDoc !== undefined &&
+      prevDoc.root.id === doc.root.id &&
+      findDirectChildByAiuiId(container, doc.root.id) !== null;
+
+    if (canSync) {
+      try {
+        container.style.position = "relative";
+        container.style.boxSizing = "border-box";
+        container.style.minHeight = `${rootRect.height}px`;
+        container.style.width = "100%";
+        syncNode(prevDoc.root, doc.root, container, origin, rects);
+        prevDoc = doc;
+        prevConfigRef = config;
+        return;
+      } catch {
+        // fall through to full remount
+      }
+    }
+
     clearListenersAndDom();
+    prevDoc = undefined;
+    prevConfigRef = undefined;
 
     container.style.position = "relative";
     container.style.boxSizing = "border-box";
@@ -285,10 +432,12 @@ export function render(options: RenderOptions): RuntimeHandle {
         bindEvents,
         onNodeError,
       );
+      prevDoc = doc;
       prevConfigRef = config;
     } catch (e) {
       clearListenersAndDom();
       prevConfigRef = undefined;
+      prevDoc = undefined;
       showParseError(
         container,
         `Render failed: ${e instanceof Error ? e.message : String(e)}`,
@@ -308,6 +457,7 @@ export function render(options: RenderOptions): RuntimeHandle {
     disposed = true;
     clearListenersAndDom();
     prevConfigRef = undefined;
+    prevDoc = undefined;
   }
 
   function getState(): Record<string, unknown> {

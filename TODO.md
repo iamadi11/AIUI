@@ -32,8 +32,6 @@ _Logic graph shipped — see **Done**._
 
 _Baseline shipped — `@aiui/runtime-core` (`render` / `update` / `destroy`); see **Done**._
 
-- [ ] Fine-grained DOM diff (add/remove nodes without full remount when tree structure changes)
-
 ---
 
 ## Phase 5 — Runtime bundle packaging
@@ -66,7 +64,8 @@ _Baseline shipped — see **Done**._
 
 ## Done
 
-- **2026-03-31** — **Phase 4 — Runtime flush:** Layout-only path when `prevConfigRef === config` + listeners → `patchSubtree`; `update()` / initial mount re-seed `state` from `doc.state`; action flush preserves `state`; full remount + `clearListenersAndDom` on errors; per-node error UI unchanged; Vitest DOM reuse after click
+- **2026-03-31** — **Phase 4 — Structural DOM sync:** `prevDoc` + `syncNode` / `syncChildren` (match by `data-aiui-id`); `update()` with new object reuses nodes, adds/removes/reorders children; per-node listener map; layout-only path when `prevConfigRef === config && prevDoc` (no `replaceChildren`); Vitest reuse + reorder
+- **2026-03-31** — **Phase 4 — Runtime flush:** Layout-only path when `prevConfigRef === config` and `prevDoc` set → `patchSubtree`; `update()` / initial mount re-seed `state` from `doc.state`; action flush preserves `state`; full remount + `clearListenersAndDom` on errors; per-node error UI unchanged; Vitest DOM reuse after click
 - **2026-03-31** — **Phase 7 — Adapters:** `AiuiRuntime` uses `useLayoutEffect` for `render`/`update` on `document` (before paint), `ResizeObserver` in `useEffect`, `destroy` on unmount; `examples/vanilla-runtime` (Vite) + README; `pnpm-workspace.yaml` includes `examples/*`
 - **2026-03-31** — **Phase 6 — Export / migration:** `migrateDocument` + `safeParseDocumentWithMigration`; `MIGRATION_REGISTRY` stub; `exportGoldenJson` / `importGoldenJson` live in `@aiui/dsl-schema`; builder import uses package; `runtime-core` parses with migration; Vitest round-trip + migration tests; root `pnpm test` includes DSL suites
 - **2026-03-31** — **Phase 5 — Runtime bundles:** Vite library builds (`vite.lib.config.ts` → `dist/index.mjs` + d.ts), `pnpm bundle:check`; `exports["./bundled"]` on `@aiui/runtime-core` / `@aiui/runtime-react`; READMEs for workspace source + `transpilePackages` vs `@aiui/.../bundled`; peers + `AiuiRuntime` + preview
