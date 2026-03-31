@@ -234,7 +234,7 @@ These phases improve **how** users edit the DSL in the Next.js builder. They sit
 | **2 — Components** | Palette layout, categories, search, registry-driven extensibility *(baseline: registry metadata + grouped searchable palette)* |
 | **3 — Layout** | Drag/resize, spacing controls, snapping, constraints *(baseline: layout padding + leaf W/H, sibling reorder on canvas)* |
 | **4 — Events** | Friendly event list/editor, discoverability *(baseline: visual steps + presets + advanced JSON)* |
-| **5 — Logic** | API/state/conditions UI, progressive disclosure, hide raw JSON for typical flows |
+| **5 — Logic** | API/state/conditions UI, progressive disclosure, hide raw JSON for typical flows *(baseline: If + HTTP body + initial `state` panel)* |
 | **6 — Graph** | React Flow workflows, sync with simple mode, debug |
 | **7 — Convergence** | Builder uses runtime engine; preview parity |
 | **8 — Power** | Multi-select, templates, shortcuts, diagnostics |

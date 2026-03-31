@@ -7,9 +7,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   COMMON_EVENT_NAMES,
+  defaultBranchAction,
+  defaultConditionAction,
   defaultSimpleActions,
+  formatHttpBodyInput,
   formatValueForInput,
+  isBranchAction,
   isSimpleActionsList,
+  parseHttpBodyInput,
   parseValueInput,
 } from "@/lib/builder/event-actions";
 import { cn } from "@/lib/utils";
@@ -105,9 +110,308 @@ function actionSummary(actions: Action[]): string {
     if (a.type === "setState") return "State";
     if (a.type === "navigate") return "Go to URL";
     if (a.type === "http") return `${a.method} request`;
+    if (a.type === "condition") return "If";
     return a.type;
   });
   return parts.join(" → ");
+}
+
+/** Inline editor for a single branch action (nested under conditions). */
+function BranchActionFields(props: {
+  idPrefix: string;
+  branch: Action;
+  onChange: (a: Action) => void;
+  onBlurCommit: () => void;
+}) {
+  const { idPrefix, branch, onChange, onBlurCommit } = props;
+  if (!isBranchAction(branch)) return null;
+
+  const typeSelect = (
+    <div>
+      <label
+        className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+        htmlFor={`${idPrefix}-type`}
+      >
+        Step type
+      </label>
+      <select
+        id={`${idPrefix}-type`}
+        className={controlClass}
+        value={branch.type}
+        onChange={(e) => {
+          const t = e.target.value;
+          if (t === "setState" || t === "navigate" || t === "http") {
+            onChange(defaultBranchAction(t));
+          }
+        }}
+        onBlur={onBlurCommit}
+      >
+        <option value="setState">Update state</option>
+        <option value="navigate">Open URL</option>
+        <option value="http">HTTP</option>
+      </select>
+    </div>
+  );
+
+  if (branch.type === "setState") {
+    return (
+      <div className="space-y-2">
+        {typeSelect}
+        <div>
+          <label
+            className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+            htmlFor={`${idPrefix}-path`}
+          >
+            State path
+          </label>
+          <input
+            id={`${idPrefix}-path`}
+            type="text"
+            className={controlClass}
+            value={branch.path}
+            onChange={(e) =>
+              onChange({ ...branch, path: e.target.value })
+            }
+            onBlur={onBlurCommit}
+            placeholder="count"
+            autoComplete="off"
+          />
+        </div>
+        <div>
+          <label
+            className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+            htmlFor={`${idPrefix}-val`}
+          >
+            Value (JSON or text)
+          </label>
+          <textarea
+            id={`${idPrefix}-val`}
+            className={textareaClass}
+            rows={2}
+            spellCheck={false}
+            value={formatValueForInput(branch.value)}
+            onChange={(e) =>
+              onChange({
+                ...branch,
+                value: parseValueInput(e.target.value),
+              })
+            }
+            onBlur={onBlurCommit}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (branch.type === "navigate") {
+    return (
+      <div className="space-y-2">
+        {typeSelect}
+        <div>
+          <label
+            className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+            htmlFor={`${idPrefix}-href`}
+          >
+            Link
+          </label>
+          <input
+            id={`${idPrefix}-href`}
+            type="url"
+            className={controlClass}
+            value={branch.href}
+            onChange={(e) =>
+              onChange({ ...branch, href: e.target.value })
+            }
+            onBlur={onBlurCommit}
+            placeholder="https://…"
+            autoComplete="off"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {typeSelect}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div>
+          <label
+            className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+            htmlFor={`${idPrefix}-m`}
+          >
+            Method
+          </label>
+          <select
+            id={`${idPrefix}-m`}
+            className={controlClass}
+            value={branch.method}
+            onChange={(e) =>
+              onChange({
+                ...branch,
+                method: e.target.value as "GET" | "POST",
+              })
+            }
+            onBlur={onBlurCommit}
+          >
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+          </select>
+        </div>
+        <div className="sm:col-span-2">
+          <label
+            className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+            htmlFor={`${idPrefix}-url`}
+          >
+            URL
+          </label>
+          <input
+            id={`${idPrefix}-url`}
+            type="url"
+            className={controlClass}
+            value={branch.url}
+            onChange={(e) =>
+              onChange({ ...branch, url: e.target.value })
+            }
+            onBlur={onBlurCommit}
+            placeholder="https://…"
+            autoComplete="off"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label
+            className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+            htmlFor={`${idPrefix}-body`}
+          >
+            Body (optional, JSON)
+          </label>
+          <textarea
+            id={`${idPrefix}-body`}
+            className={textareaClass}
+            rows={2}
+            spellCheck={false}
+            value={formatHttpBodyInput(branch.body)}
+            onChange={(e) => {
+              const body = parseHttpBodyInput(e.target.value);
+              onChange({
+                ...branch,
+                body: body === undefined ? undefined : body,
+              });
+            }}
+            onBlur={onBlurCommit}
+            placeholder='{"key":"value"}'
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConditionStepRow(props: {
+  action: Extract<Action, { type: "condition" }>;
+  index: number;
+  onChange: (next: Action) => void;
+  onRemove: () => void;
+  onBlurCommit: () => void;
+  canRemove: boolean;
+}) {
+  const { action, index, onChange, onRemove, onBlurCommit, canRemove } = props;
+  const hasElse = action.else !== undefined;
+
+  return (
+    <div className="rounded-md border border-border/80 bg-background/60 p-2">
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+          If condition
+        </span>
+        {canRemove ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground hover:text-destructive"
+            title="Remove step"
+            onClick={onRemove}
+          >
+            <Trash2 className="size-3.5" aria-hidden />
+          </Button>
+        ) : null}
+      </div>
+      <div className="space-y-2">
+        <div>
+          <label
+            className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+            htmlFor={`cond-when-${index}`}
+          >
+            When (expression)
+          </label>
+          <input
+            id={`cond-when-${index}`}
+            type="text"
+            className={controlClass}
+            value={action.when}
+            onChange={(e) =>
+              onChange({ ...action, when: e.target.value })
+            }
+            onBlur={onBlurCommit}
+            placeholder="count > 0"
+            autoComplete="off"
+          />
+          <p className="mt-1 text-[0.6rem] leading-snug text-muted-foreground">
+            Comparisons or {"{{ }}"} paths — same rules as the expression engine.
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-[0.65rem] font-medium text-muted-foreground">
+            Then
+          </p>
+          <BranchActionFields
+            idPrefix={`cond-then-${index}`}
+            branch={action.then}
+            onChange={(then) => onChange({ ...action, then })}
+            onBlurCommit={onBlurCommit}
+          />
+        </div>
+        <label className="flex cursor-pointer items-center gap-2 text-[0.65rem] text-foreground">
+          <input
+            type="checkbox"
+            className="rounded border-input"
+            checked={hasElse}
+            onChange={(e) => {
+              if (e.target.checked) {
+                onChange({
+                  ...action,
+                  else: defaultBranchAction("setState"),
+                });
+              } else {
+                onChange({
+                  type: "condition",
+                  when: action.when,
+                  then: action.then,
+                });
+              }
+            }}
+          />
+          Else branch
+        </label>
+        {hasElse && action.else ? (
+          <div>
+            <p className="mb-1 text-[0.65rem] font-medium text-muted-foreground">
+              Else
+            </p>
+            <BranchActionFields
+              idPrefix={`cond-else-${index}`}
+              branch={action.else}
+              onChange={(elseAction) =>
+                onChange({ ...action, else: elseAction })
+              }
+              onBlurCommit={onBlurCommit}
+            />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function SimpleActionRow(props: {
@@ -119,6 +423,19 @@ function SimpleActionRow(props: {
   canRemove: boolean;
 }) {
   const { action, index, onChange, onRemove, onBlurCommit, canRemove } = props;
+
+  if (action.type === "condition") {
+    return (
+      <ConditionStepRow
+        action={action}
+        index={index}
+        onChange={onChange}
+        onRemove={onRemove}
+        onBlurCommit={onBlurCommit}
+        canRemove={canRemove}
+      />
+    );
+  }
 
   if (action.type === "setState") {
     return (
@@ -297,6 +614,30 @@ function SimpleActionRow(props: {
               autoComplete="off"
             />
           </div>
+          <div className="sm:col-span-2">
+            <label
+              className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+              htmlFor={`http-body-${index}`}
+            >
+              Body (optional, JSON)
+            </label>
+            <textarea
+              id={`http-body-${index}`}
+              className={textareaClass}
+              rows={2}
+              spellCheck={false}
+              value={formatHttpBodyInput(action.body)}
+              onChange={(e) => {
+                const body = parseHttpBodyInput(e.target.value);
+                onChange({
+                  ...action,
+                  body: body === undefined ? undefined : body,
+                });
+              }}
+              onBlur={onBlurCommit}
+              placeholder='{"key":"value"}'
+            />
+          </div>
         </div>
       </div>
     );
@@ -427,7 +768,7 @@ export function EventBindingsPanel(props: {
     }
     if (!isSimpleActionsList(parsedList.data)) {
       setFormError(
-        "Only Update state, Open URL, and HTTP steps can use the visual editor. Remove sequences or conditions, or stay in advanced JSON.",
+        "Visual editor supports branch actions and one-level If (then/else). For sequence or nested conditions, use Advanced JSON.",
       );
       return;
     }
@@ -460,21 +801,17 @@ export function EventBindingsPanel(props: {
     );
   }
 
-  function addSimpleAction(
+  function addVisualStep(
     rowId: string,
-    type: "setState" | "navigate" | "http",
+    type: "setState" | "navigate" | "http" | "condition",
   ) {
     setRows((prev) => {
       const mapped = prev.map((row) => {
         if (row.id !== rowId) return row;
-        let next: Action;
-        if (type === "setState") {
-          next = { type: "setState", path: "key", value: "" };
-        } else if (type === "navigate") {
-          next = { type: "navigate", href: "/" };
-        } else {
-          next = { type: "http", method: "GET", url: "https://" };
-        }
+        const next: Action =
+          type === "condition"
+            ? defaultConditionAction()
+            : defaultBranchAction(type);
         return { ...row, simpleActions: [...row.simpleActions, next] };
       });
       queueMicrotask(() => commitFromRows(mapped));
@@ -513,9 +850,10 @@ export function EventBindingsPanel(props: {
         </Button>
       </div>
       <p className="mb-3 text-[0.65rem] leading-snug text-muted-foreground">
-        Choose when this node runs logic, then add one or more steps. Use{" "}
+        Add steps: state, URL, HTTP, or a one-level If (then/else). Use{" "}
         <span className="font-medium text-foreground/90">Advanced JSON</span>{" "}
-        for sequences, conditions, or nested actions.
+        for <code className="rounded bg-muted px-0.5">sequence</code> or nested
+        logic.
       </p>
       {formError ? (
         <p className="mb-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs text-destructive">
@@ -674,7 +1012,7 @@ export function EventBindingsPanel(props: {
                             variant="outline"
                             size="sm"
                             className="h-7 text-[0.65rem]"
-                            onClick={() => addSimpleAction(row.id, "setState")}
+                            onClick={() => addVisualStep(row.id, "setState")}
                           >
                             + State
                           </Button>
@@ -684,7 +1022,7 @@ export function EventBindingsPanel(props: {
                             size="sm"
                             className="h-7 text-[0.65rem]"
                             onClick={() =>
-                              addSimpleAction(row.id, "navigate")
+                              addVisualStep(row.id, "navigate")
                             }
                           >
                             + URL
@@ -694,9 +1032,20 @@ export function EventBindingsPanel(props: {
                             variant="outline"
                             size="sm"
                             className="h-7 text-[0.65rem]"
-                            onClick={() => addSimpleAction(row.id, "http")}
+                            onClick={() => addVisualStep(row.id, "http")}
                           >
                             + HTTP
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[0.65rem]"
+                            onClick={() =>
+                              addVisualStep(row.id, "condition")
+                            }
+                          >
+                            + If
                           </Button>
                         </div>
                       </div>

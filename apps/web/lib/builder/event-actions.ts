@@ -1,8 +1,28 @@
 import type { Action } from "@aiui/dsl-schema";
 
-/** Top-level actions editable in the simple (non-JSON) UI. */
-export function isSimpleAction(a: Action): boolean {
+/** Single-step actions that can appear in the visual list or as `condition` branches. */
+export function isBranchAction(
+  a: Action,
+): a is Extract<
+  Action,
+  { type: "setState" } | { type: "navigate" } | { type: "http" }
+> {
   return a.type === "setState" || a.type === "navigate" || a.type === "http";
+}
+
+/**
+ * Actions editable in the visual (non-JSON) list: branch actions, or one-level
+ * `condition` whose `then` / optional `else` are branch actions only.
+ */
+export function isSimpleAction(a: Action): boolean {
+  if (isBranchAction(a)) return true;
+  if (a.type === "condition") {
+    return (
+      isBranchAction(a.then) &&
+      (a.else === undefined || isBranchAction(a.else))
+    );
+  }
+  return false;
 }
 
 export function isSimpleActionsList(actions: Action[]): boolean {
@@ -25,6 +45,23 @@ export function formatValueForInput(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
 
+/** Serialize HTTP body for a textarea (objects → JSON). */
+export function formatHttpBodyInput(body: unknown): string {
+  if (body === undefined) return "";
+  if (typeof body === "string") return body;
+  return JSON.stringify(body, null, 2);
+}
+
+export function parseHttpBodyInput(raw: string): unknown | undefined {
+  const t = raw.trim();
+  if (t === "") return undefined;
+  try {
+    return JSON.parse(t) as unknown;
+  } catch {
+    return raw;
+  }
+}
+
 export const COMMON_EVENT_NAMES = [
   "click",
   "submit",
@@ -37,4 +74,23 @@ export const COMMON_EVENT_NAMES = [
 
 export function defaultSimpleActions(): Action[] {
   return [{ type: "setState", path: "count", value: 0 }];
+}
+
+export function defaultBranchAction(
+  t: "setState" | "navigate" | "http",
+): Extract<
+  Action,
+  { type: "setState" } | { type: "navigate" } | { type: "http" }
+> {
+  if (t === "setState") return { type: "setState", path: "key", value: "" };
+  if (t === "navigate") return { type: "navigate", href: "/" };
+  return { type: "http", method: "GET", url: "https://" };
+}
+
+export function defaultConditionAction(): Action {
+  return {
+    type: "condition",
+    when: "true",
+    then: { type: "setState", path: "count", value: 0 },
+  };
 }

@@ -40,6 +40,8 @@ type DocumentState = {
   future: AiuiDocument[];
   setDocument: (document: AiuiDocument) => void;
   setRoot: (root: UiNode) => void;
+  /** Replace document `state` (initial logic state). Pass `undefined` or `{}` to clear. */
+  setDocumentState: (state: Record<string, unknown> | undefined) => void;
   updateNode: (id: string, updater: (node: UiNode) => UiNode) => void;
   insertChild: (parentId: string, child: UiNode, index?: number) => void;
   appendChildOfType: (parentId: string, type: string) => void;
@@ -68,6 +70,22 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   setRoot: (root) => {
     const { document, past } = get();
     const next = { ...document, root };
+    set({
+      past: truncatePast([...past, cloneDocument(document)]),
+      future: [],
+      document: next,
+    });
+    sanitizeSelection(next);
+  },
+
+  setDocumentState: (state) => {
+    const { document, past } = get();
+    const next: AiuiDocument = { ...document };
+    if (state === undefined || Object.keys(state).length === 0) {
+      delete next.state;
+    } else {
+      next.state = { ...state };
+    }
     set({
       past: truncatePast([...past, cloneDocument(document)]),
       future: [],

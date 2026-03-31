@@ -10,7 +10,9 @@ See `packages/registry/README.md` for palette metadata when adding primitives.
 
 **Layout:** Properties can target `node.layout` (padding, width/height for empty leaves). On the canvas, use the **grip** beside a nested node to **reorder** among siblings.
 
-**Events:** Configure **When** (preset or custom) and **Visual steps** (state, URL, HTTP) or **Advanced JSON** for complex actions; blur fields to save.
+**Events:** Configure **When** (preset or custom) and **Visual steps** (state, URL, HTTP, one-level **If**, HTTP body) or **Advanced JSON** for `sequence` / nested logic; blur fields to save.
+
+**Initial state:** Edit `document.state` key/value defaults for expressions and `setState` paths (panel below export).
 
 ## Getting Started
 

@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { canvasPointerCollision } from "./builder-collision";
 import { DocumentExportPanel } from "./document-export-panel";
+import { DocumentStatePanel } from "./document-state-panel";
 import { LayoutDebugPanel } from "./layout-debug-panel";
 import { LogicFlowPanel } from "./logic-flow-panel";
 import { ComponentPalette } from "./component-palette";
@@ -252,6 +253,8 @@ export function BuilderDemo() {
             </div>
 
             <DocumentExportPanel document={document} />
+
+            <DocumentStatePanel />
 
             <LayoutDebugPanel
               root={document.root}

@@ -406,6 +406,11 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 
 - **Inspector:** Event list with **When** presets (or custom name), **Visual steps** (update state, open URL, HTTP) or **Advanced JSON** for `sequence` / `condition`; collapsed header shows a short summary chain.
 
-### Phases 5–8 (planned)
+### Phase 5 — Logic / side effects (shipped baseline)
 
-Logic side-effects UI without raw JSON for common flows; React Flow alignment; builder/runtime visual parity; power-user tooling; optional layout follow-ups (on-canvas resize, snapping, margin). Details in `PLAN.md` §14.
+- **Events:** Visual **If** (expression + then/else, each branch: state / URL / HTTP only); top-level HTTP steps include optional **body** (JSON). `sequence` / nested logic stays in Advanced JSON.
+- **Document:** **Initial state** panel edits `document.state` (key/value rows, JSON-friendly values) with undo via `setDocumentState`.
+
+### Phases 6–8 (planned)
+
+React Flow alignment; builder/runtime visual parity; power-user tooling; optional layout follow-ups (on-canvas resize, snapping, margin). Details in `PLAN.md` §14.
