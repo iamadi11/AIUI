@@ -8,7 +8,7 @@
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r exec tsc --noEmit",
     "check:repo": "node scripts/check-single-repo-lockfile.mjs",
-    "test": "pnpm run check:repo && pnpm --filter @aiui/dsl-schema test && pnpm --filter @aiui/expression test && pnpm --filter @aiui/logic test && pnpm --filter @aiui/layout-engine test && pnpm --filter @aiui/runtime-core test"
+    "test": "pnpm run check:repo && pnpm --filter @aiui/dsl-schema test && pnpm --filter @aiui/expression test && pnpm --filter @aiui/logic test && pnpm --filter @aiui/layout-engine test && pnpm --filter @aiui/runtime-core test && pnpm --filter web test"
   },
   "devDependencies": {
     "shadcn": "^4.1.1",

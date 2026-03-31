@@ -25,7 +25,7 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 - [x] Builder canvas uses **`RuntimePreviewHost`** (same DOM/CSS as `/preview` default path: desktop width cap, `p-4`, `min-h-[140px]`).
 - [x] **`runtimeDocumentForActiveEditorScreen`** so the runtime shows the **active** editor screen (non-mutating `initialScreenId` shim); export / preview keep persisted routing.
 - [x] Manual checklist: [`docs/builder/preview-parity.md`](docs/builder/preview-parity.md).
-- [ ] **Optional:** automated visual or layout snapshot test (builder vs preview) in CI.
+- [x] **Optional CI guard:** `apps/web/lib/builder/viewport-parity.test.ts` snapshots parity rows (desktop/tablet/mobile) via `buildViewportParityReport`; root `pnpm test` now runs `pnpm --filter web test`.
 
 ## Phase 3 — Props on drop + lean inspector
 

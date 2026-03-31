@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-04-01 - Preview parity CI guard:** Keep automated parity checks on the shared `buildViewportParityReport` path (used by builder diagnostics and `/preview`), and snapshot stable row fields (`viewportId`, `width`, `nodeCount`, `invalidRectCount`, `deterministic`) to avoid brittle pixel-level tests.
 - **2026-04-01 - Phase 7 hardening:** Keep **document performance** copy out of `document-performance.ts` — return **`perfSummary`** + **`guardrailIds`** and map to **`msg()`** in **`document-performance-ui.ts`** so diagnostics and the large-doc banner stay i18n-ready without pulling i18n into pure metrics code.
 - **2026-04-01 - Actions UX (Phase 6):** Keep **registry `interactionPresets`** as the template source; gate **React Flow** previews (**JSON flow** under Actions, **Logic map** in Diagnostics) behind **`?dev=1`** so default users see steps + ordering without graph chrome.
 - **2026-04-01 - Bindings panel:** Validate **`BindingDescriptor`** with **`safeParseBindingDescriptor`** before persisting; keep draft editors in a **keyed** sub-tree so form state syncs from the document without effects that trip `react-hooks/set-state-in-effect`.
