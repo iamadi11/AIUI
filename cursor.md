@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-03-31 - shadcn MCP + pnpm workspaces:** `shadcn mcp init` runs `pnpm add -D shadcn@latest` at the repo root without `-w`, which pnpm blocks by default; set `ignore-workspace-root-check=true` in root `.npmrc` (or pass `-w` manually only works for your own installs, not the CLI’s internal step).
 - **2026-03-31 - Screen templates:** Keep composed multi-layer roots next to `createNodeFromType` in the app (`screen-template-builders.ts`) while `SCREEN_TEMPLATE_LABELS` stays in `@aiui/registry` for a single list of ids + human labels shared by the store title and the builder select.
 - **2026-03-31 - navigateScreen in visual events:** Treat `navigateScreen` as a first-class branch action (with `isBranchAction` + `defaultBranchAction`) and pass `screenOptions` from the document store into `EventBindingsPanel` so the step picker stays aligned with `document.screens` without JSON edits.
 - **2026-03-31 - Multi-screen documents:** Prefer `screens` + `initialScreenId` + `flowLayout` as the source of truth; use `editorDocumentView(doc, activeScreenId)` wherever the builder still expects a single `root`; legacy `root`-only JSON is normalized in `migrateDocument` via `normalizeLegacyRootToScreens`.

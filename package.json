@@ -11,6 +11,7 @@
     "test": "pnpm run check:repo && pnpm --filter @aiui/dsl-schema test && pnpm --filter @aiui/expression test && pnpm --filter @aiui/logic test && pnpm --filter @aiui/layout-engine test && pnpm --filter @aiui/runtime-core test"
   },
   "devDependencies": {
+    "shadcn": "^4.1.1",
     "typescript": "~5.8.3"
   },
   "packageManager": "pnpm@10.28.0",
