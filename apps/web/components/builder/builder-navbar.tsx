@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { msg } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
-import { MoreHorizontal, Redo2, Undo2 } from "lucide-react";
+import { Database, MoreHorizontal, Redo2, Undo2 } from "lucide-react";
 import { useRef, useState } from "react";
 
 export type BuilderNavbarProps = {
@@ -17,6 +17,8 @@ export type BuilderNavbarProps = {
   onAddStackToRoot: () => void;
   /** When true, show a link to open builder with dev panels (`?dev=1`). */
   showAdvancedDevLink?: boolean;
+  /** Opens the unified Data & state sheet (document state + sample sources). */
+  onOpenDataAndState?: () => void;
 };
 
 export function BuilderNavbar(props: BuilderNavbarProps) {
@@ -29,6 +31,7 @@ export function BuilderNavbar(props: BuilderNavbarProps) {
     onAddBoxToRoot,
     onAddStackToRoot,
     showAdvancedDevLink,
+    onOpenDataAndState,
   } = props;
   const [moreOpen, setMoreOpen] = useState(false);
   const moreWrapRef = useRef<HTMLDivElement>(null);
@@ -49,6 +52,18 @@ export function BuilderNavbar(props: BuilderNavbarProps) {
           >
             {msg("builder.preview")}
           </Link>
+          {onOpenDataAndState ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => onOpenDataAndState()}
+            >
+              <Database className="size-3.5" aria-hidden />
+              {msg("navbar.dataAndState")}
+            </Button>
+          ) : null}
           {showAdvancedDevLink ? (
             <Link
               href="/?dev=1"

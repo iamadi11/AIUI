@@ -34,8 +34,8 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 4 — State and data UX
 
-- [ ] Single clear story for **document state** + **data sources** (no duplicate panels).
-- [ ] Happy-path **fetch → populate** without JSON for standard templates.
+- [x] **Data & state** sheet (`DataAndStateSheet`): navbar **Data & state** opens one place for initial state, sample source ids, and fetch→table starter (removed duplicate **Initial state** block from dev stack).
+- [x] **Prepare state for fetch → table** button merges `getFetchTableStarterState()` (`table.rows`) to align with the interaction preset — no JSON required for that path.
 
 ## Phase 5 — Bindings
 

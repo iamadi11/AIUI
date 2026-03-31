@@ -38,8 +38,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { BuilderNavbar } from "./builder-navbar";
 import { canvasPointerCollision } from "./builder-collision";
+import { DataAndStateSheet } from "./data-and-state-sheet";
 import { DocumentExportPanel } from "./document-export-panel";
-import { DocumentStatePanel } from "./document-state-panel";
 import { LayoutDebugPanel } from "./layout-debug-panel";
 import { LogicFlowPanel } from "./logic-flow-panel";
 import { ComponentPalette } from "./component-palette";
@@ -111,6 +111,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
 
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [dataStateSheetOpen, setDataStateSheetOpen] = useState(false);
 
   const editorDoc = useMemo(
     () => editorDocumentView(document, activeScreenId),
@@ -378,8 +379,6 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
 
           <DocumentExportPanel document={document} />
 
-          <DocumentStatePanel />
-
           <LayoutDebugPanel
             root={editorDoc.root}
             documentLayoutVersion={document.layoutVersion}
@@ -475,6 +474,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
           onAddBoxToRoot={() => appendChildOfType(rootId, BOX_TYPE)}
           onAddStackToRoot={() => appendChildOfType(rootId, STACK_TYPE)}
           showAdvancedDevLink={!builderDevMode}
+          onOpenDataAndState={() => setDataStateSheetOpen(true)}
         />
 
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 lg:grid-cols-[minmax(240px,280px)_1fr]">
@@ -684,6 +684,11 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
           </main>
         </div>
       </div>
+
+      <DataAndStateSheet
+        open={dataStateSheetOpen}
+        onOpenChange={setDataStateSheetOpen}
+      />
 
       <BuilderInspectorSheet
         open={inspectorOpen}

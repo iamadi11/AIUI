@@ -10,7 +10,7 @@ From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home p
 
 **Layout & events:** Inspector sections are registry-driven. Canvas affordances (reorder, resize where supported) should match runtime layout rules.
 
-**Initial state:** Document state defaults for expressions and `setState` paths live in the document model (see builder panels).
+**Data & state:** Use the **Data & state** control in the navbar to edit **initial document state**, see sample binding source ids, and apply the **fetch → table** state starter. Per-component bindings stay in the properties sheet when a layer is selected.
 
 **Diagnostics:** With **`?dev=1`**, diagnostics and optional logic visualization are available without cluttering the default builder.
 

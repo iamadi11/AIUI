@@ -3,6 +3,7 @@ const EN_MESSAGES = {
   "navbar.more": "More",
   "navbar.closeMenu": "Close menu",
   "navbar.advanced": "Advanced",
+  "navbar.dataAndState": "Data & state",
   "builder.componentPaletteAriaLabel": "Component palette",
   "builder.workspaceHeading": "Builder workspace",
   "builder.workspaceTabDesign": "Design",
@@ -21,6 +22,27 @@ const EN_MESSAGES = {
   "builder.redo": "Redo",
   "builder.redoTitle": "Redo (⌘⇧Z / Ctrl+Y)",
   "builder.preview": "Preview",
+  "builder.dataStateSheetTitle": "Data & state",
+  "builder.dataStateSheetDescription":
+    "Initial document state, sample source ids for bindings preview, and a shortcut for the fetch→table workflow.",
+  "builder.dataStateIntro":
+    "Use initial state for default values that actions and expressions read. Per-layer data bindings are edited in the properties sheet when you select a component.",
+  "builder.dataStateInitialHeading": "Initial state",
+  "builder.dataStateInitialBody":
+    "Keys become state paths (e.g. table.rows). Values accept JSON: numbers, booleans, strings, objects. Blur a field to save.",
+  "builder.dataStateKeyLabel": "Key",
+  "builder.dataStateKeyPlaceholder": "count",
+  "builder.dataStateValueLabel": "Value",
+  "builder.dataStateValuePlaceholder": "e.g. 0, true, \"hello\"",
+  "builder.dataStateRemoveRow": "Remove row",
+  "builder.dataStateAddField": "Add field",
+  "builder.dataStateSampleSourcesHeading": "Sample data sources (preview)",
+  "builder.dataStateSampleSourcesBody":
+    "Use these ids as query sources when binding props. They are built-in samples for the binding preview, not live APIs.",
+  "builder.dataStateFetchStarterHeading": "Fetch → table preset",
+  "builder.dataStateFetchStarterBody":
+    "Adds table.rows (empty array) so it matches the Click → fetch table data interaction preset (assignTo: table.rows). Then select a Button, open Actions, and add that preset.",
+  "builder.dataStateFetchStarterButton": "Prepare state for fetch → table",
   "builder.addBoxToRoot": "Add Box to root",
   "builder.addStackToRoot": "Add Stack to root",
   "builder.resetDocument": "Reset document",

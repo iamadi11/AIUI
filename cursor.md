@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-04-01 - Data & state UX:** One **Sheet** from the navbar holds **initial state**, **sample data source ids** (for binding preview), and a **fetch→table state starter**; avoid a second copy under dev-only stacks so the story stays single-path.
 - **2026-04-01 - Drop defaults:** Registry **`defaultLayout`** (`UiLayout`) merges in **`createNodeFromType`** alongside **`defaultProps`**; keep palette components’ spacing/padding in the registry, not ad hoc in the app.
 - **2026-04-01 - Preview parity:** Extract **`RuntimePreviewHost`** (shared with `/preview`) for the builder canvas; pass **`runtimeDocumentForActiveEditorScreen(doc, activeScreenId)`** into runtime so the edited screen renders while `update()` resets to `initialScreenId` — without mutating the stored document.
 - **2026-04-01 - Phase 1 builder layout:** With **one screen**, **hide** the **screen graph** so the **page canvas** fills the workspace; surface **add screen** via template dropdown + hint. With **multiple screens**, default split **22% / 78%** (graph / canvas). Palette → canvas stays primary for components; dropping on the graph to spawn a screen only applies when the graph is mounted.
