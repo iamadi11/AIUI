@@ -15,13 +15,17 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 1 — Full-window page canvas
 
-- [ ] Builder workspace: **React Flow** as the **dominant** full-area canvas for the one-page tree (palette + minimal chrome).
-- [ ] **Palette → canvas** DnD is the default path for adding top-level structure (audit: no mandatory alternate tree for basic flows).
+- [x] **Single-page mode** (`screens.length === 1`): hide the **screen graph** (React Flow); the **page canvas** (`BuilderCanvas` / runtime surface) uses the **full workspace** below the optional dev/perf rows.
+- [x] **Multi-screen mode**: vertical split defaults to **~22% screen map / ~78% page canvas** (was 40/60) so composition stays dominant.
+- [x] When the graph is hidden, **add another screen** via the **template** dropdown + short hint; palette → **page canvas** remains the primary DnD path for components.
+- [ ] **Follow-up:** true “components on a React Flow canvas” (spatial node graph for the page tree) is a larger architectural step — see [`PLAN.md`](PLAN.md) if/when prioritized over the current runtime canvas.
 
 ## Phase 2 — Preview parity
 
-- [ ] Audit all builder surfaces that render DSL; **eliminate or align** any second render path vs `/preview`.
-- [ ] Document or automate a **canvas vs preview** smoke checklist (same JSON, same viewport).
+- [x] Builder canvas uses **`RuntimePreviewHost`** (same DOM/CSS as `/preview` default path: desktop width cap, `p-4`, `min-h-[140px]`).
+- [x] **`runtimeDocumentForActiveEditorScreen`** so the runtime shows the **active** editor screen (non-mutating `initialScreenId` shim); export / preview keep persisted routing.
+- [x] Manual checklist: [`docs/builder/preview-parity.md`](docs/builder/preview-parity.md).
+- [ ] **Optional:** automated visual or layout snapshot test (builder vs preview) in CI.
 
 ## Phase 3 — Props on drop + lean inspector
 

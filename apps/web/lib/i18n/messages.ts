@@ -36,7 +36,11 @@ const EN_MESSAGES = {
   "builder.selectionMany": "{count} layers selected",
   "builder.emptyStateTitle": "Start with one small step",
   "builder.emptyStateBody":
-    "Your page is empty. Drag a component from the left palette onto the screen graph (top) or the canvas below, or add a Box or Stack from the menu.",
+    "Your page is empty. Drag a component from the left palette onto the canvas, or use More → Add Box or Stack to the root.",
+  "builder.emptyStateBodyMultiScreen":
+    "Your page is empty. Drag from the palette onto the canvas below, or onto the screen map above to add another screen. You can also use More → Add Box or Stack.",
+  "builder.singlePageAddScreenHint":
+    "One page — add another screen from a template to show the screen map and wire navigation.",
   "builder.nearEmptyState":
     "Nice start. Add one more section to make your layout easier to work with.",
   "builder.tree": "Tree",

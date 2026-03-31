@@ -25,6 +25,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { runtimeDocumentForActiveEditorScreen } from "@/lib/builder/runtime-document-editor";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { analyzeDocumentPerformanceFromDoc } from "@/lib/builder/document-performance";
 import { getPathToNode } from "@/lib/document/tree";
@@ -115,6 +116,12 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
     () => editorDocumentView(document, activeScreenId),
     [document, activeScreenId],
   );
+  const runtimeDocument = useMemo(
+    () => runtimeDocumentForActiveEditorScreen(document, activeScreenId),
+    [document, activeScreenId],
+  );
+  const screenCount = Object.keys(document.screens).length;
+  const showScreenGraph = screenCount > 1;
   const rootId = editorDoc.root.id;
   const userLayerCount = Math.max(0, countNodes(editorDoc.root) - 1);
   const performance = useMemo(
@@ -277,6 +284,175 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
     }
   }
 
+  const canvasColumn = (
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
+      <div className="min-h-0 flex-1">
+        <BuilderCanvas
+          document={editorDoc}
+          runtimeDocument={runtimeDocument}
+          onRuntimeDiagnostic={handleRuntimeDiagnostic}
+          selectedId={selectedNodeId}
+          onSelect={selectNodeEx}
+          onToggleSelect={toggleNodeEx}
+          onLabelChange={(id, label) =>
+            updateNode(id, (n) => ({
+              ...n,
+              props: { ...n.props, label },
+            }))
+          }
+          onLeafLayoutResize={(id, width, height) =>
+            updateNode(id, (n) => {
+              const prev = n.layout ? { ...n.layout } : {};
+              const next = { ...prev } as Record<string, unknown>;
+              next.width = width;
+              next.height = height;
+              return { ...n, layout: next };
+            })
+          }
+          rootId={rootId}
+          onDuplicateNode={(id) => duplicateNode(id)}
+          onRemoveNode={(id) => removeNode(id)}
+        />
+      </div>
+
+      {userLayerCount === 0 ? (
+        <div className="shrink-0 rounded-xl border border-dashed border-primary/40 bg-primary/4 p-4">
+          <p className="text-sm font-medium text-foreground">
+            {msg("builder.emptyStateTitle")}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {msg(
+              showScreenGraph
+                ? "builder.emptyStateBodyMultiScreen"
+                : "builder.emptyStateBody",
+            )}
+          </p>
+        </div>
+      ) : userLayerCount <= 2 && builderDevMode ? (
+        <div className="shrink-0 rounded-xl border border-border/80 bg-muted/20 p-3">
+          <p className="text-xs text-muted-foreground">
+            {msg("builder.nearEmptyState")}
+          </p>
+        </div>
+      ) : null}
+
+      {builderDevMode ? (
+        <div className="flex min-h-0 max-h-[min(42vh,520px)] shrink-0 flex-col gap-3 overflow-y-auto">
+          <BuilderShortcutsHelp />
+          <section
+            className="flex flex-col gap-2"
+            aria-labelledby="builder-tree-heading"
+          >
+            <p
+              id="builder-tree-heading"
+              className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+            >
+              {msg("builder.tree")}
+            </p>
+            <NodeTree
+              node={editorDoc.root}
+              depth={0}
+              selectedIds={selectedIds}
+              onSelect={selectNodeEx}
+              onToggle={toggleNodeEx}
+              onRangeSelect={(targetId) => {
+                if (!selectedNodeId) {
+                  selectNodeEx(targetId);
+                  return;
+                }
+                const ids = collectNodeIds(editorDoc.root);
+                const a = ids.indexOf(selectedNodeId);
+                const b = ids.indexOf(targetId);
+                if (a < 0 || b < 0) {
+                  selectNodeEx(targetId);
+                  return;
+                }
+                const from = Math.min(a, b);
+                const to = Math.max(a, b);
+                setSelectionEx(ids.slice(from, to + 1));
+              }}
+              rootId={rootId}
+              labelledById="builder-tree-heading"
+            />
+          </section>
+
+          <DocumentExportPanel document={document} />
+
+          <DocumentStatePanel />
+
+          <LayoutDebugPanel
+            root={editorDoc.root}
+            documentLayoutVersion={document.layoutVersion}
+          />
+
+          <DiagnosticsPanel
+            document={document}
+            selectedCount={selectedIds.length}
+            undoDepth={undoDepth}
+            redoDepth={redoDepth}
+            logicMapSlot={
+              <LogicFlowPanel
+                root={editorDoc.root}
+                selectedId={selectedNodeId}
+              />
+            }
+          />
+
+          <section
+            className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm"
+            aria-labelledby="live-document-heading"
+          >
+            <p
+              id="live-document-heading"
+              className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+            >
+              {msg("builder.liveDocument")}
+            </p>
+            {performance.scaleLevel === "very_large" ? (
+              <p className="text-xs text-muted-foreground">
+                {msg("builder.liveDocumentHidden")}
+              </p>
+            ) : (
+              <pre className="max-h-64 overflow-auto text-sm leading-relaxed">
+                {JSON.stringify(document, null, 2)}
+              </pre>
+            )}
+          </section>
+        </div>
+      ) : null}
+
+      {!builderDevMode && selectedIds.some((id) => id !== rootId) ? (
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              for (const id of selectedIds) {
+                if (id !== rootId) duplicateNode(id);
+              }
+            }}
+            title={msg("builder.duplicateTitle")}
+          >
+            {msg("builder.duplicate")}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              for (const id of selectedIds) {
+                if (id !== rootId) removeNode(id);
+              }
+            }}
+          >
+            {msg("builder.removeSelected")}
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <DndContext
       sensors={sensors}
@@ -383,32 +559,69 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
               </div>
             ) : null}
 
-            <ResizablePanelGroup
-              orientation="vertical"
-              className="min-h-0 flex-1"
-            >
-              <ResizablePanel defaultSize={40} minSize={20}>
-                <div className="flex h-full min-h-0 flex-col gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="button"
-                      variant={
-                        nextEdgeKind === "navigate" ? "default" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setNextEdgeKind("navigate")}
-                    >
-                      {msg("builder.edgeKindNavigate")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={nextEdgeKind === "modal" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setNextEdgeKind("modal")}
-                    >
-                      {msg("builder.edgeKindModal")}
-                    </Button>
-                    {Object.keys(document.screens).length > 1 ? (
+            {!showScreenGraph ? (
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <select
+                  className="h-8 max-w-[min(100%,260px)] truncate rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground shadow-sm"
+                  aria-label={msg("builder.addScreenTemplateAriaLabel")}
+                  value={screenTemplateChoice}
+                  onChange={(e) => {
+                    const v = e.target.value as ScreenTemplateId | "";
+                    if (!v) return;
+                    const pos =
+                      flowRef.current?.centerFlowPosition() ?? {
+                        x: 200,
+                        y: 160,
+                      };
+                    addScreenFromTemplate(v, pos);
+                    setScreenTemplateChoice("");
+                  }}
+                >
+                  <option value="">
+                    {msg("builder.addScreenTemplatePlaceholder")}
+                  </option>
+                  {(
+                    Object.keys(SCREEN_TEMPLATE_LABELS) as ScreenTemplateId[]
+                  ).map((id) => (
+                    <option key={id} value={id}>
+                      {SCREEN_TEMPLATE_LABELS[id]}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  {msg("builder.singlePageAddScreenHint")}
+                </p>
+              </div>
+            ) : null}
+
+            {showScreenGraph ? (
+              <ResizablePanelGroup
+                orientation="vertical"
+                className="min-h-0 flex-1"
+              >
+                <ResizablePanel defaultSize={22} minSize={15}>
+                  <div className="flex h-full min-h-0 flex-col gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        variant={
+                          nextEdgeKind === "navigate" ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setNextEdgeKind("navigate")}
+                      >
+                        {msg("builder.edgeKindNavigate")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={
+                          nextEdgeKind === "modal" ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setNextEdgeKind("modal")}
+                      >
+                        {msg("builder.edgeKindModal")}
+                      </Button>
                       <Button
                         type="button"
                         variant="ghost"
@@ -417,213 +630,57 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                       >
                         {msg("builder.removeScreen")}
                       </Button>
-                    ) : null}
-                    <select
-                      className="h-8 max-w-[min(100%,220px)] truncate rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground shadow-sm"
-                      aria-label={msg("builder.addScreenTemplateAriaLabel")}
-                      value={screenTemplateChoice}
-                      onChange={(e) => {
-                        const v = e.target.value as ScreenTemplateId | "";
-                        if (!v) return;
-                        const pos =
-                          flowRef.current?.centerFlowPosition() ?? {
-                            x: 200,
-                            y: 160,
-                          };
-                        addScreenFromTemplate(v, pos);
-                        setScreenTemplateChoice("");
-                      }}
-                    >
-                      <option value="">
-                        {msg("builder.addScreenTemplatePlaceholder")}
-                      </option>
-                      {(
-                        Object.keys(
-                          SCREEN_TEMPLATE_LABELS,
-                        ) as ScreenTemplateId[]
-                      ).map((id) => (
-                        <option key={id} value={id}>
-                          {SCREEN_TEMPLATE_LABELS[id]}
+                      <select
+                        className="h-8 max-w-[min(100%,220px)] truncate rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground shadow-sm"
+                        aria-label={msg("builder.addScreenTemplateAriaLabel")}
+                        value={screenTemplateChoice}
+                        onChange={(e) => {
+                          const v = e.target.value as ScreenTemplateId | "";
+                          if (!v) return;
+                          const pos =
+                            flowRef.current?.centerFlowPosition() ?? {
+                              x: 200,
+                              y: 160,
+                            };
+                          addScreenFromTemplate(v, pos);
+                          setScreenTemplateChoice("");
+                        }}
+                      >
+                        <option value="">
+                          {msg("builder.addScreenTemplatePlaceholder")}
                         </option>
-                      ))}
-                    </select>
-                  </div>
-                  <ScreenFlowCanvas
-                    ref={flowRef}
-                    document={document}
-                    activeScreenId={activeScreenId}
-                    nextEdgeKind={nextEdgeKind}
-                    onSelectScreen={handleSelectScreen}
-                    selectedEdgeId={selectedEdgeId}
-                    onSelectEdge={handleSelectEdge}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={60} minSize={25}>
-                <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
-                  <div className="min-h-0 flex-1">
-                    <BuilderCanvas
-                      document={editorDoc}
-                      onRuntimeDiagnostic={handleRuntimeDiagnostic}
-                      selectedId={selectedNodeId}
-                      onSelect={selectNodeEx}
-                      onToggleSelect={toggleNodeEx}
-                      onLabelChange={(id, label) =>
-                        updateNode(id, (n) => ({
-                          ...n,
-                          props: { ...n.props, label },
-                        }))
-                      }
-                      onLeafLayoutResize={(id, width, height) =>
-                        updateNode(id, (n) => {
-                          const prev = n.layout ? { ...n.layout } : {};
-                          const next = { ...prev } as Record<string, unknown>;
-                          next.width = width;
-                          next.height = height;
-                          return { ...n, layout: next };
-                        })
-                      }
-                      rootId={rootId}
-                      onDuplicateNode={(id) => duplicateNode(id)}
-                      onRemoveNode={(id) => removeNode(id)}
+                        {(
+                          Object.keys(
+                            SCREEN_TEMPLATE_LABELS,
+                          ) as ScreenTemplateId[]
+                        ).map((id) => (
+                          <option key={id} value={id}>
+                            {SCREEN_TEMPLATE_LABELS[id]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <ScreenFlowCanvas
+                      ref={flowRef}
+                      document={document}
+                      activeScreenId={activeScreenId}
+                      nextEdgeKind={nextEdgeKind}
+                      onSelectScreen={handleSelectScreen}
+                      selectedEdgeId={selectedEdgeId}
+                      onSelectEdge={handleSelectEdge}
                     />
                   </div>
-
-                  {userLayerCount === 0 ? (
-                    <div className="shrink-0 rounded-xl border border-dashed border-primary/40 bg-primary/4 p-4">
-                      <p className="text-sm font-medium text-foreground">
-                        {msg("builder.emptyStateTitle")}
-                      </p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        {msg("builder.emptyStateBody")}
-                      </p>
-                    </div>
-                  ) : userLayerCount <= 2 && builderDevMode ? (
-                    <div className="shrink-0 rounded-xl border border-border/80 bg-muted/20 p-3">
-                      <p className="text-xs text-muted-foreground">
-                        {msg("builder.nearEmptyState")}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {builderDevMode ? (
-                    <div className="flex min-h-0 max-h-[min(42vh,520px)] shrink-0 flex-col gap-3 overflow-y-auto">
-                      <BuilderShortcutsHelp />
-                      <section
-                        className="flex flex-col gap-2"
-                        aria-labelledby="builder-tree-heading"
-                      >
-                        <p
-                          id="builder-tree-heading"
-                          className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                        >
-                          {msg("builder.tree")}
-                        </p>
-                        <NodeTree
-                          node={editorDoc.root}
-                          depth={0}
-                          selectedIds={selectedIds}
-                          onSelect={selectNodeEx}
-                          onToggle={toggleNodeEx}
-                          onRangeSelect={(targetId) => {
-                            if (!selectedNodeId) {
-                              selectNodeEx(targetId);
-                              return;
-                            }
-                            const ids = collectNodeIds(editorDoc.root);
-                            const a = ids.indexOf(selectedNodeId);
-                            const b = ids.indexOf(targetId);
-                            if (a < 0 || b < 0) {
-                              selectNodeEx(targetId);
-                              return;
-                            }
-                            const from = Math.min(a, b);
-                            const to = Math.max(a, b);
-                            setSelectionEx(ids.slice(from, to + 1));
-                          }}
-                          rootId={rootId}
-                          labelledById="builder-tree-heading"
-                        />
-                      </section>
-
-                      <DocumentExportPanel document={document} />
-
-                      <DocumentStatePanel />
-
-                      <LayoutDebugPanel
-                        root={editorDoc.root}
-                        documentLayoutVersion={document.layoutVersion}
-                      />
-
-                      <DiagnosticsPanel
-                        document={document}
-                        selectedCount={selectedIds.length}
-                        undoDepth={undoDepth}
-                        redoDepth={redoDepth}
-                        logicMapSlot={
-                          <LogicFlowPanel
-                            root={editorDoc.root}
-                            selectedId={selectedNodeId}
-                          />
-                        }
-                      />
-
-                      <section
-                        className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm"
-                        aria-labelledby="live-document-heading"
-                      >
-                        <p
-                          id="live-document-heading"
-                          className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                        >
-                          {msg("builder.liveDocument")}
-                        </p>
-                        {performance.scaleLevel === "very_large" ? (
-                          <p className="text-xs text-muted-foreground">
-                            {msg("builder.liveDocumentHidden")}
-                          </p>
-                        ) : (
-                          <pre className="max-h-64 overflow-auto text-sm leading-relaxed">
-                            {JSON.stringify(document, null, 2)}
-                          </pre>
-                        )}
-                      </section>
-                    </div>
-                  ) : null}
-
-                  {!builderDevMode && selectedIds.some((id) => id !== rootId) ? (
-                    <div className="flex shrink-0 flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          for (const id of selectedIds) {
-                            if (id !== rootId) duplicateNode(id);
-                          }
-                        }}
-                        title={msg("builder.duplicateTitle")}
-                      >
-                        {msg("builder.duplicate")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          for (const id of selectedIds) {
-                            if (id !== rootId) removeNode(id);
-                          }
-                        }}
-                      >
-                        {msg("builder.removeSelected")}
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={78} minSize={25}>
+                  {canvasColumn}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                {canvasColumn}
+              </div>
+            )}
           </main>
         </div>
       </div>

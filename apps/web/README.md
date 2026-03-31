@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**.
 
-**Product direction (see repo [`PLAN.md`](../../PLAN.md)):** **one page** built on a **full-window React Flow canvas** — **drag and drop** from the palette to compose the dashboard. **Preview** (`/preview`) must show the **same** runtime output as the canvas for the same document (parity). Configuration uses contextual panels (e.g. **Sheet** for properties); **`?dev=1`** adds tree, export, diagnostics, and optional advanced views.
+**Product direction (see repo [`PLAN.md`](../../PLAN.md)):** **one page** composed on the **page canvas** (runtime surface) with **drag-and-drop** from the palette. With a **single screen**, the **screen map** (React Flow) is hidden so the canvas uses the full workspace; **multiple screens** show a **resizable** graph above the canvas. **Preview** (`/preview`) should match the canvas output for the same document (parity). Configuration uses contextual panels (e.g. **Sheet**); **`?dev=1`** adds tree, export, diagnostics, and optional advanced views.
 
 **Builder UX (target):** The **canvas** uses the same **`@aiui/runtime-core`** view as **Preview** where possible. Click to select; keyboard shortcuts and selection behavior as implemented in code. The **component palette** is registry-driven (see [`packages/registry/README.md`](../../packages/registry/README.md)).
 

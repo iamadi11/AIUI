@@ -1,6 +1,10 @@
 "use client";
 
-import type { AiuiDocumentEditorView, UiNode } from "@aiui/dsl-schema";
+import type {
+  AiuiDocument,
+  AiuiDocumentEditorView,
+  UiNode,
+} from "@aiui/dsl-schema";
 import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import {
@@ -18,7 +22,8 @@ import { getDefinition } from "@aiui/registry";
 import { GripVertical } from "lucide-react";
 import { findNodeById } from "@/lib/document/tree";
 import { cn } from "@/lib/utils";
-import { RuntimeSurface } from "@/components/runtime/runtime-surface";
+import { RuntimePreviewHost } from "@/components/preview/runtime-preview-host";
+import { getViewportPreset } from "@/lib/builder/viewport-presets";
 import { Button } from "@/components/ui/button";
 import { msg } from "@/lib/i18n/messages";
 import type { CanvasDropData, CanvasSiblingData } from "./dnd-types";
@@ -36,8 +41,13 @@ function isLeafNode(node: UiNode): boolean {
   return !node.children?.length;
 }
 
+const DESKTOP_VIEWPORT = getViewportPreset("desktop");
+
 type BuilderCanvasProps = {
+  /** Active screen root + full document (editor helpers). */
   document: AiuiDocumentEditorView;
+  /** Passed to runtime; use `runtimeDocumentForActiveEditorScreen` so the edited screen renders. */
+  runtimeDocument: AiuiDocument;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onToggleSelect?: (id: string) => void;
@@ -260,6 +270,7 @@ function SelectionChrome(props: {
 export function BuilderCanvas(props: BuilderCanvasProps) {
   const {
     document,
+    runtimeDocument,
     selectedId,
     onSelect,
     onToggleSelect,
@@ -573,11 +584,13 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
         onDoubleClickCapture={handleDoubleClickCapture}
         onContextMenuCapture={handleContextMenuCapture}
       >
-        <div ref={measureRef} className="relative w-full min-h-[220px]">
-          <RuntimeSurface
-            document={document}
+        <div className="relative w-full min-h-[min(220px,42vh)]">
+          <RuntimePreviewHost
+            ref={measureRef}
+            document={runtimeDocument}
+            viewport={DESKTOP_VIEWPORT}
+            hideChrome
             diagnostics={onRuntimeDiagnostic}
-            className="min-h-[200px] w-full rounded-lg border border-border/60 bg-background/40"
           />
 
           <div className="pointer-events-none absolute inset-0">
