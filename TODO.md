@@ -59,6 +59,11 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 - [x] Reconcile **screen graph** with single-page clarity: multi-screen docs now default to page-canvas editing with an explicit **Open/Hide screen map** toggle (secondary entry), so navigation wiring is opt-in.
 
+## Phase 9+ — Forward backlog
+
+- [ ] Optional: **palette → Page graph** drop targets (append/reorder like runtime canvas) with parity-safe semantics.
+- [ ] Optional: persist **Page graph** node positions (document metadata) across sessions.
+
 ---
 
 ## Done (meta)

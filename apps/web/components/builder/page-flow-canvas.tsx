@@ -1,11 +1,18 @@
 "use client";
 
 import type { UiNode } from "@aiui/dsl-schema";
-import type { Node, Edge, NodeMouseHandler } from "@xyflow/react";
+import type { Edge, Node, NodeMouseHandler, NodeProps } from "@xyflow/react";
 import { Background, Controls, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import { useMemo } from "react";
 import { formatNodeTitle } from "@/lib/builder/node-display";
+import { msg } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
+
+type PageNodeData = {
+  title: string;
+  subtitle: string;
+  childCount: number;
+};
 
 type PageFlowCanvasProps = {
   root: UiNode;
@@ -13,8 +20,8 @@ type PageFlowCanvasProps = {
   onSelect: (id: string | null) => void;
 };
 
-function buildTreeFlow(root: UiNode): { nodes: Node[]; edges: Edge[] } {
-  const nodes: Node[] = [];
+function buildTreeFlow(root: UiNode): { nodes: Node<PageNodeData>[]; edges: Edge[] } {
+  const nodes: Node<PageNodeData>[] = [];
   const edges: Edge[] = [];
   const depthRows = new Map<number, number>();
 
@@ -47,26 +54,29 @@ function buildTreeFlow(root: UiNode): { nodes: Node[]; edges: Edge[] } {
   return { nodes, edges };
 }
 
-function NodeCard(props: { data?: unknown; selected?: boolean }) {
-  const data = (props.data ?? {}) as {
-    title?: string;
-    subtitle?: string;
-    childCount?: number;
-  };
+function NodeCard(props: NodeProps<Node<PageNodeData>>) {
+  const { data, selected } = props;
+  const childCount = data.childCount ?? 0;
+  const roleLine =
+    childCount === 0
+      ? msg("builder.pageGraphLeaf")
+      : msg("builder.pageGraphChildrenCount", { count: childCount });
+
   return (
     <div
       className={cn(
         "min-w-[220px] max-w-[280px] rounded-lg border border-border bg-card px-3 py-2 text-card-foreground shadow-sm",
-        props.selected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+        selected &&
+          "ring-2 ring-primary ring-offset-2 ring-offset-background",
       )}
     >
-      <p className="truncate text-xs font-semibold">{data.title ?? "Node"}</p>
+      <p className="truncate text-xs font-semibold">
+        {data.title?.trim() ? data.title : msg("builder.pageGraphNodeFallback")}
+      </p>
       <p className="truncate font-mono text-[0.62rem] text-muted-foreground">
         {data.subtitle}
       </p>
-      <p className="mt-1 text-[0.62rem] text-muted-foreground">
-        {(data.childCount ?? 0) > 0 ? `${data.childCount} child(ren)` : "Leaf"}
-      </p>
+      <p className="mt-1 text-[0.62rem] text-muted-foreground">{roleLine}</p>
     </div>
   );
 }
