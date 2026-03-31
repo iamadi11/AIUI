@@ -8,20 +8,37 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { layoutDocument, type Rect } from "@aiui/layout-engine";
+import {
+  layoutDocument,
+  parsePadding,
+  type Rect,
+} from "@aiui/layout-engine";
 import { AiuiRuntime } from "@aiui/runtime-react";
 import { getDefinition } from "@aiui/registry";
 import { GripVertical } from "lucide-react";
 import { findNodeById } from "@/lib/document/tree";
 import { cn } from "@/lib/utils";
 import type { CanvasDropData, CanvasSiblingData } from "./dnd-types";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+const MIN_LEAF_PX = 32;
+const SNAP_PX = 8;
+
+function snapLayoutSize(n: number): number {
+  return Math.max(MIN_LEAF_PX, Math.round(n / SNAP_PX) * SNAP_PX);
+}
+
+function isLeafNode(node: UiNode): boolean {
+  return !node.children?.length;
+}
 
 type BuilderCanvasProps = {
   document: AiuiDocument;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onLabelChange: (id: string, label: string) => void;
+  /** Set intrinsic `layout.width` / `layout.height` for empty leaves (snapped to 8px, min 32). */
+  onLeafLayoutResize?: (id: string, width: number, height: number) => void;
 };
 
 function readLabelProp(node: UiNode): string {
@@ -225,13 +242,31 @@ function SelectionChrome(props: {
 }
 
 export function BuilderCanvas(props: BuilderCanvasProps) {
-  const { document, selectedId, onSelect, onLabelChange } = props;
+  const { document, selectedId, onSelect, onLabelChange, onLeafLayoutResize } =
+    props;
   const root = document.root;
 
   const measureRef = useRef<HTMLDivElement>(null);
+  const onLeafLayoutResizeRef = useRef(onLeafLayoutResize);
+  useLayoutEffect(() => {
+    onLeafLayoutResizeRef.current = onLeafLayoutResize;
+  });
+
   const [layoutWidth, setLayoutWidth] = useState(0);
   const [paletteDropActive, setPaletteDropActive] = useState(false);
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
+  const [resizeSession, setResizeSession] = useState<null | {
+    id: string;
+    startX: number;
+    startY: number;
+    baseW: number;
+    baseH: number;
+  }>(null);
+  const [resizeDraft, setResizeDraft] = useState<null | {
+    id: string;
+    w: number;
+    h: number;
+  }>(null);
 
   useDndMonitor({
     onDragStart: (e) => {
@@ -266,9 +301,50 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
   const selectedNode =
     selectedId && selectedRect ? findNodeById(root, selectedId) : null;
 
+  const effectiveSelectedRect = useMemo(() => {
+    if (!selectedRect || !selectedNode || !resizeDraft) return selectedRect;
+    if (resizeDraft.id !== selectedId) return selectedRect;
+    const pad = parsePadding(selectedNode);
+    return {
+      ...selectedRect,
+      width: pad.left + pad.right + resizeDraft.w,
+      height: pad.top + pad.bottom + resizeDraft.h,
+    };
+  }, [selectedRect, selectedNode, resizeDraft, selectedId]);
+
+  useEffect(() => {
+    if (resizeSession === null) return;
+    const { id, startX, startY, baseW, baseH } = resizeSession;
+    function move(e: PointerEvent) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      setResizeDraft({
+        id,
+        w: snapLayoutSize(baseW + dx),
+        h: snapLayoutSize(baseH + dy),
+      });
+    }
+    function up(e: PointerEvent) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const w = snapLayoutSize(baseW + dx);
+      const h = snapLayoutSize(baseH + dy);
+      onLeafLayoutResizeRef.current?.(id, w, h);
+      setResizeSession(null);
+      setResizeDraft(null);
+    }
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+  }, [resizeSession]);
+
   function handlePointerDownCapture(e: React.PointerEvent<HTMLDivElement>) {
     const t = e.target as HTMLElement | null;
     if (!t) return;
+    if (t.closest("[data-aiui-resize-handle]")) return;
     if (t.closest("[data-aiui-builder-chrome]")) return;
     if (t.closest("[data-aiui-grip]")) return;
     const hit = t.closest("[data-aiui-id]");
@@ -310,7 +386,8 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
       <p className="text-[0.65rem] leading-snug text-muted-foreground">
         Same <code className="font-mono text-[0.65rem]">@aiui/runtime-core</code>{" "}
         view as Preview — click a layer to select; drag the grip to reorder
-        siblings; drop palette items onto a highlighted region.
+        siblings; empty leaves show a resize handle (8px snap); drop palette
+        items onto a highlighted region.
       </p>
       <div
         className="rounded-xl border border-dashed border-border bg-muted/15 p-3 transition-colors hover:bg-muted/25"
@@ -359,9 +436,9 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
               </SortableContext>
             ))}
 
-            {selectedNode && selectedRect ? (
+            {selectedNode && effectiveSelectedRect ? (
               <SelectionChrome
-                rect={selectedRect}
+                rect={effectiveSelectedRect}
                 title={nodeTypeTitle(selectedNode)}
                 labelText={readLabelProp(selectedNode)}
                 editing={
@@ -373,6 +450,62 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
                   setEditingLabelId(null);
                 }}
                 onCancelEdit={() => setEditingLabelId(null)}
+              />
+            ) : null}
+
+            {selectedNode &&
+            selectedRect &&
+            effectiveSelectedRect &&
+            onLeafLayoutResize &&
+            isLeafNode(selectedNode) ? (
+              <button
+                type="button"
+                data-aiui-resize-handle
+                className="nodrag nopan pointer-events-auto absolute size-3 cursor-nwse-resize rounded-sm border border-primary bg-background shadow-md"
+                style={{
+                  left: effectiveSelectedRect.x + effectiveSelectedRect.width - 5,
+                  top: effectiveSelectedRect.y + effectiveSelectedRect.height - 5,
+                  zIndex: 22,
+                }}
+                title="Resize (8px snap, min 32px)"
+                aria-label="Resize layer"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  const pad = parsePadding(selectedNode);
+                  const innerW = Math.max(
+                    0,
+                    selectedRect.width - pad.left - pad.right,
+                  );
+                  const innerH = Math.max(
+                    0,
+                    selectedRect.height - pad.top - pad.bottom,
+                  );
+                  const layout = selectedNode.layout as
+                    | Record<string, unknown>
+                    | undefined;
+                  const baseW =
+                    typeof layout?.width === "number" && Number.isFinite(layout.width)
+                      ? layout.width
+                      : innerW;
+                  const baseH =
+                    typeof layout?.height === "number" &&
+                    Number.isFinite(layout.height)
+                      ? layout.height
+                      : innerH;
+                  setResizeSession({
+                    id: selectedNode.id,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    baseW,
+                    baseH,
+                  });
+                  setResizeDraft({
+                    id: selectedNode.id,
+                    w: snapLayoutSize(baseW),
+                    h: snapLayoutSize(baseH),
+                  });
+                }}
               />
             ) : null}
           </div>

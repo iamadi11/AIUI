@@ -8,7 +8,7 @@ From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home p
 
 See `packages/registry/README.md` for palette metadata when adding primitives.
 
-**Layout:** Properties can target `node.layout` (padding, width/height for empty leaves). On the canvas, use the **grip** beside a nested node to **reorder** among siblings.
+**Layout:** Properties can target `node.layout` (padding, **margin**, width/height for empty leaves). On the canvas, use the **grip** beside a nested node to **reorder** among siblings; select an **empty** Box/Stack and drag the **resize** handle (bottom-right) to change intrinsic size — values snap to 8px (minimum 32px).
 
 **Events:** Configure **When** (preset or custom) and **Visual steps** (state, URL, HTTP, one-level **If**, HTTP body) or **Advanced JSON** for `sequence` / nested logic; blur fields to save.
 

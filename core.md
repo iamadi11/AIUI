@@ -402,6 +402,12 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 - **Inspector:** Padding and intrinsic width/height for Box/Stack via `scope: "layout"` fields (no raw JSON for these keys).
 - **Canvas:** **Grip** drag to **reorder siblings**; drop targets and palette drag unchanged.
 
+### Phase 3 — Layout (follow-up, partial)
+
+- **Engine:** `layout.margin` (number or per-side object) — outside the border box; affects sibling spacing in column and row stacks (`parseMargin` in `@aiui/layout-engine`).
+- **Inspector:** Uniform **Margin (px)** on Box/Stack (same pattern as padding).
+- **Canvas:** **Resize** handle on selected **empty** leaves — 8px snap, 32px minimum; writes `layout.width` / `layout.height` (matches Properties).
+
 ### Phase 4 — Events (shipped baseline)
 
 - **Inspector:** Event list with **When** presets (or custom name), **Visual steps** (update state, open URL, HTTP) or **Advanced JSON** for `sequence` / `condition`; collapsed header shows a short summary chain.

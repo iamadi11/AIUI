@@ -285,6 +285,15 @@ export function BuilderDemo() {
                   props: { ...n.props, label },
                 }))
               }
+              onLeafLayoutResize={(id, width, height) =>
+                updateNode(id, (n) => {
+                  const prev = n.layout ? { ...n.layout } : {};
+                  const next = { ...prev } as Record<string, unknown>;
+                  next.width = width;
+                  next.height = height;
+                  return { ...n, layout: next };
+                })
+              }
             />
 
             <div className="space-y-2">

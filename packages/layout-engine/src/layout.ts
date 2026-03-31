@@ -1,4 +1,5 @@
 import type { UiNode } from "@aiui/dsl-schema";
+import { parseMargin } from "./margin";
 import { parsePadding } from "./padding";
 import type { IntrinsicSize, LayoutConstraints, LayoutOptions, Rect } from "./types";
 
@@ -68,15 +69,17 @@ export function measureNode(
   }
 
   if (isRow(node)) {
-    const dims = children.map((c) =>
-      measureNode(c, innerW, innerH, intrinsics),
-    );
+    const dims = children.map((c) => {
+      const mg = parseMargin(c);
+      return measureNode(c, innerW - mg.left - mg.right, innerH, intrinsics);
+    });
     let totalW = 0;
     let rowH = 0;
     for (let i = 0; i < dims.length; i++) {
-      totalW += dims[i].w;
+      const mg = parseMargin(children[i]);
+      totalW += mg.left + dims[i].w + mg.right;
       if (i < dims.length - 1) totalW += gap;
-      rowH = Math.max(rowH, dims[i].h);
+      rowH = Math.max(rowH, dims[i].h + mg.top + mg.bottom);
     }
     if (innerH !== undefined) {
       rowH = Math.min(rowH, innerH);
@@ -89,8 +92,14 @@ export function measureNode(
 
   let totalH = pad.top + pad.bottom;
   for (let i = 0; i < children.length; i++) {
-    const m = measureNode(children[i], innerW, undefined, intrinsics);
-    totalH += m.h;
+    const mg = parseMargin(children[i]);
+    const m = measureNode(
+      children[i],
+      innerW - mg.left - mg.right,
+      undefined,
+      intrinsics,
+    );
+    totalH += mg.top + m.h + mg.bottom;
     if (i < children.length - 1) totalH += gap;
   }
   return { w: maxW, h: totalH };
@@ -127,26 +136,40 @@ function layoutSubtree(
   }
 
   if (isRow(node)) {
-    const dims = children.map((c) =>
-      measureNode(c, innerW, innerH, intrinsics),
-    );
-    let rowH = Math.max(...dims.map((d) => d.h), 0);
+    const dims = children.map((c) => {
+      const mg = parseMargin(c);
+      return measureNode(c, innerW - mg.left - mg.right, innerH, intrinsics);
+    });
+    const margins = children.map((c) => parseMargin(c));
+    let rowH = 0;
+    for (let i = 0; i < dims.length; i++) {
+      rowH = Math.max(
+        rowH,
+        dims[i].h + margins[i].top + margins[i].bottom,
+      );
+    }
     if (innerH !== undefined) {
       rowH = Math.min(rowH, innerH);
     }
     let cx = x + pad.left;
     for (let i = 0; i < children.length; i++) {
-      const dy = y + pad.top + (rowH - dims[i].h) / 2;
+      const mg = margins[i];
+      cx += mg.left;
+      const dy =
+        y +
+        pad.top +
+        mg.top +
+        (rowH - mg.top - mg.bottom - dims[i].h) / 2;
       layoutSubtree(
         children[i],
         cx,
         dy,
         dims[i].w,
-        rowH,
+        rowH - mg.top - mg.bottom,
         map,
         intrinsics,
       );
-      cx += dims[i].w;
+      cx += dims[i].w + mg.right;
       if (i < children.length - 1) cx += gap;
     }
     const rectW = cx - x + pad.right;
@@ -158,18 +181,20 @@ function layoutSubtree(
 
   let cy = y + pad.top;
   for (let i = 0; i < children.length; i++) {
+    const mg = parseMargin(children[i]);
+    cy += mg.top;
     const r = layoutSubtree(
       children[i],
-      x + pad.left,
+      x + pad.left + mg.left,
       cy,
-      innerW,
+      innerW - mg.left - mg.right,
       undefined,
       map,
       intrinsics,
     );
-    cy += r.height + gap;
+    cy += r.height + mg.bottom;
+    if (i < children.length - 1) cy += gap;
   }
-  cy -= gap;
   const rectH = cy - y + pad.bottom;
   const r = { x, y, width, height: rectH };
   map.set(node.id, r);

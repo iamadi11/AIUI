@@ -6,6 +6,8 @@ export type {
 } from "./types";
 export { parsePadding } from "./padding";
 export type { Padding } from "./padding";
+export { parseMargin } from "./margin";
+export type { Margin } from "./margin";
 export {
   createTextMeasureCache,
   noopTextMeasure,

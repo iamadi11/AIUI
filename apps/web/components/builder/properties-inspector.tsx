@@ -29,7 +29,7 @@ function resolveProp(
 function resolveLayoutNumber(node: UiNode, key: string): number {
   const layout = node.layout as Record<string, unknown> | undefined;
   const raw = layout?.[key];
-  if (key === "padding") {
+  if (key === "padding" || key === "margin") {
     if (typeof raw === "number" && Number.isFinite(raw)) return raw;
     if (raw && typeof raw === "object" && !Array.isArray(raw)) {
       const o = raw as Record<string, unknown>;
@@ -51,10 +51,10 @@ function resolveLayoutNumber(node: UiNode, key: string): number {
 function applyLayoutUpdate(node: UiNode, key: string, value: unknown): UiNode {
   const prev = node.layout ? { ...node.layout } : {};
   const next = { ...prev } as Record<string, unknown>;
-  if (key === "padding") {
+  if (key === "padding" || key === "margin") {
     const n = typeof value === "number" && Number.isFinite(value) ? Math.max(0, value) : 0;
-    if (n === 0) delete next.padding;
-    else next.padding = n;
+    if (n === 0) delete next[key];
+    else next[key] = n;
     return {
       ...node,
       layout: Object.keys(next).length ? next : undefined,
