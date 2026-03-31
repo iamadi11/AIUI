@@ -17,7 +17,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Define registry UX metadata standard for all shadcn components.
 - [x] Standardize drag-drop placement language and visual affordances.
 - [x] Refactor inspector into beginner-first sections.
-- [ ] Add smart defaults/templates for table/button/card/filter/chart starter dashboard.
+- [x] Add smart defaults/templates for table/button/card/filter/chart starter dashboard.
 - [ ] Run first-time-user walkthrough and capture friction points.
 
 ### Phase 2 - Responsive layout defaults
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 1 starter dashboard smart templates added:
+  - Added reusable starter templates for filter bar, KPI cards, table section, and chart section.
+  - Added a combined "Starter dashboard" template that composes these primitives in a beginner-friendly flow.
+  - Introduced labeled node helpers so template content is self-describing immediately after insertion.
 - **2026-03-31** - Phase 1 inspector refactor to beginner-first sections:
   - Properties inspector now renders ordered sections from registry metadata (`Content`, `Data`, `Actions`, `Visibility`, `Layout`, etc.).
   - Layout-scoped controls are grouped under `Layout`; prop fields default to `Content`.
