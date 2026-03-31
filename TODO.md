@@ -29,8 +29,8 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 3 — Props on drop + lean inspector
 
-- [ ] **Drop-time defaults** wired from registry (and thin app helpers) for new nodes.
-- [ ] **Inspector audit:** remove redundant fields and duplicate controls; section order from registry metadata.
+- [x] **`defaultLayout`** on `ComponentDefinition`; merged in `createNodeFromType` (`apps/web/lib/document/model.ts`). Palette primitives (Button, Input, Card, Table, Badge) set spacing defaults.
+- [x] **Inspector:** hide **Width/Height** layout controls when the node **has children** (those fields apply to empty leaves only). Shorten displayed **node id** with full id in `title` tooltip.
 
 ## Phase 4 — State and data UX
 

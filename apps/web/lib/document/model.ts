@@ -34,6 +34,9 @@ export function createNodeFromType(
     id: options?.id ?? newNodeId(),
     type: def.type,
     props: { ...def.defaultProps },
+    ...(def.defaultLayout && Object.keys(def.defaultLayout).length > 0
+      ? { layout: { ...def.defaultLayout } }
+      : {}),
   };
   if (!def.defaultChildren?.length) return base;
   return {

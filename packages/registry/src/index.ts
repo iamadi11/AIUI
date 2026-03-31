@@ -1,4 +1,4 @@
-import type { UiNode } from "@aiui/dsl-schema";
+import type { UiLayout, UiNode } from "@aiui/dsl-schema";
 
 export const BOX_TYPE = "Box";
 export const STACK_TYPE = "Stack";
@@ -223,6 +223,8 @@ export type ComponentDefinition = {
   type: string;
   displayName: string;
   defaultProps: Record<string, unknown>;
+  /** Merged onto new nodes from `createNodeFromType` (spacing, padding). */
+  defaultLayout?: UiLayout;
   /** Builder UX metadata contract (palette + inspector + capabilities). */
   ux: ComponentUxMetadata;
   /** Optional tree fragment inserted when dropping this type on the canvas. */
@@ -464,6 +466,7 @@ export const primitives: Record<string, ComponentDefinition> = {
     type: BUTTON_TYPE,
     displayName: "Button",
     defaultProps: { label: "Button", variant: "default" },
+    defaultLayout: { margin: { bottom: 8 } },
     ux: {
       palette: {
         category: "input",
@@ -520,6 +523,7 @@ export const primitives: Record<string, ComponentDefinition> = {
     type: INPUT_TYPE,
     displayName: "Input",
     defaultProps: { placeholder: "Type here..." },
+    defaultLayout: { margin: { bottom: 12 } },
     ux: {
       palette: {
         category: "input",
@@ -549,6 +553,7 @@ export const primitives: Record<string, ComponentDefinition> = {
     type: CARD_TYPE,
     displayName: "Card",
     defaultProps: { label: "Card", description: "Card description" },
+    defaultLayout: { padding: 12 },
     defaultChildren: [CARD_DROP_IN_REGIONS],
     ux: {
       palette: {
@@ -585,6 +590,7 @@ export const primitives: Record<string, ComponentDefinition> = {
     type: TABLE_TYPE,
     displayName: "Table",
     defaultProps: { label: "Table", emptyState: "No rows yet" },
+    defaultLayout: { padding: 8, margin: { bottom: 12 } },
     defaultChildren: [TABLE_DROP_IN_REGIONS],
     ux: {
       palette: {
@@ -638,6 +644,7 @@ export const primitives: Record<string, ComponentDefinition> = {
     type: BADGE_TYPE,
     displayName: "Badge",
     defaultProps: { label: "Status", variant: "secondary" },
+    defaultLayout: { margin: { right: 8, bottom: 4 } },
     ux: {
       palette: {
         category: "display",

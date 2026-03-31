@@ -95,6 +95,17 @@ function helperCopyForSection(section: InspectorSectionId): string | null {
   return null;
 }
 
+function formatInspectorNodeId(id: string): string {
+  if (id.length <= 28) return id;
+  return `…${id.slice(-12)}`;
+}
+
+function shouldShowLayoutField(node: UiNode, field: InspectorField): boolean {
+  if (fieldScope(field) !== "layout") return true;
+  if (field.key !== "width" && field.key !== "height") return true;
+  return (node.children?.length ?? 0) === 0;
+}
+
 function hasFiniteLayoutNumber(node: UiNode, key: "width" | "height"): boolean {
   const raw = node.layout?.[key];
   return typeof raw === "number" && Number.isFinite(raw) && raw > 0;
@@ -264,8 +275,11 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
       <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
         <div className="mb-3 border-b border-border pb-2 text-xs text-muted-foreground">
           <span className="font-mono font-medium text-foreground">{node.type}</span>
-          <span className="ml-2 block truncate font-mono text-[0.65rem] text-muted-foreground/90">
-            {node.id}
+          <span
+            className="ml-2 block truncate font-mono text-[0.65rem] text-muted-foreground/90"
+            title={node.id}
+          >
+            {formatInspectorNodeId(node.id)}
           </span>
           {node.id === rootId ? (
             <span className="mt-1 inline-block text-[0.65rem]">{msg("inspector.root")}</span>
@@ -278,7 +292,9 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
         ) : (
           <div className="space-y-4">
             {inspectorOrder.map((section) => {
-              const sectionFields = fieldsBySection.get(section) ?? [];
+              const sectionFields = (fieldsBySection.get(section) ?? []).filter(
+                (f) => shouldShowLayoutField(node, f),
+              );
               const showActions = section === "actions";
               const showDataHint = section === "data";
               const showVisibilityHint = section === "visibility";

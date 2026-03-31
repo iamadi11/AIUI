@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-04-01 - Drop defaults:** Registry **`defaultLayout`** (`UiLayout`) merges in **`createNodeFromType`** alongside **`defaultProps`**; keep palette components’ spacing/padding in the registry, not ad hoc in the app.
 - **2026-04-01 - Preview parity:** Extract **`RuntimePreviewHost`** (shared with `/preview`) for the builder canvas; pass **`runtimeDocumentForActiveEditorScreen(doc, activeScreenId)`** into runtime so the edited screen renders while `update()` resets to `initialScreenId` — without mutating the stored document.
 - **2026-04-01 - Phase 1 builder layout:** With **one screen**, **hide** the **screen graph** so the **page canvas** fills the workspace; surface **add screen** via template dropdown + hint. With **multiple screens**, default split **22% / 78%** (graph / canvas). Palette → canvas stays primary for components; dropping on the graph to spawn a screen only applies when the graph is mounted.
 - **2026-04-01 - Dashboard revamp direction:** The product narrative shifts to **one page = full React Flow workspace** + **DnD structure**, with **preview identical** to the canvas runtime path. **Multi-screen** and **screen graph** are **deferred** to a later optional phase so the default experience stays simple; document this in `PLAN.md`/`TODO.md` to avoid mixed messaging.

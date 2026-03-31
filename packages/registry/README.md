@@ -61,4 +61,5 @@ Adding a primitive: register it in `primitives`, set `ux.palette` and `ux.inspec
 ## Drop-in subtrees and action presets
 
 - **`defaultChildren`:** Optional `UiNode[]` template on a `ComponentDefinition`. When the builder creates a node with `createNodeFromType`, each template subtree is cloned with fresh ids (`cloneUiSubtreeWithNewIds`). Use this for composed starters (e.g. Card/Table with toolbar, body, pagination regions as nested layout nodes).
+- **`defaultLayout`:** Optional `UiLayout` merged onto new nodes (padding, margin) so palette drops get sensible spacing without manual inspector edits.
 - **`ux.capabilities.interactionPresets`:** Optional list of `InteractionPreset` entries (`id`, `label`, `eventName`, `templateKey`). The builder maps `templateKey` to concrete `Action[]` in the app so users get one-click side-effect starters without raw JSON first.
