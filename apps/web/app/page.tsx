@@ -11,15 +11,16 @@ export default function Home() {
             Builder + Universal JSON DSL
           </h1>
           <p className="text-muted-foreground leading-relaxed">
-            Phase 1: document model and Zustand stores, palette and canvas,
-            properties panel, undo/redo, and a live{" "}
+            Phase 1 baseline: document model, builder (palette, canvas, inspector,
+            undo/redo), Zod-validated{" "}
+            <span className="text-foreground">golden JSON</span> export/import, and a{" "}
             <Link
               href="/preview"
               className="text-primary underline-offset-4 hover:underline"
             >
-              preview route
+              live preview
             </Link>{" "}
-            that renders the same document with registry-driven React.
+            driven by the shared registry.
           </p>
         </div>
 
@@ -27,7 +28,7 @@ export default function Home() {
 
         <div className="flex flex-wrap gap-3">
           <p className="text-sm text-muted-foreground">
-            Next: golden JSON export (validated round-trip).
+            Next: Phase 2 — deterministic layout engine (`packages/layout-engine`).
           </p>
         </div>
       </main>

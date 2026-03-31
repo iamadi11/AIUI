@@ -59,3 +59,4 @@ _Add dated or milestone notes below as the project progresses._
 - **2026-03-31 — Builder inspector vs registry:** Describe editable props in `@aiui/registry` (`inspectorFields` + `InspectorField` union) so the panel stays aligned with defaults and new primitives without ad-hoc switch statements in the app.
 - **2026-03-31 — Builder undo/redo:** Snapshot `AiuiDocument` with `structuredClone` before each mutation; keep `past`/`future` stacks with a max depth; after undo/redo validate selection still exists in the tree.
 - **2026-03-31 — Builder preview:** Keep a small React renderer keyed by registry `type` (`DslPreview`); it is a dev host, not `runtime-core`—when the real runtime exists, align flex/gap behavior or share layout from `layout-engine`.
+- **2026-03-31 — Golden JSON:** Always run `safeParseDocument` before writing bytes to disk or clipboard so exports cannot drift from `documentSchema`; re-validate on import before `setDocument`.
