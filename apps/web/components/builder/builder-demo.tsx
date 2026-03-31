@@ -29,6 +29,7 @@ import { DocumentExportPanel } from "./document-export-panel";
 import { DocumentStatePanel } from "./document-state-panel";
 import { LayoutDebugPanel } from "./layout-debug-panel";
 import { LogicFlowPanel } from "./logic-flow-panel";
+import { FirstTimeWalkthroughPanel } from "./first-time-walkthrough-panel";
 import { ComponentPalette } from "./component-palette";
 import { PropertiesInspector } from "./properties-inspector";
 import { DiagnosticsPanel } from "./diagnostics-panel";
@@ -252,6 +253,11 @@ export function BuilderDemo() {
             </div>
 
             <BuilderShortcutsHelp />
+
+            <FirstTimeWalkthroughPanel
+              document={document}
+              selectedCount={selectedIds.length}
+            />
 
             <p className="text-xs text-muted-foreground">
               Selection:{" "}
