@@ -348,6 +348,22 @@ export function BuilderDemo() {
                 selectedIds={selectedIds}
                 onSelect={selectNode}
                 onToggle={toggleNode}
+                onRangeSelect={(targetId) => {
+                  if (!selectedNodeId) {
+                    selectNode(targetId);
+                    return;
+                  }
+                  const ids = collectNodeIds(document.root);
+                  const a = ids.indexOf(selectedNodeId);
+                  const b = ids.indexOf(targetId);
+                  if (a < 0 || b < 0) {
+                    selectNode(targetId);
+                    return;
+                  }
+                  const from = Math.min(a, b);
+                  const to = Math.max(a, b);
+                  setSelection(ids.slice(from, to + 1));
+                }}
                 rootId={rootId}
               />
             </div>
@@ -405,9 +421,11 @@ function NodeTree(props: {
   selectedIds: string[];
   onSelect: (id: string | null) => void;
   onToggle: (id: string) => void;
+  onRangeSelect: (id: string) => void;
   rootId: string;
 }) {
-  const { node, depth, selectedIds, onSelect, onToggle, rootId } = props;
+  const { node, depth, selectedIds, onSelect, onToggle, onRangeSelect, rootId } =
+    props;
   const pad = depth * 12;
   const isRoot = node.id === rootId;
   const title = formatNodeTitle(node);
@@ -425,7 +443,9 @@ function NodeTree(props: {
         )}
         style={{ paddingLeft: pad + 8 }}
         onClick={(e) => {
-          if (e.metaKey || e.ctrlKey) {
+          if (e.shiftKey) {
+            onRangeSelect(node.id);
+          } else if (e.metaKey || e.ctrlKey) {
             onToggle(node.id);
           } else {
             onSelect(node.id);
@@ -447,6 +467,7 @@ function NodeTree(props: {
           selectedIds={selectedIds}
           onSelect={onSelect}
           onToggle={onToggle}
+          onRangeSelect={onRangeSelect}
           rootId={rootId}
         />
       ))}
