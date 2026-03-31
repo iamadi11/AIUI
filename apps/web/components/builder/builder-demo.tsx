@@ -38,6 +38,7 @@ import {
   isCanvasSiblingData,
   isPaletteDragData,
 } from "./dnd-types";
+import { DRAG_COPY } from "./drag-copy";
 import { NodeTree } from "./node-tree";
 import { useBuilderShortcuts } from "./use-builder-shortcuts";
 
@@ -363,7 +364,7 @@ export function BuilderDemo() {
       <DragOverlay dropAnimation={null}>
         {activePalette ? (
           <div className="rounded-lg border border-primary bg-card px-3 py-2 font-mono text-sm shadow-lg">
-            {activePalette.componentType}
+            {DRAG_COPY.overlayPrefix} {activePalette.componentType}
           </div>
         ) : null}
       </DragOverlay>

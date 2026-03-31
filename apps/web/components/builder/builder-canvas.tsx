@@ -19,6 +19,7 @@ import { GripVertical } from "lucide-react";
 import { findNodeById } from "@/lib/document/tree";
 import { cn } from "@/lib/utils";
 import type { CanvasDropData, CanvasSiblingData } from "./dnd-types";
+import { DRAG_COPY } from "./drag-copy";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const MIN_LEAF_PX = 32;
@@ -105,7 +106,13 @@ function PaletteDropOverlay(props: {
         pointerEvents: props.pointerEventsOn ? "auto" : "none",
         zIndex: props.pointerEventsOn ? 8 : 0,
       }}
-    />
+    >
+      {isOver && props.pointerEventsOn ? (
+        <span className="pointer-events-none absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[0.62rem] font-medium text-primary-foreground shadow-sm">
+          {DRAG_COPY.dropInsideLabel}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -145,7 +152,7 @@ function SortableGrip(props: {
         type="button"
         data-aiui-grip
         className="nodrag nopan -ml-0.5 -mt-0.5 flex cursor-grab touch-none rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing"
-        title="Drag to reorder"
+        title={DRAG_COPY.reorderTitle}
         aria-label="Drag to reorder sibling"
         onClick={(e) => e.stopPropagation()}
         {...listeners}
@@ -507,10 +514,7 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
         Canvas
       </p>
       <p className="text-[0.65rem] leading-snug text-muted-foreground">
-        Same <code className="font-mono text-[0.65rem]">@aiui/runtime-core</code>{" "}
-        view as Preview — click a layer to select; drag the grip to reorder
-        siblings; empty leaves show a resize handle (8px snap); drop palette
-        items onto a highlighted region.
+        {DRAG_COPY.canvasHint}
       </p>
       <div
         className="rounded-xl border border-dashed border-border bg-muted/15 p-3 transition-colors hover:bg-muted/25"

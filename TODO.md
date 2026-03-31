@@ -15,7 +15,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 ### Phase 1 - No-code UX foundation (shadcn-first)
 
 - [x] Define registry UX metadata standard for all shadcn components.
-- [ ] Standardize drag-drop placement language and visual affordances.
+- [x] Standardize drag-drop placement language and visual affordances.
 - [ ] Refactor inspector into beginner-first sections.
 - [ ] Add smart defaults/templates for table/button/card/filter/chart starter dashboard.
 - [ ] Run first-time-user walkthrough and capture friction points.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 1 drag-drop language + affordances standardized:
+  - Added shared drag/drop copy constants for palette, canvas, and overlay states.
+  - Unified action wording around add/nest/reorder for first-time-user clarity.
+  - Added explicit on-canvas drop affordance label when nesting targets are active.
 - **2026-03-31** - Phase 1 registry UX metadata standard implemented:
   - Introduced canonical `ComponentDefinition.ux` contract (`palette`, `inspector`, `capabilities`) in `@aiui/registry`.
   - Migrated existing primitives to standardized UX metadata paths and exposed `getPaletteMeta`.

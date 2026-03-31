@@ -14,6 +14,7 @@ import {
 } from "@aiui/registry";
 import { cn } from "@/lib/utils";
 import type { PaletteDragData } from "./dnd-types";
+import { DRAG_COPY } from "./drag-copy";
 import { useMemo, useState } from "react";
 
 const iconForType: Partial<Record<string, typeof BoxIcon>> = {
@@ -48,7 +49,7 @@ function PaletteItem(props: { definition: ComponentDefinition }) {
       style={style}
       {...listeners}
       {...attributes}
-      title={`${definition.displayName} (${definition.type}) — drag onto the canvas`}
+      title={DRAG_COPY.paletteItemTitle(definition.displayName, definition.type)}
       className={cn(
         "flex w-full items-start gap-2 rounded-lg border border-border bg-card px-2.5 py-2 text-left shadow-sm transition-colors",
         "hover:border-primary/45 hover:bg-muted/45",
@@ -172,8 +173,7 @@ export function ComponentPalette() {
       </div>
 
       <p className="text-[0.65rem] leading-relaxed text-muted-foreground">
-        Drag onto the canvas. Drop on a node to nest a child; use the canvas
-        background to append under the root.
+        {DRAG_COPY.paletteFooter}
       </p>
     </div>
   );
