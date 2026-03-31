@@ -28,6 +28,58 @@ function minimalDoc() {
   };
 }
 
+function parityDoc(initialCount = 0) {
+  const BTN = "30000000-0000-4000-8000-000000000101";
+  return {
+    version: DSL_VERSION,
+    layoutVersion: LAYOUT_VERSION,
+    state: { count: initialCount },
+    root: {
+      id: ROOT,
+      type: "Stack",
+      props: { direction: "column", gap: 8 },
+      children: [
+        {
+          id: BTN,
+          type: "Button",
+          props: { label: "Increment" },
+          events: {
+            click: [
+              {
+                type: "setState" as const,
+                path: "count",
+                expression: "(state.count ?? 0) + 1",
+              },
+            ],
+          },
+        },
+        {
+          id: CHILD,
+          type: "Box",
+          props: {},
+        },
+      ],
+    },
+  };
+}
+
+function snapshotDom(container: HTMLElement) {
+  return Array.from(container.querySelectorAll("[data-aiui-id]")).map((node) => {
+    const el = node as HTMLElement;
+    return {
+      id: el.dataset.aiuiId ?? "",
+      type: el.dataset.aiuiType ?? "",
+      left: el.style.left,
+      top: el.style.top,
+      width: el.style.width,
+      height: el.style.height,
+      border: el.style.border,
+      background: el.style.background,
+      borderRadius: el.style.borderRadius,
+    };
+  });
+}
+
 describe("render", () => {
   it("mounts nodes with layout and binds events", async () => {
     const container = document.createElement("div");
@@ -168,5 +220,45 @@ describe("render", () => {
 
     rt.destroy();
     document.body.removeChild(container);
+  });
+
+  it("enforces parity matrix: same DSL + viewport + data => same result", async () => {
+    const widths = [375, 768, 1280];
+    const states = [0, 2];
+
+    for (const width of widths) {
+      for (const initialCount of states) {
+        const doc = parityDoc(initialCount);
+
+        const a = document.createElement("div");
+        a.style.width = `${width}px`;
+        document.body.appendChild(a);
+        const rtA = render({ container: a, config: doc });
+
+        const b = document.createElement("div");
+        b.style.width = `${width}px`;
+        document.body.appendChild(b);
+        const rtB = render({ container: b, config: structuredClone(doc) });
+
+        // Baseline parity for initial render.
+        expect(snapshotDom(a)).toEqual(snapshotDom(b));
+        expect(rtA.getState()).toEqual(rtB.getState());
+
+        // Behavior parity after same interaction.
+        const btnA = a.querySelector('[data-aiui-type="Button"]');
+        const btnB = b.querySelector('[data-aiui-type="Button"]');
+        btnA!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        btnB!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await Promise.resolve();
+
+        expect(snapshotDom(a)).toEqual(snapshotDom(b));
+        expect(rtA.getState()).toEqual(rtB.getState());
+
+        rtA.destroy();
+        rtB.destroy();
+        document.body.removeChild(a);
+        document.body.removeChild(b);
+      }
+    }
   });
 });

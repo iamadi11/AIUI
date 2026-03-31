@@ -48,7 +48,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 ### Phase 5 - Parity and preview contract
 
 - [ ] Enforce single renderer path across editor canvas, preview, and runtime output.
-- [ ] Define parity test matrix: same DSL + viewport + data => same result.
+- [x] Define parity test matrix: same DSL + viewport + data => same result.
 - [ ] Add high-priority visual regression snapshots.
 - [ ] Ensure preview mode hides editor chrome while preserving behavior.
 - [ ] Add parity failure diagnostics surfaced in developer mode.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 5 parity test matrix defined and enforced:
+  - Added runtime-core parity matrix test over desktop/tablet/mobile-like widths and multiple initial data states.
+  - Test asserts deterministic parity for both initial render and post-interaction state transition when DSL, viewport, and initial data are identical.
+  - Added DOM snapshot comparison + runtime state parity assertions to lock regression risk in CI.
 - **2026-03-31** - Phase 6 shadcn default library baseline enforced:
   - Expanded registry palette with shadcn-first primitives (`Button`, `Input`, `Card`, `Table`, `Badge`) so they are visible in the builder's left components navbar.
   - Added inspector metadata/capabilities for new primitives to keep no-code editing beginner-friendly and consistent.
