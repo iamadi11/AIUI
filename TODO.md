@@ -18,7 +18,7 @@ All items below are done unless marked otherwise.
 
 ## Recently completed (2026-03-31)
 
-- Minimal builder: **navbar** (palette + Preview + More); main canvas + properties; **Advanced** → `/?dev=1` for full dev panels.
+- Builder shell: **sidebar palette** (left), slim **navbar** (Preview + More); **`/?dev=1`** adds **Design / Logic** tabs (React Flow logic map + dev panels), tree, export, diagnostics, live JSON; **Advanced** → `/?dev=1` from default route.
 - **Preview** (`/preview`): download / copy / import JSON; **Edit** → `/`; optional **Developer preview** → `?dev=1`.
 - Shared **golden JSON** export logic: [`apps/web/lib/builder/golden-document-export.ts`](apps/web/lib/builder/golden-document-export.ts), [`use-golden-document-export.ts`](apps/web/lib/builder/use-golden-document-export.ts).
 - **Runtime** (`@aiui/runtime-core`): paints labels and sample table UI for Button, Input, Badge, Card (leaf), Table (leaf or title overlay when composed).
@@ -29,3 +29,4 @@ All items below are done unless marked otherwise.
 
 - [ ] Optional React shadcn renderer path if imperative DOM is not enough for visual parity.
 - [ ] Extend `interactionPresets` across more primitives and tune copy.
+- [ ] Optional: editable React Flow graph synced to `Action[]` (advanced); document-template UI if reintroduced.

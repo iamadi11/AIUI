@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ComponentPaletteNavbar } from "./component-palette";
 import { msg } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
-import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
 import { MoreHorizontal, Redo2, Undo2 } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -17,7 +15,6 @@ export type BuilderNavbarProps = {
   onReset: () => void;
   onAddBoxToRoot: () => void;
   onAddStackToRoot: () => void;
-  onInsertTemplate: (templateId: string) => void;
   /** When true, show a link to open builder with dev panels (`?dev=1`). */
   showAdvancedDevLink?: boolean;
 };
@@ -31,7 +28,6 @@ export function BuilderNavbar(props: BuilderNavbarProps) {
     onReset,
     onAddBoxToRoot,
     onAddStackToRoot,
-    onInsertTemplate,
     showAdvancedDevLink,
   } = props;
   const [moreOpen, setMoreOpen] = useState(false);
@@ -39,7 +35,7 @@ export function BuilderNavbar(props: BuilderNavbarProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="flex min-h-0 flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:gap-3">
+      <div className="flex min-h-0 flex-wrap items-center gap-2 px-3 py-2">
         <div className="flex shrink-0 items-center gap-2">
           <Link
             href="/"
@@ -63,9 +59,7 @@ export function BuilderNavbar(props: BuilderNavbarProps) {
           ) : null}
         </div>
 
-        <ComponentPaletteNavbar />
-
-        <div className="flex shrink-0 items-center justify-end gap-1 sm:ml-auto">
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-1">
           <Button
             type="button"
             variant="ghost"
@@ -143,23 +137,6 @@ export function BuilderNavbar(props: BuilderNavbarProps) {
                     >
                       {msg("builder.addStackToRoot")}
                     </Button>
-                    <div className="my-1 h-px bg-border" />
-                    {BUILDER_DOCUMENT_TEMPLATES.map((tpl) => (
-                      <Button
-                        key={tpl.id}
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="justify-start font-normal"
-                        title={tpl.description}
-                        onClick={() => {
-                          onInsertTemplate(tpl.id);
-                          setMoreOpen(false);
-                        }}
-                      >
-                        {tpl.label}
-                      </Button>
-                    ))}
                     <div className="my-1 h-px bg-border" />
                     <Button
                       type="button"

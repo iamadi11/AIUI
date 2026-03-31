@@ -18,6 +18,7 @@ import {
 import { findNodeById } from "@/lib/document/tree";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { msg } from "@/lib/i18n/messages";
 
 type LogicFlowPanelProps = {
   root: UiNode;
@@ -41,7 +42,7 @@ function LogicFlowGraphBody(props: FlowBodyProps) {
 
   return (
     <>
-      <div className="nodrag nopan h-[min(320px,50vh)] w-full overflow-hidden rounded-lg border border-border bg-muted/20">
+      <div className="nodrag nopan h-[min(560px,min(60vh,640px))] w-full overflow-hidden rounded-lg border border-border bg-muted/20">
         <ReactFlowProvider>
           <ReactFlow
             className="h-full w-full"
@@ -79,10 +80,11 @@ function LogicFlowGraphBody(props: FlowBodyProps) {
           </ReactFlow>
         </ReactFlowProvider>
       </div>
-      <p className="mt-2 text-[0.6rem] text-muted-foreground">
-        {stats.eventCount} event{stats.eventCount === 1 ? "" : "s"} ·{" "}
-        {stats.stepCount} step{stats.stepCount === 1 ? "" : "s"} (after
-        expansion)
+      <p className="mt-2 text-[0.65rem] text-muted-foreground">
+        {msg("logic.statsLine", {
+          events: stats.eventCount,
+          steps: stats.stepCount,
+        })}
       </p>
       {inspect ? (
         <div className="mt-2 rounded-lg border border-border bg-muted/25 p-3">
@@ -95,7 +97,7 @@ function LogicFlowGraphBody(props: FlowBodyProps) {
               variant="ghost"
               size="icon"
               className="size-7 shrink-0"
-              title="Close"
+              title={msg("logic.closeInspect")}
               onClick={() => setInspect(null)}
             >
               <X className="size-3" aria-hidden />
@@ -105,13 +107,12 @@ function LogicFlowGraphBody(props: FlowBodyProps) {
             {JSON.stringify(inspect.action, null, 2)}
           </pre>
           <p className="mt-2 text-[0.6rem] leading-snug text-muted-foreground">
-            This view is read-only. Update the same logic under Properties →
-            Events — the graph refreshes automatically.
+            {msg("logic.inspectReadOnly")}
           </p>
         </div>
       ) : (
-        <p className="mt-2 text-[0.6rem] text-muted-foreground">
-          Tip: click a step node to inspect its action payload.
+        <p className="mt-2 text-[0.65rem] text-muted-foreground">
+          {msg("logic.inspectHint")}
         </p>
       )}
     </>
@@ -139,25 +140,21 @@ export function LogicFlowPanel(props: LogicFlowPanelProps) {
   const flowKey = `${selectedId ?? "none"}-${eventsFingerprint}`;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
+    <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Logic graph
+          {msg("logic.title")}
         </p>
         <span className="rounded-full bg-muted px-2 py-0.5 text-[0.6rem] font-medium text-muted-foreground">
-          Synced with Properties
+          {msg("logic.syncBadge")}
         </span>
       </div>
       <p className="mb-3 text-[0.65rem] leading-snug text-muted-foreground">
-        Visual map of event bindings for the selected node.{" "}
-        <code className="rounded bg-muted px-0.5">sequence</code> and{" "}
-        <code className="rounded bg-muted px-0.5">condition</code> are expanded
-        into steps. Click a step to inspect the underlying action JSON. Edit in
-        Properties → Events.
+        {msg("logic.intro")}
       </p>
       {!selectedId ? (
         <p className="text-sm text-muted-foreground">
-          Select a node to preview its logic flow.
+          {msg("logic.selectNode")}
         </p>
       ) : (
         <LogicFlowGraphBody key={flowKey} nodes={nodes} edges={edges} stats={stats} />

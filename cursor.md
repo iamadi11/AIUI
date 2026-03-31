@@ -44,7 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
-- **2026-03-31 - Minimal builder shell:** Navbar holds palette + Preview + overflow actions; walkthrough, export panel, live JSON, and deep diagnostics stay behind `/?dev=1`; default `/preview` carries golden JSON import/export.
+- **2026-03-31 - Minimal builder shell:** Navbar is Preview + undo/redo + overflow actions; **component palette** lives in a **left sidebar**; **Design / Logic** tabs (dev mode) promote the React Flow logic map; walkthrough and document templates were removed from the UI; export panel, live JSON, and deep diagnostics stay behind `/?dev=1`; default `/preview` carries golden JSON import/export.
 - **2026-03-31 - Registry drop-ins:** `defaultChildren` provides composed starter trees (fresh ids via `cloneUiSubtreeWithNewIds`); `interactionPresets` lists beginner-friendly `Action[]` starters resolved in the app (`interaction-preset-actions.ts`).
 - **2026-03-31 - Runtime primitive content:** Decorative labels and table markup use `data-aiui-content`; positioned `data-aiui-id` nodes remain the layout engine’s responsibility.
 - **2026-03-31 - i18n readiness pattern:** Keep user-facing copy behind stable message keys and a tiny interpolation helper early, even for single-locale apps, so localization can be introduced incrementally without touching feature logic.
@@ -75,7 +75,7 @@ After each phase or sub-milestone:
 - **2026-03-31 - Workflow template adoption:** Non-technical action builders need one-click scenario starters (with editable generated steps) to reduce setup friction for common patterns like data-table fetch and hydrate.
 - **2026-03-31 - Multi-step CRUD template:** For row-level CRUD workflows, pre-seeding modal + submit + refresh + feedback actions dramatically reduces event authoring time while keeping generated steps editable.
 - **2026-03-31 - Rule-builder persistence:** Early visibility/interactivity builders should store expression rules on nodes with a stable props key so runtime/parity phases can adopt them without migration churn.
-- **2026-03-31 - Palette visibility contract:** Components appear in the builder left navbar only when they are registered in `@aiui/registry` with `ux.palette` metadata; shadcn adoption should be driven by registry entries, not app-level hardcoded lists.
+- **2026-03-31 - Palette visibility contract:** Components appear in the builder **left palette** only when they are registered in `@aiui/registry` with `ux.palette` metadata; shadcn adoption should be driven by registry entries, not app-level hardcoded lists.
 - **2026-03-31 - Parity guardrail in CI:** Encode parity rules as matrix tests (viewport x initial data x repeated interaction) so deterministic runtime behavior is enforced automatically rather than validated manually.
 - **2026-03-31 - Visual baseline discipline:** Keep high-priority runtime visuals under committed snapshot tests (desktop + mobile widths) so style/layout drift is detected immediately during test runs.
 - **2026-03-31 - Runtime surface parity:** Route builder canvas and preview through one shared app-level runtime surface wrapper so future host-level behavior changes cannot drift between editor and preview experiences.

@@ -333,6 +333,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                       ) : null}
                       <EventBindingsPanel
                         nodeId={editingId}
+                        root={root}
                         events={node.events}
                         onApply={applyEvents}
                         interactionPresets={capabilities?.interactionPresets}

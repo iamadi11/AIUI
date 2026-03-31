@@ -28,11 +28,14 @@ import {
   formatValueForInput,
   isBranchAction,
   isSimpleActionsList,
-  buttonClickFetchPopulateTableTemplate,
-  rowActionModalSubmitRefreshTemplate,
   parseHttpBodyInput,
   parseValueInput,
 } from "@/lib/builder/event-actions";
+import {
+  listDocumentNodesForPicker,
+  type DocumentNodeOption,
+} from "@/lib/builder/document-node-options";
+import { msg } from "@/lib/i18n/messages";
 import { eventsToFlowElements } from "@/lib/logic/events-to-flow";
 import { actionsForInteractionPreset } from "@/lib/builder/interaction-preset-actions";
 import { cn } from "@/lib/utils";
@@ -42,6 +45,58 @@ const controlClass =
 
 const textareaClass =
   "min-h-[6rem] w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 font-mono text-xs leading-relaxed text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+/** Switch branch action type without leaving the visual editor. */
+function SimpleStepTypeSelect(props: {
+  index: number;
+  action: Action;
+  onChange: (next: Action) => void;
+  onBlurCommit: () => void;
+}) {
+  const { index, action, onChange, onBlurCommit } = props;
+  if (action.type === "condition") return null;
+  const id = `step-action-kind-${index}`;
+  return (
+    <div>
+      <label
+        className="mb-0.5 block text-[0.65rem] text-muted-foreground"
+        htmlFor={id}
+      >
+        {msg("events.stepActionKind")}
+      </label>
+      <select
+        id={id}
+        className={controlClass}
+        value={action.type}
+        onChange={(e) => {
+          const t = e.target.value;
+          if (t === "condition") onChange(defaultConditionAction());
+          else if (
+            t === "setState" ||
+            t === "navigate" ||
+            t === "http" ||
+            t === "fetch" ||
+            t === "transform" ||
+            t === "modal" ||
+            t === "notify"
+          ) {
+            onChange(defaultBranchAction(t));
+          }
+        }}
+        onBlur={onBlurCommit}
+      >
+        <option value="setState">{msg("events.kindSetState")}</option>
+        <option value="navigate">{msg("events.kindNavigate")}</option>
+        <option value="http">{msg("events.kindHttp")}</option>
+        <option value="fetch">{msg("events.kindFetch")}</option>
+        <option value="transform">{msg("events.kindTransform")}</option>
+        <option value="modal">{msg("events.kindModal")}</option>
+        <option value="notify">{msg("events.kindNotify")}</option>
+        <option value="condition">{msg("events.kindCondition")}</option>
+      </select>
+    </div>
+  );
+}
 
 type EditorMode = "simple" | "advanced";
 
@@ -74,7 +129,7 @@ function AdvancedFlowPreview(props: { eventName: string; jsonText: string }) {
   if (!parsed) {
     return (
       <p className="text-[0.65rem] text-muted-foreground">
-        Fix JSON to preview flow graph mode.
+        {msg("events.fixJsonPreview")}
       </p>
     );
   }
@@ -101,8 +156,7 @@ function AdvancedFlowPreview(props: { eventName: string; jsonText: string }) {
         </ReactFlowProvider>
       </div>
       <p className="text-[0.6rem] leading-snug text-muted-foreground">
-        Advanced flow mode is read-only for branching preview. Edit JSON above to
-        update graph structure.
+        {msg("events.jsonFlowPreviewHint")}
       </p>
     </div>
   );
@@ -198,8 +252,10 @@ function BranchActionFields(props: {
   branch: Action;
   onChange: (a: Action) => void;
   onBlurCommit: () => void;
+  documentNodeOptions?: readonly DocumentNodeOption[];
 }) {
-  const { idPrefix, branch, onChange, onBlurCommit } = props;
+  const { idPrefix, branch, onChange, onBlurCommit, documentNodeOptions } =
+    props;
   if (!isBranchAction(branch)) return null;
 
   const typeSelect = (
@@ -367,6 +423,8 @@ function BranchActionFields(props: {
   }
 
   if (branch.type === "modal") {
+    const opts = documentNodeOptions ?? [];
+    const inList = opts.some((o) => o.id === branch.target);
     return (
       <div className="space-y-2">
         {typeSelect}
@@ -378,8 +436,25 @@ function BranchActionFields(props: {
               <option value="close">Close</option>
             </select>
           </div>
-          <div>
-            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-mt`}>Target</label>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-mp`}>{msg("events.modalPickComponent")}</label>
+            <select
+              id={`${idPrefix}-mp`}
+              className={controlClass}
+              value={inList ? branch.target : ""}
+              onChange={(e) => onChange({ ...branch, target: e.target.value })}
+              onBlur={onBlurCommit}
+            >
+              <option value="">{msg("events.modalPickPlaceholder")}</option>
+              {opts.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-mt`}>{msg("events.modalTargetId")}</label>
             <input id={`${idPrefix}-mt`} type="text" className={controlClass} value={branch.target} onChange={(e) => onChange({ ...branch, target: e.target.value })} onBlur={onBlurCommit} placeholder="settings-modal" autoComplete="off" />
           </div>
         </div>
@@ -493,8 +568,10 @@ function ConditionStepRow(props: {
   onRemove: () => void;
   onBlurCommit: () => void;
   canRemove: boolean;
+  documentNodeOptions?: readonly DocumentNodeOption[];
 }) {
-  const { action, index, onChange, onRemove, onBlurCommit, canRemove } = props;
+  const { action, index, onChange, onRemove, onBlurCommit, canRemove, documentNodeOptions } =
+    props;
   const hasElse = action.else !== undefined;
 
   return (
@@ -549,6 +626,7 @@ function ConditionStepRow(props: {
             branch={action.then}
             onChange={(then) => onChange({ ...action, then })}
             onBlurCommit={onBlurCommit}
+            documentNodeOptions={documentNodeOptions}
           />
         </div>
         <label className="flex cursor-pointer items-center gap-2 text-[0.65rem] text-foreground">
@@ -585,6 +663,7 @@ function ConditionStepRow(props: {
                 onChange({ ...action, else: elseAction })
               }
               onBlurCommit={onBlurCommit}
+              documentNodeOptions={documentNodeOptions}
             />
           </div>
         ) : null}
@@ -604,6 +683,7 @@ function SimpleActionRow(props: {
   canRemove: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
+  documentNodeOptions?: readonly DocumentNodeOption[];
 }) {
   const {
     action,
@@ -616,6 +696,7 @@ function SimpleActionRow(props: {
     canRemove,
     canMoveUp,
     canMoveDown,
+    documentNodeOptions,
   } = props;
 
   if (action.type === "condition") {
@@ -627,6 +708,7 @@ function SimpleActionRow(props: {
         onRemove={onRemove}
         onBlurCommit={onBlurCommit}
         canRemove={canRemove}
+        documentNodeOptions={documentNodeOptions}
       />
     );
   }
@@ -634,10 +716,15 @@ function SimpleActionRow(props: {
   if (action.type === "setState") {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
-            Update state
-          </span>
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-[min(100%,12rem)] flex-1">
+            <SimpleStepTypeSelect
+              index={index}
+              action={action}
+              onChange={onChange}
+              onBlurCommit={onBlurCommit}
+            />
+          </div>
           <div className="flex items-center gap-1">
             <Button
               type="button"
@@ -729,10 +816,15 @@ function SimpleActionRow(props: {
   if (action.type === "navigate") {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
-            Open URL
-          </span>
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-[min(100%,12rem)] flex-1">
+            <SimpleStepTypeSelect
+              index={index}
+              action={action}
+              onChange={onChange}
+              onBlurCommit={onBlurCommit}
+            />
+          </div>
           <div className="flex items-center gap-1">
             <Button
               type="button"
@@ -795,10 +887,15 @@ function SimpleActionRow(props: {
   if (action.type === "http") {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
-            HTTP
-          </span>
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-[min(100%,12rem)] flex-1">
+            <SimpleStepTypeSelect
+              index={index}
+              action={action}
+              onChange={onChange}
+              onBlurCommit={onBlurCommit}
+            />
+          </div>
           <div className="flex items-center gap-1">
             <Button
               type="button"
@@ -912,8 +1009,15 @@ function SimpleActionRow(props: {
   if (action.type === "fetch") {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">Fetch</span>
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-[min(100%,12rem)] flex-1">
+            <SimpleStepTypeSelect
+              index={index}
+              action={action}
+              onChange={onChange}
+              onBlurCommit={onBlurCommit}
+            />
+          </div>
           <div className="flex items-center gap-1">
             <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step up" onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
             <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step down" onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
@@ -941,10 +1045,15 @@ function SimpleActionRow(props: {
   if (action.type === "transform" || action.type === "modal" || action.type === "notify") {
     return (
       <div className="rounded-md border border-border/80 bg-background/60 p-2">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
-            {action.type === "transform" ? "Transform" : action.type === "modal" ? "Modal" : "Notify"}
-          </span>
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-[min(100%,12rem)] flex-1">
+            <SimpleStepTypeSelect
+              index={index}
+              action={action}
+              onChange={onChange}
+              onBlurCommit={onBlurCommit}
+            />
+          </div>
           <div className="flex items-center gap-1">
             <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step up" onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
             <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step down" onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
@@ -956,6 +1065,7 @@ function SimpleActionRow(props: {
           branch={action}
           onChange={onChange}
           onBlurCommit={onBlurCommit}
+          documentNodeOptions={documentNodeOptions}
         />
       </div>
     );
@@ -966,12 +1076,17 @@ function SimpleActionRow(props: {
 
 export function EventBindingsPanel(props: {
   nodeId: string;
+  root: UiNode;
   events: UiNode["events"];
   onApply: (next: Record<string, Action[]> | undefined) => void;
-  /** Registry-driven quick actions; when absent, generic table templates are shown. */
+  /** Registry-driven quick actions (e.g. table row presets). */
   interactionPresets?: readonly InteractionPreset[];
 }) {
-  const { nodeId, events, onApply, interactionPresets } = props;
+  const { nodeId, root, events, onApply, interactionPresets } = props;
+  const documentNodeOptions = useMemo(
+    () => listDocumentNodesForPicker(root),
+    [root],
+  );
   const serialized = useMemo(() => JSON.stringify(events ?? {}), [events]);
   const [rows, setRows] = useState<EventBindingRow[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -1034,38 +1149,6 @@ export function EventBindingsPanel(props: {
     });
   }
 
-  function applyButtonFetchTemplate() {
-    const template = buttonClickFetchPopulateTableTemplate();
-    setRows((prev) => {
-      const existingIndex = prev.findIndex((row) => row.name === template.eventName);
-      const nextRow: EventBindingRow = {
-        id: newRowId(),
-        name: template.eventName,
-        namePreset: "click",
-        mode: "simple",
-        simpleActions: template.actions,
-        jsonText: JSON.stringify(template.actions, null, 2),
-      };
-      let nextRows: EventBindingRow[];
-      if (existingIndex >= 0) {
-        nextRows = prev.map((row, index) =>
-          index === existingIndex
-            ? {
-                ...row,
-                mode: "simple",
-                simpleActions: template.actions,
-                jsonText: JSON.stringify(template.actions, null, 2),
-              }
-            : row,
-        );
-      } else {
-        nextRows = [...prev, nextRow];
-      }
-      queueMicrotask(() => commitFromRows(nextRows));
-      return nextRows;
-    });
-  }
-
   function applyInteractionPreset(preset: InteractionPreset) {
     const actions = actionsForInteractionPreset(preset);
     const eventName = preset.eventName;
@@ -1095,38 +1178,6 @@ export function EventBindingsPanel(props: {
                 jsonText: JSON.stringify(actions, null, 2),
                 name: eventName,
                 namePreset,
-              }
-            : row,
-        );
-      } else {
-        nextRows = [...prev, nextRow];
-      }
-      queueMicrotask(() => commitFromRows(nextRows));
-      return nextRows;
-    });
-  }
-
-  function applyRowActionTemplate() {
-    const template = rowActionModalSubmitRefreshTemplate();
-    setRows((prev) => {
-      const existingIndex = prev.findIndex((row) => row.name === template.eventName);
-      const nextRow: EventBindingRow = {
-        id: newRowId(),
-        name: template.eventName,
-        namePreset: "custom",
-        mode: "simple",
-        simpleActions: template.actions,
-        jsonText: JSON.stringify(template.actions, null, 2),
-      };
-      let nextRows: EventBindingRow[];
-      if (existingIndex >= 0) {
-        nextRows = prev.map((row, index) =>
-          index === existingIndex
-            ? {
-                ...row,
-                mode: "simple",
-                simpleActions: template.actions,
-                jsonText: JSON.stringify(template.actions, null, 2),
               }
             : row,
         );
@@ -1182,7 +1233,7 @@ export function EventBindingsPanel(props: {
     try {
       parsed = JSON.parse(row.jsonText);
     } catch {
-      setFormError("Fix JSON before switching to the visual editor.");
+      setFormError(msg("events.fixJsonBeforeVisual"));
       return;
     }
     const parsedList = safeParseActionsArray(parsed);
@@ -1191,9 +1242,7 @@ export function EventBindingsPanel(props: {
       return;
     }
     if (!isSimpleActionsList(parsedList.data)) {
-      setFormError(
-        "Visual editor supports branch actions and one-level If (then/else). For sequence or nested conditions, use Advanced JSON.",
-      );
+      setFormError(msg("events.visualEditorLimit"));
       return;
     }
     setFormError(null);
@@ -1285,7 +1334,9 @@ export function EventBindingsPanel(props: {
   return (
     <div className="mt-4 border-t border-border pt-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-xs font-medium text-muted-foreground">Events</p>
+        <p className="text-xs font-medium text-muted-foreground">
+          {msg("events.sectionTitle")}
+        </p>
         <Button
           type="button"
           variant="outline"
@@ -1294,61 +1345,36 @@ export function EventBindingsPanel(props: {
           onClick={addRow}
         >
           <Plus className="size-3.5" aria-hidden />
-          Add event
+          {msg("events.addEvent")}
         </Button>
       </div>
       <p className="mb-3 text-[0.65rem] leading-snug text-muted-foreground">
-        Add steps: state, URL, HTTP, or a one-level If (then/else). Use{" "}
-        <span className="font-medium text-foreground/90">Advanced JSON</span>{" "}
-        for <code className="rounded bg-muted px-0.5">sequence</code> or nested
-        logic.
+        {msg("events.intro")}
       </p>
-      <div className="mb-3 flex flex-wrap gap-2">
-        {interactionPresets?.length
-          ? interactionPresets.map((p) => (
-              <Button
-                key={p.id}
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="h-7 text-[0.65rem]"
-                title={p.description}
-                onClick={() => applyInteractionPreset(p)}
-              >
-                + {p.label}
-              </Button>
-            ))
-          : null}
-        {!interactionPresets?.length ? (
-          <>
+      {interactionPresets?.length ? (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {interactionPresets.map((p) => (
             <Button
+              key={p.id}
               type="button"
               variant="secondary"
               size="sm"
               className="h-7 text-[0.65rem]"
-              onClick={applyButtonFetchTemplate}
+              title={p.description}
+              onClick={() => applyInteractionPreset(p)}
             >
-              Template: click -&gt; fetch -&gt; populate table
+              + {p.label}
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="h-7 text-[0.65rem]"
-              onClick={applyRowActionTemplate}
-            >
-              Template: row action -&gt; modal -&gt; submit -&gt; refresh
-            </Button>
-          </>
-        ) : null}
-      </div>
+          ))}
+        </div>
+      ) : null}
       {formError ? (
         <p className="mb-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs text-destructive">
           {formError}
         </p>
       ) : null}
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No events yet.</p>
+        <p className="text-sm text-muted-foreground">{msg("events.noneYet")}</p>
       ) : (
         <ul className="space-y-3">
           {rows.map((row) => {
@@ -1356,7 +1382,7 @@ export function EventBindingsPanel(props: {
             const preview =
               row.mode === "simple"
                 ? actionSummary(row.simpleActions)
-                : "Advanced JSON";
+                : msg("events.modeJsonShort");
             return (
               <li
                 key={row.id}
@@ -1450,7 +1476,7 @@ export function EventBindingsPanel(props: {
 
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[0.65rem] font-medium text-muted-foreground">
-                        Editor
+                        {msg("events.editorLabel")}
                       </span>
                       <button
                         type="button"
@@ -1462,7 +1488,7 @@ export function EventBindingsPanel(props: {
                         )}
                         onClick={() => row.mode !== "simple" && toggleMode(row)}
                       >
-                        Visual steps
+                        {msg("events.modeVisual")}
                       </button>
                       <button
                         type="button"
@@ -1474,7 +1500,7 @@ export function EventBindingsPanel(props: {
                         )}
                         onClick={() => row.mode !== "advanced" && toggleMode(row)}
                       >
-                        Advanced JSON
+                        {msg("events.modeJson")}
                       </button>
                     </div>
 
@@ -1495,6 +1521,7 @@ export function EventBindingsPanel(props: {
                             onMoveUp={() => moveSimpleAction(row.id, i, -1)}
                             onMoveDown={() => moveSimpleAction(row.id, i, 1)}
                             onBlurCommit={handleBlur}
+                            documentNodeOptions={documentNodeOptions}
                           />
                         ))}
                         <div className="flex flex-wrap gap-1.5 pt-1">
@@ -1582,7 +1609,7 @@ export function EventBindingsPanel(props: {
                           className="mb-1 block text-[0.65rem] font-medium text-muted-foreground"
                           htmlFor={`ev-json-${row.id}`}
                         >
-                          Actions (JSON array)
+                          {msg("events.jsonActionsLabel")}
                         </label>
                         <textarea
                           id={`ev-json-${row.id}`}
@@ -1596,7 +1623,7 @@ export function EventBindingsPanel(props: {
                         />
                         <div className="mt-2">
                           <p className="mb-1 text-[0.65rem] font-medium text-muted-foreground">
-                            Advanced flow mode
+                            {msg("events.jsonFlowPreviewTitle")}
                           </p>
                           <AdvancedFlowPreview
                             eventName={row.name.trim()}

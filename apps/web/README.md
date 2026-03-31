@@ -2,23 +2,23 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## AIUI builder (`apps/web`)
 
-From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**: component palette, canvas, tree, properties, export, layout debug, and logic graph. **Preview** lives at `/preview`.
+From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**: **left palette**, canvas, properties, and (with `?dev=1`) tree, export, layout debug, and a **Design / Logic** workspace (logic map uses React Flow). **Preview** lives at `/preview`.
 
-**Builder UX:** The **canvas** is the same **`@aiui/runtime-core`** view as **Preview** (`AiuiRuntime`). Click a layer to select; **Cmd/Ctrl+Click** toggles multi-select; **Cmd/Ctrl+A** selects all layers; click empty chrome to deselect; **Esc** clears selection. Double-click a node in the preview or the **label** chip on the selection outline to rename (`props.label`). Selection shows a breadcrumb path for a single layer (or a count for multi-select); full ids are in tooltips / a subtle hover chip. The **component palette** is grouped by category with a **search** field (registry-driven keywords + names).
+**Builder UX:** The **canvas** is the same **`@aiui/runtime-core`** view as **Preview** (`AiuiRuntime`). Click a layer to select; **Cmd/Ctrl+Click** toggles multi-select; **Cmd/Ctrl+A** selects all layers; click empty chrome to deselect; **Esc** clears selection. Double-click a node in the preview or the **label** chip on the selection outline to rename (`props.label`). Selection shows a breadcrumb path for a single layer (or a count for multi-select); full ids are in tooltips / a subtle hover chip. The **component palette** sits in the **left sidebar** (grouped by category with **search**; registry-driven keywords + names).
 
 See `packages/registry/README.md` for palette metadata when adding primitives.
 
 **Layout:** Properties can target `node.layout` (padding, per-side **margin** T/R/B/L, width/height for empty leaves). On the canvas, use the **grip** beside a nested node to **reorder** among siblings; select an **empty** Box/Stack and drag the **resize** handle (bottom-right) to change intrinsic size — values snap to 8px (minimum 32px) and can align to neighboring edges.
 
-**Events:** Configure **When** (preset or custom) and **Visual steps** (state, URL, HTTP, one-level **If**, HTTP body) or **Advanced JSON** for `sequence` / nested logic; blur fields to save.
+**Events:** Under **Properties → Actions**, configure **When** (preset or custom) and **Steps** (state, URL, HTTP, one-level **If**, HTTP body) or **Edit as JSON** for `sequence` / nested logic; blur fields to save.
 
 **Initial state:** Edit `document.state` key/value defaults for expressions and `setState` paths (panel below export).
 
-**Logic graph:** The **Logic** panel renders a read-only React Flow chain from the selected node’s `events`; `sequence` and `condition` are expanded into steps. Click a step to inspect its action JSON; edit bindings in **Properties → Events**.
+**Logic map:** On **`/?dev=1`**, open the **Logic** tab for a read-only React Flow view of the selected node’s `events`; `sequence` and `condition` are expanded into steps. Click a step to inspect its action JSON; edit the same logic under **Properties → Actions**.
 
 **Diagnostics:** A dedicated **Diagnostics** panel shows schema validity, selection count, node/leaf/event/action counts, and undo/redo depth.
 
-**Shortcuts & templates:** Open **Keyboard shortcuts** on the builder for undo/redo, Esc, Delete/Backspace, ⌘/Ctrl+D (duplicate), and ⌘/Ctrl+A (select all). In the tree, use **Shift+Click** to range-select between the current primary selection and the clicked layer; use **Alt+↑** to jump selection to the parent layer. Use the **Templates** buttons (Row + two boxes, Header / content / footer, Sidebar + content) to insert common layouts under the selection (or under root).
+**Shortcuts:** With **`/?dev=1`**, open **Keyboard shortcuts** for undo/redo, Esc, Delete/Backspace, ⌘/Ctrl+D (duplicate), and ⌘/Ctrl+A (select all). In the tree, use **Shift+Click** to range-select between the current primary selection and the clicked layer; use **Alt+↑** to jump selection to the parent layer.
 
 ## Getting Started
 
