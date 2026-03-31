@@ -2,6 +2,7 @@
 
 import { safeParseDocument } from "@aiui/dsl-schema";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { RuntimePreview } from "@/components/preview/runtime-preview";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -18,6 +19,32 @@ export default function PreviewPage() {
   const parsed = safeParseDocument(document);
   const [viewportId, setViewportId] = useState<ViewportPresetId>("desktop");
   const viewport = getViewportPreset(viewportId);
+  const searchParams = useSearchParams();
+  const developerMode = searchParams.get("dev") === "1";
+
+  if (!developerMode) {
+    return (
+      <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
+        <main className="flex w-full flex-1 flex-col">
+          <div className="flex justify-end px-4 py-3">
+            <Link
+              href="/?dev=1"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              Open builder controls
+            </Link>
+          </div>
+          <div className="flex-1 px-0 pb-0 pt-1">
+            <RuntimePreview
+              document={document}
+              viewport={viewport}
+              hideChrome
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
@@ -25,7 +52,7 @@ export default function PreviewPage() {
         <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-muted-foreground">AIUI</p>
-            <h1 className="text-lg font-semibold tracking-tight">Preview</h1>
+            <h1 className="text-lg font-semibold tracking-tight">Preview (Developer mode)</h1>
             <p className="text-sm text-muted-foreground">
               Runtime preview uses <code className="font-mono text-xs">@aiui/runtime-core</code>
               ; the React panel below is a dev host via{" "}
@@ -34,10 +61,10 @@ export default function PreviewPage() {
             </p>
           </div>
           <Link
-            href="/"
+            href="/preview"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
-            ← Builder
+            Hide preview chrome
           </Link>
         </div>
       </header>

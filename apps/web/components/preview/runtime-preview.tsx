@@ -11,17 +11,29 @@ import { RuntimeSurface } from "@/components/runtime/runtime-surface";
 export function RuntimePreview(props: {
   document: AiuiDocument;
   viewport: ViewportPreset;
+  hideChrome?: boolean;
 }) {
+  const hideChrome = props.hideChrome ?? false;
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-[0.7rem] text-muted-foreground">
-        <span>
-          Simulated viewport:{" "}
-          <span className="font-medium text-foreground">{props.viewport.label}</span>
-        </span>
-        <span className="font-mono">{props.viewport.width}px</span>
-      </div>
-      <div className="w-full overflow-auto rounded-xl border border-border bg-muted/20 p-3">
+    <div className={cn(hideChrome ? "" : "space-y-2")}>
+      {hideChrome ? null : (
+        <div className="flex items-center justify-between text-[0.7rem] text-muted-foreground">
+          <span>
+            Simulated viewport:{" "}
+            <span className="font-medium text-foreground">{props.viewport.label}</span>
+          </span>
+          <span className="font-mono">{props.viewport.width}px</span>
+        </div>
+      )}
+      <div
+        className={cn(
+          "w-full overflow-auto",
+          hideChrome
+            ? "rounded-none border-none bg-transparent p-0"
+            : "rounded-xl border border-border bg-muted/20 p-3",
+        )}
+      >
         <div
           className="mx-auto"
           style={{ width: `min(100%, ${props.viewport.width}px)` }}
@@ -29,7 +41,10 @@ export function RuntimePreview(props: {
           <RuntimeSurface
             document={props.document}
             className={cn(
-              "min-h-[140px] w-full rounded-xl border border-border bg-muted/25 p-4",
+              "min-h-[140px] w-full p-4",
+              hideChrome
+                ? "rounded-none border-none bg-transparent"
+                : "rounded-xl border border-border bg-muted/25",
             )}
           />
         </div>

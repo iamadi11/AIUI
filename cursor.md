@@ -75,3 +75,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Parity guardrail in CI:** Encode parity rules as matrix tests (viewport x initial data x repeated interaction) so deterministic runtime behavior is enforced automatically rather than validated manually.
 - **2026-03-31 - Visual baseline discipline:** Keep high-priority runtime visuals under committed snapshot tests (desktop + mobile widths) so style/layout drift is detected immediately during test runs.
 - **2026-03-31 - Runtime surface parity:** Route builder canvas and preview through one shared app-level runtime surface wrapper so future host-level behavior changes cannot drift between editor and preview experiences.
+- **2026-03-31 - Preview chrome policy:** Default `/preview` to a chrome-hidden runtime surface and gate diagnostics/viewport controls behind explicit developer mode (`?dev=1`) so end-user behavior checks stay clean without losing debugging access.
