@@ -137,6 +137,26 @@ export type ComponentDefinition = {
   defaultChildren?: UiNode[];
 };
 
+/**
+ * Adapter contract for wiring a UI component library into AIUI.
+ * Future libraries (beyond shadcn) should implement this interface.
+ */
+export type UiAdapterDefinition = {
+  id: string;
+  displayName: string;
+  packageName: string;
+  version: string;
+  /**
+   * Component types exposed by this adapter.
+   * This allows compatibility checks before exposing components in the builder.
+   */
+  supportedTypes: readonly string[];
+  /** Returns the component definition for a given `UiNode.type`. */
+  getDefinition: (type: string) => ComponentDefinition | undefined;
+  /** Lists all component definitions this adapter provides. */
+  listDefinitions: () => readonly ComponentDefinition[];
+};
+
 export const primitives: Record<string, ComponentDefinition> = {
   [BOX_TYPE]: {
     type: BOX_TYPE,
@@ -512,3 +532,13 @@ export function matchesPaletteSearch(
     .toLowerCase();
   return tokens.every((t) => hay.includes(t));
 }
+
+export const SHADCN_ADAPTER: UiAdapterDefinition = {
+  id: "shadcn",
+  displayName: "shadcn/ui",
+  packageName: "@aiui/registry",
+  version: "0.1.0",
+  supportedTypes: Object.keys(primitives),
+  getDefinition,
+  listDefinitions: () => Object.values(primitives),
+};

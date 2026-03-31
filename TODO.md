@@ -56,7 +56,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 ### Phase 6 - Component adapter strategy
 
 - [x] Keep shadcn as production default library.
-- [ ] Define adapter interface for future UI libraries.
+- [x] Define adapter interface for future UI libraries.
 - [ ] Define component capability schema and validator.
 - [ ] Create component certification checklist before user exposure.
 - [ ] Publish adapter onboarding guide for future component integrations.
@@ -87,6 +87,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
   - Added parity diagnostics section to `/preview?dev=1` using shared viewport parity report generation.
   - Diagnostics now show per-viewport invalid-rect and deterministic status with pass/fail summary.
   - Added actionable remediation guidance when one or more viewport presets fail parity checks.
+- **2026-03-31** - Phase 6 adapter interface defined for future UI libraries:
+  - Added `UiAdapterDefinition` contract in `@aiui/registry` with stable identification and component-resolution methods.
+  - Added default `SHADCN_ADAPTER` implementation as the production adapter baseline.
+  - Documented adapter contract usage in registry README to prevent app-level hardcoded integration paths.
 - **2026-03-31** - Phase 5 single renderer path enforced:
   - Added shared `RuntimeSurface` component used by both builder canvas and preview surfaces.
   - Replaced direct `AiuiRuntime` usage in app-level surfaces with the shared runtime host wrapper.

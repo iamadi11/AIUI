@@ -2,6 +2,18 @@
 
 Component **definitions** for the builder and any host that maps `UiNode.type` to UI behavior.
 
+## Adapter interface (Phase 6 baseline)
+
+`@aiui/registry` exports a formal `UiAdapterDefinition` contract for UI-library integrations:
+
+- `id`, `displayName`, `packageName`, `version`
+- `supportedTypes`
+- `getDefinition(type)`
+- `listDefinitions()`
+
+The default production adapter is `SHADCN_ADAPTER` (`id: "shadcn"`), which exposes the current primitive registry.
+Future component libraries must plug in through this interface instead of adding app-level hardcoded mappings.
+
 ## UX metadata standard
 
 Each `ComponentDefinition` must provide `ux` metadata:
