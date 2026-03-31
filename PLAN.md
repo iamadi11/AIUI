@@ -4,7 +4,7 @@
 
 AIUI is a **visual dashboard builder** that mirrors how frontend developers ship dashboards: **structure and layout**, then **state and data**, then **binding data to UI**, then **side effects and CTAs**. The builder should feel like composing a real page—not juggling two different visual languages.
 
-**Single-page focus:** Treat the **main builder workspace as one page**. The **React Flow canvas occupies the full window** (or the full primary workspace region): users **drag and drop** registered UI primitives onto that canvas to build structure. **Preview must show exactly the same output** as the canvas runtime path (same subtree, same `RuntimeSurface`, same viewport rules). There is no separate “page preview” that diverges from the editor.
+**Single-page focus:** Treat the **main builder workspace as one page**. The **page graph** (React Flow) occupies the full primary region: users **drag and drop** registered UI primitives to build the **DSL tree** (structure + props). **Runtime parity** (layout engine pixels, interactions) is verified via **`/preview`**, which renders the same document through **`RuntimeSurface`** — the graph editor uses **data-driven component previews** (`ShadcnNodePreview`), not a second full runtime mounted beside Preview.
 
 This direction **simplifies** the product: fewer panels, fewer redundant fields, and **defaults supplied at drop time** (registry-defined props and layout hints) that users refine in a focused inspector.
 
@@ -25,7 +25,7 @@ This direction **simplifies** the product: fewer panels, fewer redundant fields,
 
 ## Core principles
 
-- **Parity by default:** Whatever renders on the **canvas** (in “edit” mode) must match **Preview** pixel- and behavior-wise for the same document and viewport. Preview is a **mode**, not a second renderer.
+- **Parity by default:** The **exported / previewed** document must match **`/preview`** (same `RuntimeSurface` path) for the same JSON. The **graph** is an editor; it is not required to duplicate every runtime pixel in place.
 - **One page, one graph:** The primary surface is **one page’s component tree** laid out on React Flow. Avoid splitting “design” and “preview” into different layout engines.
 - **Progressive disclosure:** Simple controls first; JSON, deep diagnostics, and secondary graphs (`?dev=1`) optional.
 - **Drop-time intelligence:** When a component is dropped, apply **registry-defined default props** (and sensible layout) so the user configures deltas, not empty shells.

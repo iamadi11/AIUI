@@ -13,17 +13,17 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 - [x] Confirm single-page primary scope; multi-screen explicitly deferred to Phase 8+ in [`PLAN.md`](PLAN.md).
 - [x] Ensure `core.md`, `cursor.md`, `apps/web/README.md`, and `.cursor/skills/aiui-platform/SKILL.md` match [`PLAN.md`](PLAN.md) (no contradictory builder descriptions).
 
-## Phase 1 — Full-window page canvas
+## Phase 1 — Full-window page graph (primary workspace)
 
-- [x] **Single-page mode** (`screens.length === 1`): hide the **screen graph** (React Flow); the **page canvas** (`BuilderCanvas` / runtime surface) uses the **full workspace** below the optional dev/perf rows.
-- [x] **Multi-screen mode**: vertical split defaults to **~22% screen map / ~78% page canvas** (was 40/60) so composition stays dominant.
-- [x] When the graph is hidden, **add another screen** via the **template** dropdown + short hint; palette → **page canvas** remains the primary DnD path for components.
-- [x] **Follow-up:** add a **Page graph** workspace mode (React Flow tree view) with node selection wiring into inspector; runtime page canvas remains default for parity-sensitive editing.
+- [x] **Primary workspace** is **`PageFlowCanvas`** (React Flow page tree + `ShadcnNodePreview`); the legacy runtime **`BuilderCanvas`** surface is **removed**.
+- [x] **Single-screen mode**: full width for the page graph; **multi-screen mode**: vertical split defaults to **~22% screen map / ~78% page graph**.
+- [x] **Add screen** via template dropdown + hint when the screen map is available; palette → **page graph** is the DnD path for components.
+- [x] **Inspector** selection wiring from graph nodes (unchanged).
 
 ## Phase 2 — Preview parity
 
-- [x] Builder canvas uses **`RuntimePreviewHost`** (same DOM/CSS as `/preview` default path: desktop width cap, `p-4`, `min-h-[140px]`).
-- [x] **`runtimeDocumentForActiveEditorScreen`** so the runtime shows the **active** editor screen (non-mutating `initialScreenId` shim); export / preview keep persisted routing.
+- [x] **`/preview`** uses **`RuntimePreviewHost`** (same DOM/CSS path: desktop width cap, `p-4`, `min-h-[140px]`). The builder graph does **not** embed full runtime; parity is checked against **`/preview`** / export for the same DSL ([`docs/builder/preview-parity.md`](docs/builder/preview-parity.md)).
+- [x] **`runtimeDocumentForActiveEditorScreen`** for **`/preview`** and any runtime host so the **active** editor screen can render (non-mutating `initialScreenId` shim); export keeps persisted routing.
 - [x] Manual checklist: [`docs/builder/preview-parity.md`](docs/builder/preview-parity.md).
 - [x] **Optional CI guard:** `apps/web/lib/builder/viewport-parity.test.ts` snapshots parity rows (desktop/tablet/mobile) via `buildViewportParityReport`; root `pnpm test` now runs `pnpm --filter web test`.
 
@@ -57,13 +57,14 @@ The **previous** phase checklist **0–8** (registry, layout, bindings, actions,
 
 ## Phase 8+ — Multi-screen (optional)
 
-- [x] Reconcile **screen graph** with single-page clarity: multi-screen docs now default to page-canvas editing with an explicit **Open/Hide screen map** toggle (secondary entry), so navigation wiring is opt-in.
+- [x] Reconcile **screen graph** with single-page clarity: multi-screen docs default to **page graph** editing with an explicit **Open/Hide screen map** toggle (secondary entry), so navigation wiring is opt-in.
 
 ## Phase 9+ — Forward backlog
 
-- [x] **palette → Page graph:** dnd-kit droppables on each tree node + full pane (`CanvasDropData` with `depth` for collision vs main canvas); **`appendChildOfType`** matches the runtime canvas path; each graph node renders a data-driven **React/shadcn preview** (`ShadcnNodePreview`) instead of card-only labels.
+- [x] **palette → Page graph:** dnd-kit droppables on each tree node + full pane (`CanvasDropData` with `depth` for collision); **`appendChildOfType`** appends to the tree; each graph node uses **`ShadcnNodePreview`**.
 - [ ] Optional: persist **Page graph** node positions (document metadata) across sessions.
-- [ ] Optional: **Page graph** sibling reorder (match canvas `SortableContext` behavior).
+- [ ] Optional: **Page graph** sibling reorder (replace removed canvas `SortableContext`).
+- [ ] Optional: **prop-level connections** between nodes (edges / binding UX) + guided **state** authoring on top of registry props.
 
 ---
 

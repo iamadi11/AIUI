@@ -3,7 +3,7 @@ name: aiui-platform
 description: >-
   Guides architecture and implementation for the AIUI UI runtime platform:
   Universal JSON DSL, deterministic layout engine, logic/actions/expressions,
-  React Flow page canvas, Next.js builder, shadcn/ui, Zod, and runtime bundle
+  React Flow page graph, Next.js builder, shadcn/ui, Zod, and runtime bundle
   packaging. Use when editing the builder, DSL schema, registry, layout-engine,
   runtime-core, runtime-react, export pipeline, or when the user mentions
   phases, Pretext-style layout, preview parity, or framework-agnostic runtime.
@@ -15,12 +15,12 @@ description: >-
 
 - **Builder** produces **JSON DSL** + users ship a **JS runtime bundle** that calls `render({ container, config })`.
 - **Do not** treat framework codegen as the primary artifact.
-- **Canvas and preview** must use the **same runtime path** (parity).
+- **`/preview` and export** must use the **same runtime path** (parity). The builder **page graph** uses data-driven previews; it does not mount full `runtime-core` in the main workspace.
 
 ## Stack
 
 - Next.js App Router, React, TypeScript, Tailwind, shadcn/ui  
-- dnd-kit (palette/canvas), **React Flow as the full-window page canvas** (structure); optional React Flow for advanced logic under dev mode  
+- dnd-kit (palette → graph), **React Flow as the full-window page graph** (structure); optional React Flow for screen map and dev-only logic views  
 - Zod for DSL validation; shared types in `dsl-schema`  
 - Builder state: **Zustand** by default (split stores by domain: document, selection, history).
 
@@ -36,8 +36,8 @@ description: >-
 ## Phases (forward roadmap — see `PLAN.md`)
 
 1. **Phase 0** — Docs alignment; scope freeze (single-page primary)  
-2. **Phase 1** — Full-window React Flow page canvas; DnD structure  
-3. **Phase 2** — Preview parity hard gate (same runtime as canvas)  
+2. **Phase 1** — Full-window React Flow page graph; DnD structure  
+3. **Phase 2** — Preview parity hard gate (same runtime as `/preview` for the same DSL)  
 4. **Phase 3** — Drop-time defaults; lean inspector  
 5. **Phase 4** — State and data authoring UX  
 6. **Phase 5** — Unified bindings  

@@ -12,7 +12,6 @@ import {
 } from "@dnd-kit/core";
 import type { PrototypeEdgeKind, UiNode } from "@aiui/dsl-schema";
 import { editorDocumentView } from "@aiui/dsl-schema";
-import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import {
   BOX_TYPE,
   SCREEN_TEMPLATE_LABELS,
@@ -25,18 +24,14 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { runtimeDocumentForActiveEditorScreen } from "@/lib/builder/runtime-document-editor";
 import { formatNodeTitle } from "@/lib/builder/node-display";
 import { analyzeDocumentPerformanceFromDoc } from "@/lib/builder/document-performance";
 import { formatPerfSummaryLine } from "@/lib/builder/document-performance-ui";
 import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
-import { createRuntimeIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
-import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BuilderCanvas } from "./builder-canvas";
 import { BuilderNavbar } from "./builder-navbar";
 import { canvasPointerCollision } from "./builder-collision";
 import { DataAndStateSheet } from "./data-and-state-sheet";
@@ -48,7 +43,6 @@ import { DiagnosticsPanel } from "./diagnostics-panel";
 import {
   type CanvasDropData,
   type PaletteDragData,
-  isCanvasSiblingData,
   isPaletteDragData,
 } from "./dnd-types";
 import { DRAG_COPY } from "./drag-copy";
@@ -92,8 +86,6 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const duplicateNode = useDocumentStore((s) => s.duplicateNode);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
-  const updateNode = useDocumentStore((s) => s.updateNode);
-  const reorderSibling = useDocumentStore((s) => s.reorderSibling);
   const activeScreenId = useDocumentStore((s) => s.activeScreenId);
   const setActiveScreenId = useDocumentStore((s) => s.setActiveScreenId);
   const addScreenFromPalette = useDocumentStore((s) => s.addScreenFromPalette);
@@ -110,20 +102,10 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const toggleNode = useSelectionStore((s) => s.toggleNode);
   const setSelection = useSelectionStore((s) => s.setSelection);
   const clearSelection = useSelectionStore((s) => s.clearSelection);
-  const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
-
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [dataStateSheetOpen, setDataStateSheetOpen] = useState(false);
-  const [workspaceMode, setWorkspaceMode] = useState<"canvas" | "graph">(
-    "canvas",
-  );
-
   const editorDoc = useMemo(
     () => editorDocumentView(document, activeScreenId),
-    [document, activeScreenId],
-  );
-  const runtimeDocument = useMemo(
-    () => runtimeDocumentForActiveEditorScreen(document, activeScreenId),
     [document, activeScreenId],
   );
   const screenCount = Object.keys(document.screens).length;
@@ -262,30 +244,10 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
       appendChildOfType(drop.parentId, activeData.componentType);
       return;
     }
-    if (isCanvasSiblingData(activeData)) {
-      const overData = over.data.current;
-      if (!isCanvasSiblingData(overData)) return;
-      if (activeData.parentId !== overData.parentId) return;
-      if (active.id === over.id) return;
-      reorderSibling(
-        activeData.parentId,
-        String(active.id),
-        String(over.id),
-      );
-    }
   }
 
   function handleDragCancel() {
     setActivePalette(null);
-  }
-
-  function handleRuntimeDiagnostic(diagnostic: RuntimeDiagnostic) {
-    recordIssue(
-      createRuntimeIssueTelemetryEnvelope({
-        diagnostic,
-        documentVersion: document.version,
-      }),
-    );
   }
 
   const inspectorOpen =
@@ -300,66 +262,16 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const canvasColumn = (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
       <div className="min-h-0 flex-1">
-        {workspaceMode === "canvas" ? (
-          <BuilderCanvas
-            document={editorDoc}
-            runtimeDocument={runtimeDocument}
-            onRuntimeDiagnostic={handleRuntimeDiagnostic}
-            selectedId={selectedNodeId}
-            onSelect={selectNodeEx}
-            onToggleSelect={toggleNodeEx}
-            onLabelChange={(id, label) =>
-              updateNode(id, (n) => ({
-                ...n,
-                props: { ...n.props, label },
-              }))
-            }
-            onLeafLayoutResize={(id, width, height) =>
-              updateNode(id, (n) => {
-                const prev = n.layout ? { ...n.layout } : {};
-                const next = { ...prev } as Record<string, unknown>;
-                next.width = width;
-                next.height = height;
-                return { ...n, layout: next };
-              })
-            }
-            rootId={rootId}
-            onDuplicateNode={(id) => duplicateNode(id)}
-            onRemoveNode={(id) => removeNode(id)}
-          />
-        ) : (
-          <PageFlowCanvas
-            root={editorDoc.root}
-            selectedId={selectedNodeId}
-            onSelect={selectNodeEx}
-          />
-        )}
+        <PageFlowCanvas
+          root={editorDoc.root}
+          selectedId={selectedNodeId}
+          onSelect={selectNodeEx}
+        />
       </div>
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
-        <p className="text-xs text-muted-foreground">
-          {msg("builder.workspaceTabList")}
+      <div className="flex shrink-0 flex-wrap items-start gap-2">
+        <p className="max-w-prose text-xs leading-relaxed text-muted-foreground">
+          {msg("builder.workspacePrimaryHint")}
         </p>
-        <Button
-          type="button"
-          size="sm"
-          variant={workspaceMode === "canvas" ? "default" : "outline"}
-          onClick={() => setWorkspaceMode("canvas")}
-        >
-          {msg("builder.workspaceCanvasMode")}
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant={workspaceMode === "graph" ? "default" : "outline"}
-          onClick={() => setWorkspaceMode("graph")}
-        >
-          {msg("builder.workspaceGraphMode")}
-        </Button>
-        {workspaceMode === "graph" ? (
-          <p className="text-xs text-muted-foreground">
-            {msg("builder.workspaceGraphHint")}
-          </p>
-        ) : null}
       </div>
 
       {userLayerCount === 0 ? (

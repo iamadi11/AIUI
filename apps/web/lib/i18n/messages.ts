@@ -13,6 +13,8 @@ const EN_MESSAGES = {
   "builder.workspaceGraphMode": "Page graph",
   "builder.workspaceGraphHint":
     "Graph mode shows each layer with a live preview. Drag from the palette onto a node or empty canvas to add a child under that target. Select a node to edit it in Properties.",
+  "builder.workspacePrimaryHint":
+    "Primary workspace: page graph (React Flow). Drag from the palette onto a layer or empty area to build the tree. Select a layer to edit props and bindings in Properties; use Data & state in the navbar for initial state.",
   "builder.pageGraphNodeFallback": "Layer",
   "builder.pageGraphLeaf": "Leaf",
   "builder.pageGraphChildrenCount": "{count} child(ren)",
@@ -65,9 +67,9 @@ const EN_MESSAGES = {
   "builder.selectionMany": "{count} layers selected",
   "builder.emptyStateTitle": "Start with one small step",
   "builder.emptyStateBody":
-    "Your page is empty. Drag a component from the left palette onto the canvas, or use More → Add Box or Stack to the root.",
+    "Your page is empty. Drag a component from the left palette onto the page graph below, or use More → Add Box or Stack to the root.",
   "builder.emptyStateBodyMultiScreen":
-    "Your page is empty. Drag from the palette onto the canvas below, or onto the screen map above to add another screen. You can also use More → Add Box or Stack.",
+    "Your page is empty. Drag from the palette onto the page graph below, or onto the screen map above to add another screen. You can also use More → Add Box or Stack.",
   "builder.singlePageAddScreenHint":
     "One page — add another screen from a template to show the screen map and wire navigation.",
   "builder.screenMapEntryTitle":

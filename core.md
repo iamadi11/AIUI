@@ -19,7 +19,7 @@ Build a **dashboard creator** where **one page** is composed **on a full-window 
 
 ## User experience constraints
 
-- **Primary surface:** **Palette + full-area React Flow page canvas**; configuration in contextual overlays (e.g. Sheet), not permanent third rails.
+- **Primary surface:** **Palette + full-area React Flow page graph**; configuration in contextual overlays (e.g. Sheet), not permanent third rails.
 - **Drop-time defaults:** Registry supplies sensible initial props/layout when a component lands on the canvas.
 - **Fewer fields:** Avoid redundant inspector controls; progressive disclosure for advanced and JSON.
 - **Developer-aligned workflow:** layout → state/data → bind to UI → side effects and CTAs.
@@ -28,7 +28,7 @@ Build a **dashboard creator** where **one page** is composed **on a full-window 
 ## Technical direction
 
 - Builder: Next.js App Router + TypeScript + Tailwind + shadcn.
-- **Interaction model:** React Flow as the **page canvas**; dnd-kit (or equivalent) for palette-to-canvas and in-tree moves; optional React Flow for **advanced** logic visualization behind dev mode.
+- **Interaction model:** React Flow as the **page graph**; dnd-kit for palette-to-graph drops; optional React Flow for **screen map** and **advanced** logic visualization behind dev mode.
 - Validation: Zod and versioned DSL schemas.
 - Runtime: deterministic engine with framework-agnostic core and React adapter.
 - Layout: responsive-first constraints; avoid unnecessary fixed sizing.

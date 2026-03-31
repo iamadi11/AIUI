@@ -4,11 +4,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**.
 
-**Product direction (see repo [`PLAN.md`](../../PLAN.md)):** **one page** composed on the **page canvas** (runtime surface) with **drag-and-drop** from the palette. The workspace also offers an optional **Page graph** mode (React Flow tree of layers) for spatial navigation; selection stays in sync with the properties sheet. With a **single screen**, the **screen map** (multi-screen React Flow) is hidden so the canvas uses the full workspace; with **multiple screens**, use **Open screen map** when you need to wire navigation—the graph stays secondary to page editing. **Preview** (`/preview`) should match the canvas output for the same document (parity). Configuration uses contextual panels (e.g. **Sheet**); **`?dev=1`** adds tree, export, diagnostics, and optional advanced views.
+**Product direction (see repo [`PLAN.md`](../../PLAN.md)):** **one page** composed on the **page graph** (React Flow tree of layers) with **drag-and-drop** from the palette. Each node shows a data-driven **shadcn-style preview**; the full **runtime** output for the same document JSON is viewed via **`/preview`**. With a **single screen**, the **screen map** (multi-screen React Flow) is hidden so the graph uses the full workspace; with **multiple screens**, use **Open screen map** when you need to wire navigation. Configuration uses contextual panels (e.g. **Sheet**); **`?dev=1`** adds tree, export, diagnostics, and optional advanced views.
 
-**Builder UX (target):** The **canvas** uses the same **`@aiui/runtime-core`** view as **Preview** where possible. Click to select; keyboard shortcuts and selection behavior as implemented in code. The **component palette** is registry-driven (see [`packages/registry/README.md`](../../packages/registry/README.md)).
+**Builder UX:** The **primary workspace** is the page graph. **Preview** (`/preview`) uses **`@aiui/runtime-core`** for pixel-accurate layout of the same DSL. The **component palette** is registry-driven (see [`packages/registry/README.md`](../../packages/registry/README.md)).
 
-**Layout & events:** Inspector sections are registry-driven. Canvas affordances (reorder, resize where supported) should match runtime layout rules.
+**Layout & events:** Inspector sections are registry-driven. Reorder/resize on the old runtime canvas surface are removed; structure is edited via the graph and properties.
 
 **Data & state:** Use the **Data & state** control in the navbar to edit **initial document state**, see sample binding source ids, and apply the **fetch → table** state starter. Per-component bindings stay in the properties sheet when a layer is selected.
 
