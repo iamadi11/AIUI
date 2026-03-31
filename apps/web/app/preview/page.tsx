@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { RuntimePreview } from "@/components/preview/runtime-preview";
 import { buttonVariants } from "@/components/ui/button";
+import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
 import {
   VIEWPORT_PRESETS,
   getViewportPreset,
@@ -19,6 +20,10 @@ export default function PreviewPage() {
   const parsed = safeParseDocument(document);
   const [viewportId, setViewportId] = useState<ViewportPresetId>("desktop");
   const viewport = getViewportPreset(viewportId);
+  const viewportParity = buildViewportParityReport(document.root);
+  const failingParityRows = viewportParity.rows.filter(
+    (row) => row.invalidRectCount > 0 || !row.deterministic,
+  );
   const searchParams = useSearchParams();
   const developerMode = searchParams.get("dev") === "1";
 
@@ -90,6 +95,47 @@ export default function PreviewPage() {
             {JSON.stringify(parsed.error.flatten(), null, 2)}
           </pre>
         ) : null}
+        <section className="space-y-2">
+          <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Parity diagnostics
+          </h2>
+          <div
+            className={cn(
+              "rounded-lg border p-3",
+              viewportParity.ok
+                ? "border-emerald-300/50 bg-emerald-50/40"
+                : "border-amber-300/60 bg-amber-50/40",
+            )}
+          >
+            <p
+              className={cn(
+                "text-xs font-medium",
+                viewportParity.ok ? "text-emerald-800" : "text-amber-900",
+              )}
+            >
+              {viewportParity.summary}
+            </p>
+            <ul className="mt-2 space-y-1">
+              {viewportParity.rows.map((row) => (
+                <li
+                  key={row.viewportId}
+                  className="text-[0.7rem] leading-snug text-foreground/90"
+                >
+                  {row.viewportLabel} ({row.width}px):{" "}
+                  {row.invalidRectCount === 0 && row.deterministic
+                    ? "ok"
+                    : `${row.invalidRectCount} invalid rect(s), deterministic=${row.deterministic}`}
+                </li>
+              ))}
+            </ul>
+            {failingParityRows.length > 0 ? (
+              <p className="mt-2 text-[0.7rem] text-amber-900">
+                Action: inspect node layout constraints for the failing viewport presets and rerun
+                preview diagnostics after updates.
+              </p>
+            ) : null}
+          </div>
+        </section>
 
         <section className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">

@@ -51,7 +51,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Define parity test matrix: same DSL + viewport + data => same result.
 - [x] Add high-priority visual regression snapshots.
 - [x] Ensure preview mode hides editor chrome while preserving behavior.
-- [ ] Add parity failure diagnostics surfaced in developer mode.
+- [x] Add parity failure diagnostics surfaced in developer mode.
 
 ### Phase 6 - Component adapter strategy
 
@@ -83,6 +83,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
   - `/preview` now opens in a runtime-first chrome-hidden surface without editor diagnostics panels.
   - Added opt-in developer mode (`/preview?dev=1`) to keep schema status and viewport controls available when needed.
   - Runtime behavior remains on the same shared `RuntimeSurface` render path to preserve parity.
+- **2026-03-31** - Phase 5 parity failure diagnostics surfaced in preview developer mode:
+  - Added parity diagnostics section to `/preview?dev=1` using shared viewport parity report generation.
+  - Diagnostics now show per-viewport invalid-rect and deterministic status with pass/fail summary.
+  - Added actionable remediation guidance when one or more viewport presets fail parity checks.
 - **2026-03-31** - Phase 5 single renderer path enforced:
   - Added shared `RuntimeSurface` component used by both builder canvas and preview surfaces.
   - Replaced direct `AiuiRuntime` usage in app-level surfaces with the shared runtime host wrapper.

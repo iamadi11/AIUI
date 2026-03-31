@@ -76,3 +76,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Visual baseline discipline:** Keep high-priority runtime visuals under committed snapshot tests (desktop + mobile widths) so style/layout drift is detected immediately during test runs.
 - **2026-03-31 - Runtime surface parity:** Route builder canvas and preview through one shared app-level runtime surface wrapper so future host-level behavior changes cannot drift between editor and preview experiences.
 - **2026-03-31 - Preview chrome policy:** Default `/preview` to a chrome-hidden runtime surface and gate diagnostics/viewport controls behind explicit developer mode (`?dev=1`) so end-user behavior checks stay clean without losing debugging access.
+- **2026-03-31 - Developer parity visibility:** Surface viewport parity failures in developer mode next to preview runtime output (summary + per-preset status + remediation hint) so parity regressions are diagnosable before CI failures.
