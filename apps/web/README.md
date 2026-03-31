@@ -4,7 +4,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**: component palette, canvas, tree, properties, export, layout debug, and logic graph. **Preview** lives at `/preview`.
 
-**Phase 1 UX basics:** Click empty canvas to deselect; **Esc** clears selection; double-click a layer **label** on the canvas to rename (Box/Stack `props.label`). Selection shows a breadcrumb path; full ids are in tooltips / a subtle hover chip.
+**Builder UX:** Click empty canvas to deselect; **Esc** clears selection; double-click a layer **label** on the canvas to rename (Box/Stack `props.label`). Selection shows a breadcrumb path; full ids are in tooltips / a subtle hover chip. The **component palette** is grouped by category with a **search** field (registry-driven keywords + names).
+
+See `packages/registry/README.md` for palette metadata when adding primitives.
 
 ## Getting Started
 

@@ -231,7 +231,7 @@ These phases improve **how** users edit the DSL in the Next.js builder. They sit
 | Phase | Focus |
 |-------|--------|
 | **1 — Foundation** | Canvas interaction, selection/hover, inline labels, clear affordances, low-friction basics |
-| **2 — Components** | Palette layout, categories, search, registry-driven extensibility |
+| **2 — Components** | Palette layout, categories, search, registry-driven extensibility *(baseline: registry metadata + grouped searchable palette)* |
 | **3 — Layout** | Drag/resize, spacing controls, snapping, constraints |
 | **4 — Events** | Friendly event list/editor, discoverability |
 | **5 — Logic** | API/state/conditions UI, progressive disclosure, hide raw JSON for typical flows |

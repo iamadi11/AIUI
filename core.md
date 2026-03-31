@@ -391,6 +391,11 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 - **Labels:** `props.label` (optional string) on **Box** and **Stack** for human-readable layers; **double-click** the label on a canvas card to edit inline; same field in the Properties inspector (`InspectorField` `kind: "text"`).
 - **Discoverability:** Selection line shows a **breadcrumb** (`Type (label) › …`); tree list uses the same titles; node ids appear only in `title` tooltips / subtle hover chip on canvas — not the primary label.
 
-### Phases 2–8 (planned)
+### Phase 2 — Component system (shipped baseline)
 
-Palette and search; layout manipulation; event and logic UIs without raw JSON for common cases; React Flow alignment; builder/runtime visual parity; power-user tooling. Details in `PLAN.md` §14.
+- **Registry:** `paletteCategory`, optional `paletteKeywords` and `paletteDescription` on each `ComponentDefinition`; `listPaletteDefinitions()` and `matchesPaletteSearch()` for the builder.
+- **Palette UI:** Search field (tokenized match), sections in fixed category order, subtle empty-state copy for categories with no primitives yet; cards show title + description; technical `type` is not emphasized (available in `title` tooltip).
+
+### Phases 3–8 (planned)
+
+Layout manipulation; event and logic UIs without raw JSON for common cases; React Flow alignment; builder/runtime visual parity; power-user tooling. Details in `PLAN.md` §14.

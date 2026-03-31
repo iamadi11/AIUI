@@ -1,0 +1,18 @@
+# `@aiui/registry`
+
+Component **definitions** for the builder and any host that maps `UiNode.type` to UI behavior.
+
+## Palette metadata
+
+Each `ComponentDefinition` includes:
+
+- **`paletteCategory`** — One of `layout` | `input` | `data` | `display` | `advanced` (see `PALETTE_CATEGORY_ORDER` in `src/index.ts`).
+- **`paletteKeywords`** — Optional search tokens (display name and `type` are always searched).
+- **`paletteDescription`** — Short subtitle in the builder palette.
+
+Helpers:
+
+- `listPaletteDefinitions()` — Primitives sorted by category, then display name.
+- `matchesPaletteSearch(def, query)` — Whitespace-separated tokens; all must match substrings in name, type, keywords, or description.
+
+Adding a primitive: register it in `primitives`, set `paletteCategory` and optional keywords/description so the palette stays discoverable without hardcoding lists in `apps/web`.
