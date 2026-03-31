@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-03-31 - Page graph palette + previews:** Wire palette drops with the same **`CanvasDropData`** shape as **`BuilderCanvas`**; use a full-pane droppable at **`depth: -1`** so **`canvasPointerCollision`** still prefers deeper node targets. For WYSIWYG previews without a second renderer, build a tiny document from **`previewDocumentForSubtree`** + **`RuntimePreviewHost`** per node (copy **`version` / `layoutVersion` / `state`** for binding parity).
 - **2026-04-01 - Page graph copy:** Keep **Page graph** node chrome in **`msg()`** so the tree view stays localizable alongside the runtime canvas.
 - **2026-04-01 - Page graph mode:** For the “components on React Flow canvas” follow-up, keep **runtime canvas** as default and add React Flow as a **workspace mode**; start with tree-derived positions and selection sync before attempting drag/layout mutation so preview parity remains stable.
 - **2026-04-01 - Multi-screen clarity:** Even when `screenCount > 1`, keep the **screen graph** behind an explicit toggle and default to the page canvas; this preserves the single-page mental model while still exposing graph wiring as a secondary tool.

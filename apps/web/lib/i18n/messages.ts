@@ -12,7 +12,7 @@ const EN_MESSAGES = {
   "builder.workspaceCanvasMode": "Page canvas",
   "builder.workspaceGraphMode": "Page graph",
   "builder.workspaceGraphHint":
-    "Graph mode shows the page tree as React Flow nodes. Select a node to edit it in Properties.",
+    "Graph mode shows each layer with a live preview. Drag from the palette onto a node or empty canvas to add a child under that target. Select a node to edit it in Properties.",
   "builder.pageGraphNodeFallback": "Layer",
   "builder.pageGraphLeaf": "Leaf",
   "builder.pageGraphChildrenCount": "{count} child(ren)",
