@@ -18,6 +18,7 @@ import { useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { canvasPointerCollision } from "./builder-collision";
 import { ComponentPalette } from "./component-palette";
+import { PropertiesInspector } from "./properties-inspector";
 import {
   type CanvasDropData,
   type PaletteDragData,
@@ -74,9 +75,9 @@ export function BuilderDemo() {
       onDragCancel={handleDragCancel}
     >
       <div className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-[minmax(0,200px)_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,200px)_1fr_minmax(0,260px)]">
           <ComponentPalette />
-          <div className="space-y-4">
+          <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -156,6 +157,12 @@ export function BuilderDemo() {
               </pre>
             </div>
           </div>
+
+          <PropertiesInspector
+            root={document.root}
+            selectedId={selectedNodeId}
+            rootId={rootId}
+          />
         </div>
       </div>
 

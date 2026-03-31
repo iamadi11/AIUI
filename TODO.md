@@ -12,7 +12,6 @@
 
 ## Phase 1 — Builder MVP
 
-- [ ] UI tree panel + basic properties inspector
 - [ ] Undo/redo for structural and prop edits
 - [ ] Preview route using shared registry (React preview or runtime stub)
 - [ ] Golden export: serialize document to JSON matching schema
@@ -78,6 +77,7 @@
 
 ## Done
 
+- **2026-03-31** — Properties inspector: `InspectorField` metadata on `ComponentDefinition`; Stack direction + gap; `PropertiesInspector` column updates props via `updateNode`
 - **2026-03-31** — Component palette (`@aiui/registry` primitives) + dnd-kit canvas: nested `useDroppable` targets with depth-prioritized `pointerWithin` collision; palette drag appends via `appendChildOfType`
 - **2026-03-31** — Document model + Zustand: `AiuiDocument` as canonical shape; `lib/document/tree.ts` immutable helpers; `stores/document-store` + `stores/selection-store`; `BuilderDemo` on home exercises add/remove/select
 - **2026-03-31** — Monorepo (`pnpm` workspaces): `apps/web`, `packages/dsl-schema`, `packages/registry`; root `tsconfig.base.json`
