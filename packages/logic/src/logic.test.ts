@@ -17,6 +17,8 @@ describe("setPathImmutable", () => {
 function createEnv(initial: Record<string, unknown>) {
   let state = initial;
   const navigate = vi.fn();
+  const notify = vi.fn();
+  const modal = vi.fn();
   const fetch = vi.fn().mockResolvedValue(new Response());
   const env = {
     getState: () => state,
@@ -24,9 +26,11 @@ function createEnv(initial: Record<string, unknown>) {
       state = next;
     },
     navigate,
+    notify,
+    modal,
     fetch: fetch as typeof globalThis.fetch,
   };
-  return { env, navigate, fetch };
+  return { env, navigate, fetch, notify, modal };
 }
 
 describe("runAction", () => {
@@ -83,5 +87,49 @@ describe("runAction", () => {
       env,
     );
     expect(env.getState()).toEqual({ a: 1, b: 2 });
+  });
+
+  it("runs fetch and assigns JSON payload", async () => {
+    const { env, fetch } = createEnv({});
+    fetch.mockResolvedValue(
+      new Response('{"rows":[1,2]}', {
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    await runAction(
+      {
+        type: "fetch",
+        method: "GET",
+        url: "https://example.com/data",
+        assignTo: "table.rows",
+      },
+      env,
+    );
+    expect(fetch).toHaveBeenCalledWith("https://example.com/data", {
+      method: "GET",
+      headers: {},
+      body: undefined,
+    });
+    expect(env.getState()).toEqual({ table: { rows: { rows: [1, 2] } } });
+  });
+
+  it("runs transform expression", async () => {
+    const { env } = createEnv({ count: 2 });
+    await runAction(
+      { type: "transform", path: "double", expression: "count * 2" },
+      env,
+    );
+    expect(env.getState()).toEqual({ count: 2, double: 4 });
+  });
+
+  it("runs notify and modal hooks", async () => {
+    const { env, notify, modal } = createEnv({});
+    await runAction(
+      { type: "notify", level: "success", message: "Saved" },
+      env,
+    );
+    await runAction({ type: "modal", action: "open", target: "edit-user" }, env);
+    expect(notify).toHaveBeenCalledWith({ level: "success", message: "Saved" });
+    expect(modal).toHaveBeenCalledWith("edit-user", "open");
   });
 });

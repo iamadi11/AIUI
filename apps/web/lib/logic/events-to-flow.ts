@@ -15,6 +15,14 @@ export function formatActionLabel(action: Action): string {
       return `navigate → ${action.href}`;
     case "http":
       return `${action.method} ${action.url}`;
+    case "fetch":
+      return `${action.method} fetch ${action.url}`;
+    case "transform":
+      return `transform → ${action.path}`;
+    case "modal":
+      return `${action.action} modal → ${action.target}`;
+    case "notify":
+      return `${action.level} notify`;
     case "sequence":
       return `sequence (${action.steps.length} steps)`;
     case "condition":

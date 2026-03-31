@@ -67,3 +67,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Binding error UX:** Validation should live next to binding authoring and display user-facing fixes (missing source/path, unresolved sample tokens) so broken bindings are corrected before runtime.
 - **2026-03-31 - Action-list workflow ergonomics:** In non-technical event editors, step order must be directly manipulable (move up/down) in visual mode; forcing JSON edits for ordering breaks beginner flow.
 - **2026-03-31 - Advanced flow usability:** Branching logic is easier to validate when advanced JSON editing and React Flow visualization are co-located and auto-synced, instead of split across distant panels.
+- **2026-03-31 - Action block extensibility:** Keep new workflow blocks (`fetch`, `transform`, `modal`, `notify`) modeled in the shared DSL and logic runtime first, then mirror them in visual editor controls to preserve parity.

@@ -178,6 +178,10 @@ function actionSummary(actions: Action[]): string {
     if (a.type === "setState") return "State";
     if (a.type === "navigate") return "Go to URL";
     if (a.type === "http") return `${a.method} request`;
+    if (a.type === "fetch") return `${a.method} fetch`;
+    if (a.type === "transform") return "Transform";
+    if (a.type === "modal") return `${a.action === "open" ? "Open" : "Close"} modal`;
+    if (a.type === "notify") return "Notify";
     if (a.type === "condition") return "If";
     return a.type;
   });
@@ -208,7 +212,15 @@ function BranchActionFields(props: {
         value={branch.type}
         onChange={(e) => {
           const t = e.target.value;
-          if (t === "setState" || t === "navigate" || t === "http") {
+          if (
+            t === "setState" ||
+            t === "navigate" ||
+            t === "http" ||
+            t === "fetch" ||
+            t === "transform" ||
+            t === "modal" ||
+            t === "notify"
+          ) {
             onChange(defaultBranchAction(t));
           }
         }}
@@ -217,6 +229,10 @@ function BranchActionFields(props: {
         <option value="setState">Update state</option>
         <option value="navigate">Open URL</option>
         <option value="http">HTTP</option>
+        <option value="fetch">Fetch</option>
+        <option value="transform">Transform</option>
+        <option value="modal">Modal</option>
+        <option value="notify">Notify</option>
       </select>
     </div>
   );
@@ -294,6 +310,97 @@ function BranchActionFields(props: {
             placeholder="https://…"
             autoComplete="off"
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (branch.type === "fetch") {
+    return (
+      <div className="space-y-2">
+        {typeSelect}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-fm`}>Method</label>
+            <select
+              id={`${idPrefix}-fm`}
+              className={controlClass}
+              value={branch.method}
+              onChange={(e) => onChange({ ...branch, method: e.target.value as "GET" | "POST" })}
+              onBlur={onBlurCommit}
+            >
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-fu`}>URL</label>
+            <input id={`${idPrefix}-fu`} type="url" className={controlClass} value={branch.url} onChange={(e) => onChange({ ...branch, url: e.target.value })} onBlur={onBlurCommit} autoComplete="off" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-fa`}>Assign response to state path (optional)</label>
+            <input id={`${idPrefix}-fa`} type="text" className={controlClass} value={branch.assignTo ?? ""} onChange={(e) => onChange({ ...branch, assignTo: e.target.value.trim() || undefined })} onBlur={onBlurCommit} placeholder="table.rows" autoComplete="off" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (branch.type === "transform") {
+    return (
+      <div className="space-y-2">
+        {typeSelect}
+        <div>
+          <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-tp`}>Target state path</label>
+          <input id={`${idPrefix}-tp`} type="text" className={controlClass} value={branch.path} onChange={(e) => onChange({ ...branch, path: e.target.value })} onBlur={onBlurCommit} placeholder="metrics.total" autoComplete="off" />
+        </div>
+        <div>
+          <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-te`}>Expression</label>
+          <input id={`${idPrefix}-te`} type="text" className={controlClass} value={branch.expression} onChange={(e) => onChange({ ...branch, expression: e.target.value })} onBlur={onBlurCommit} placeholder="count * 2" autoComplete="off" />
+        </div>
+      </div>
+    );
+  }
+
+  if (branch.type === "modal") {
+    return (
+      <div className="space-y-2">
+        {typeSelect}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-ma`}>Action</label>
+            <select id={`${idPrefix}-ma`} className={controlClass} value={branch.action} onChange={(e) => onChange({ ...branch, action: e.target.value as "open" | "close" })} onBlur={onBlurCommit}>
+              <option value="open">Open</option>
+              <option value="close">Close</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-mt`}>Target</label>
+            <input id={`${idPrefix}-mt`} type="text" className={controlClass} value={branch.target} onChange={(e) => onChange({ ...branch, target: e.target.value })} onBlur={onBlurCommit} placeholder="settings-modal" autoComplete="off" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (branch.type === "notify") {
+    return (
+      <div className="space-y-2">
+        {typeSelect}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-nl`}>Level</label>
+            <select id={`${idPrefix}-nl`} className={controlClass} value={branch.level} onChange={(e) => onChange({ ...branch, level: e.target.value as "info" | "success" | "warning" | "error" })} onBlur={onBlurCommit}>
+              <option value="info">Info</option>
+              <option value="success">Success</option>
+              <option value="warning">Warning</option>
+              <option value="error">Error</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`${idPrefix}-nm`}>Message</label>
+            <input id={`${idPrefix}-nm`} type="text" className={controlClass} value={branch.message} onChange={(e) => onChange({ ...branch, message: e.target.value })} onBlur={onBlurCommit} autoComplete="off" />
+          </div>
         </div>
       </div>
     );
@@ -798,6 +905,58 @@ function SimpleActionRow(props: {
     );
   }
 
+  if (action.type === "fetch") {
+    return (
+      <div className="rounded-md border border-border/80 bg-background/60 p-2">
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">Fetch</span>
+          <div className="flex items-center gap-1">
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step up" onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step down" onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
+            {canRemove ? <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" title="Remove step" onClick={onRemove}><Trash2 className="size-3.5" aria-hidden /></Button> : null}
+          </div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`fetch-m-${index}`}>Method</label>
+            <select id={`fetch-m-${index}`} className={controlClass} value={action.method} onChange={(e) => onChange({ ...action, method: e.target.value as "GET" | "POST" })} onBlur={onBlurCommit}><option value="GET">GET</option><option value="POST">POST</option></select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`fetch-u-${index}`}>URL</label>
+            <input id={`fetch-u-${index}`} type="url" className={controlClass} value={action.url} onChange={(e) => onChange({ ...action, url: e.target.value })} onBlur={onBlurCommit} autoComplete="off" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-[0.65rem] text-muted-foreground" htmlFor={`fetch-a-${index}`}>Assign to state path (optional)</label>
+            <input id={`fetch-a-${index}`} type="text" className={controlClass} value={action.assignTo ?? ""} onChange={(e) => onChange({ ...action, assignTo: e.target.value.trim() || undefined })} onBlur={onBlurCommit} placeholder="table.rows" autoComplete="off" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (action.type === "transform" || action.type === "modal" || action.type === "notify") {
+    return (
+      <div className="rounded-md border border-border/80 bg-background/60 p-2">
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+            {action.type === "transform" ? "Transform" : action.type === "modal" ? "Modal" : "Notify"}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step up" onClick={onMoveUp} disabled={!canMoveUp}><ArrowUp className="size-3.5" aria-hidden /></Button>
+            <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground disabled:opacity-40" title="Move step down" onClick={onMoveDown} disabled={!canMoveDown}><ArrowDown className="size-3.5" aria-hidden /></Button>
+            {canRemove ? <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" title="Remove step" onClick={onRemove}><Trash2 className="size-3.5" aria-hidden /></Button> : null}
+          </div>
+        </div>
+        <BranchActionFields
+          idPrefix={`generic-${index}`}
+          branch={action}
+          onChange={onChange}
+          onBlurCommit={onBlurCommit}
+        />
+      </div>
+    );
+  }
+
   return null;
 }
 
@@ -958,7 +1117,15 @@ export function EventBindingsPanel(props: {
 
   function addVisualStep(
     rowId: string,
-    type: "setState" | "navigate" | "http" | "condition",
+    type:
+      | "setState"
+      | "navigate"
+      | "http"
+      | "fetch"
+      | "transform"
+      | "modal"
+      | "notify"
+      | "condition",
   ) {
     setRows((prev) => {
       const mapped = prev.map((row) => {
@@ -1210,6 +1377,42 @@ export function EventBindingsPanel(props: {
                             onClick={() => addVisualStep(row.id, "http")}
                           >
                             + HTTP
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[0.65rem]"
+                            onClick={() => addVisualStep(row.id, "fetch")}
+                          >
+                            + Fetch
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[0.65rem]"
+                            onClick={() => addVisualStep(row.id, "transform")}
+                          >
+                            + Transform
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[0.65rem]"
+                            onClick={() => addVisualStep(row.id, "modal")}
+                          >
+                            + Modal
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[0.65rem]"
+                            onClick={() => addVisualStep(row.id, "notify")}
+                          >
+                            + Notify
                           </Button>
                           <Button
                             type="button"

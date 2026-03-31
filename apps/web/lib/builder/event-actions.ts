@@ -5,9 +5,23 @@ export function isBranchAction(
   a: Action,
 ): a is Extract<
   Action,
-  { type: "setState" } | { type: "navigate" } | { type: "http" }
+  | { type: "setState" }
+  | { type: "navigate" }
+  | { type: "http" }
+  | { type: "fetch" }
+  | { type: "transform" }
+  | { type: "modal" }
+  | { type: "notify" }
 > {
-  return a.type === "setState" || a.type === "navigate" || a.type === "http";
+  return (
+    a.type === "setState" ||
+    a.type === "navigate" ||
+    a.type === "http" ||
+    a.type === "fetch" ||
+    a.type === "transform" ||
+    a.type === "modal" ||
+    a.type === "notify"
+  );
 }
 
 /**
@@ -77,13 +91,30 @@ export function defaultSimpleActions(): Action[] {
 }
 
 export function defaultBranchAction(
-  t: "setState" | "navigate" | "http",
+  t:
+    | "setState"
+    | "navigate"
+    | "http"
+    | "fetch"
+    | "transform"
+    | "modal"
+    | "notify",
 ): Extract<
   Action,
-  { type: "setState" } | { type: "navigate" } | { type: "http" }
+  | { type: "setState" }
+  | { type: "navigate" }
+  | { type: "http" }
+  | { type: "fetch" }
+  | { type: "transform" }
+  | { type: "modal" }
+  | { type: "notify" }
 > {
   if (t === "setState") return { type: "setState", path: "key", value: "" };
   if (t === "navigate") return { type: "navigate", href: "/" };
+  if (t === "fetch") return { type: "fetch", method: "GET", url: "https://" };
+  if (t === "transform") return { type: "transform", path: "key", expression: "true" };
+  if (t === "modal") return { type: "modal", action: "open", target: "modal-id" };
+  if (t === "notify") return { type: "notify", level: "info", message: "Done" };
   return { type: "http", method: "GET", url: "https://" };
 }
 
