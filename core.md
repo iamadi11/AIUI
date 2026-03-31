@@ -402,6 +402,10 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 - **Inspector:** Padding and intrinsic width/height for Box/Stack via `scope: "layout"` fields (no raw JSON for these keys).
 - **Canvas:** **Grip** drag to **reorder siblings**; drop targets and palette drag unchanged.
 
-### Phases 4–8 (planned)
+### Phase 4 — Events (shipped baseline)
 
-Event and logic UIs without raw JSON for common cases; React Flow alignment; builder/runtime visual parity; power-user tooling; optional follow-ups for on-canvas resize handles, snapping, and margin in the engine. Details in `PLAN.md` §14.
+- **Inspector:** Event list with **When** presets (or custom name), **Visual steps** (update state, open URL, HTTP) or **Advanced JSON** for `sequence` / `condition`; collapsed header shows a short summary chain.
+
+### Phases 5–8 (planned)
+
+Logic side-effects UI without raw JSON for common flows; React Flow alignment; builder/runtime visual parity; power-user tooling; optional layout follow-ups (on-canvas resize, snapping, margin). Details in `PLAN.md` §14.

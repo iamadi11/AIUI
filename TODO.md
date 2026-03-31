@@ -65,7 +65,6 @@ _Baseline shipped — see **Done**._
 _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation is incremental; do not break DSL/runtime boundaries._
 
 - [ ] **Phase 3 — Layout UX (follow-up):** Visual resize handles on canvas, snapping/guides, margin in engine, constraint UI
-- [ ] **Phase 4 — Event system UX:** Simple event editor, add/remove, visual mapping
 - [ ] **Phase 5 — Logic / side effects UX:** API/state/conditions UI, action chaining without raw JSON
 - [ ] **Phase 6 — Advanced logic (React Flow):** Graph workflows, sync with simple mode, debugging
 - [ ] **Phase 7 — Builder = runtime convergence:** Same engine in builder as preview
@@ -75,6 +74,7 @@ _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation i
 
 ## Done
 
+- **2026-03-31** — **Product UX — Phase 4 (event system UX):** `EventBindingsPanel` — preset **When** (click, submit, … + custom), collapsible rows with summary (`click · State → …`), **Visual steps** for `setState` / `navigate` / `http` (+ add step), **Advanced JSON** for sequences/conditions; blur-to-save for visual fields; `lib/builder/event-actions.ts` helpers
 - **2026-03-31** — **Product UX — Phase 3 (layout UX baseline):** `layout.padding` / `layout.width` / `layout.height` in registry + inspector (`InspectorField` `scope: "layout"`); `leafIntrinsic` reads optional `layout.width`/`height` in `@aiui/layout-engine`; sibling **reorder** on canvas via `@dnd-kit/sortable` + grip + `reorderSibling` in `document-store` / `tree.ts`; palette vs sibling collision (`closestCenter` vs `canvasPointerCollision`)
 - **2026-03-31** — **Product UX — Phase 2 (component palette):** Registry `paletteCategory` / `paletteKeywords` / `paletteDescription`; `listPaletteDefinitions` + `matchesPaletteSearch`; palette UI — search, grouped sections (`PALETTE_CATEGORY_ORDER`), empty-category placeholders, descriptions on items; `packages/registry/README.md`
 - **2026-03-31** — **Product UX — Phase 1 (builder foundation):** Canvas hover/selection affordances, hierarchy indent, backdrop click + **Esc** to clear selection; optional `props.label` on Box/Stack with **inline rename** on canvas (double-click) + `InspectorField` `kind: "text"`; selection **breadcrumb** and tree rows use `formatNodeTitle` (ids in `title` only); `getPathToNode` in `lib/document/tree.ts`
