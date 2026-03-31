@@ -1,4 +1,4 @@
-import type { UiNode } from "@aiui/dsl-schema";
+import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 import { layoutDocument, parsePadding } from "@aiui/layout-engine";
 import { VIEWPORT_PRESETS } from "@/lib/builder/viewport-presets";
 
@@ -125,6 +125,19 @@ export function collectLayoutWarnings(root: UiNode): LayoutWarning[] {
   ];
   const deduped = new Map<string, LayoutWarning>();
   for (const w of all) {
+    const key = `${w.code}:${w.nodeId}:${w.viewport ?? "-"}`;
+    if (!deduped.has(key)) deduped.set(key, w);
+  }
+  return [...deduped.values()];
+}
+
+export function collectLayoutWarningsFromDoc(doc: AiuiDocument): LayoutWarning[] {
+  const out: LayoutWarning[] = [];
+  for (const screen of Object.values(doc.screens)) {
+    out.push(...collectLayoutWarnings(screen.root));
+  }
+  const deduped = new Map<string, LayoutWarning>();
+  for (const w of out) {
     const key = `${w.code}:${w.nodeId}:${w.viewport ?? "-"}`;
     if (!deduped.has(key)) deduped.set(key, w);
   }

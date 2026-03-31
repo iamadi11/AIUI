@@ -1,6 +1,6 @@
 "use client";
 
-import { safeParseDocument } from "@aiui/dsl-schema";
+import { getRuntimeScreenRoot, safeParseDocument } from "@aiui/dsl-schema";
 import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -26,7 +26,14 @@ function PreviewPageContent() {
   const parsed = safeParseDocument(document);
   const [viewportId, setViewportId] = useState<ViewportPresetId>("desktop");
   const viewport = getViewportPreset(viewportId);
-  const viewportParity = buildViewportParityReport(document.root);
+  const parityRoot = parsed.success
+    ? getRuntimeScreenRoot(parsed.data)
+    : document.screens[document.initialScreenId]?.root ?? {
+        id: "00000000-0000-4000-8000-000000000000",
+        type: "Box",
+        props: {},
+      };
+  const viewportParity = buildViewportParityReport(parityRoot);
   const failingParityRows = viewportParity.rows.filter(
     (row) => row.invalidRectCount > 0 || !row.deterministic,
   );

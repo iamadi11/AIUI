@@ -1,5 +1,8 @@
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
-import { safeParseDocumentWithMigration } from "@aiui/dsl-schema";
+import {
+  getRuntimeScreenRoot,
+  safeParseDocumentWithMigration,
+} from "@aiui/dsl-schema";
 import {
   BOX_TYPE,
   STACK_TYPE,
@@ -454,6 +457,13 @@ export function render(options: RenderOptions): RuntimeHandle {
   let prevDoc: AiuiDocument | undefined;
   const disposersByNodeId = new Map<string, (() => void)[]>();
 
+  /** Latest parsed document (for `navigateScreen` / modal closure). */
+  let latestDoc: AiuiDocument | undefined;
+  /** In-app router: which screen is rendered when multiple screens exist. */
+  let currentScreenId = "";
+  /** Modal stack of screen ids (`modal` action targets). */
+  let modalStack: string[] = [];
+
   let flushPending = false;
   function scheduleFlush(): void {
     if (disposed || flushPending) return;
@@ -491,6 +501,21 @@ export function render(options: RenderOptions): RuntimeHandle {
     },
     navigate: (href) => {
       window.location.assign(href);
+    },
+    navigateScreen: (screenId) => {
+      const doc = latestDoc;
+      if (!doc?.screens[screenId]) return;
+      currentScreenId = screenId;
+      scheduleFlush();
+    },
+    modal: (target, action) => {
+      if (action === "open") {
+        modalStack.push(target);
+      } else {
+        const idx = modalStack.lastIndexOf(target);
+        if (idx >= 0) modalStack.splice(idx, 1);
+      }
+      scheduleFlush();
     },
     fetch: (...args: Parameters<typeof fetch>) => fetch(...args),
   };
@@ -642,14 +667,30 @@ export function render(options: RenderOptions): RuntimeHandle {
     }
 
     const doc: AiuiDocument = parsed.data;
+    latestDoc = doc;
+
     if (shouldResetStateFromDoc) {
       state = cloneState(doc.state);
+      currentScreenId = doc.initialScreenId;
+      modalStack = [];
       shouldResetStateFromDoc = false;
     }
 
+    if (!currentScreenId || !doc.screens[currentScreenId]) {
+      currentScreenId = doc.initialScreenId;
+    }
+
+    const mainRoot =
+      doc.screens[currentScreenId]?.root ?? getRuntimeScreenRoot(doc);
+
+    const multiScreen =
+      Object.keys(doc.screens).length > 1 ||
+      currentScreenId !== doc.initialScreenId ||
+      modalStack.length > 0;
+
     const lw = rootLayoutWidth(container, layoutWidthOpt);
-    const rects = layoutDocument(doc.root, { width: lw });
-    const rootRect = rects.get(doc.root.id);
+    const rects = layoutDocument(mainRoot, { width: lw });
+    const rootRect = rects.get(mainRoot.id);
     if (!rootRect) {
       clearListenersAndDom();
       prevConfigRef = undefined;
@@ -665,18 +706,28 @@ export function render(options: RenderOptions): RuntimeHandle {
     }
 
     const origin: Rect = { x: 0, y: 0, width: 0, height: 0 };
-    const canLayoutOnly = prevConfigRef === config && prevDoc !== undefined;
+    const canLayoutOnly =
+      !multiScreen &&
+      prevConfigRef === config &&
+      prevDoc !== undefined;
 
     if (canLayoutOnly) {
       container.style.minHeight = `${rootRect.height}px`;
-      patchSubtree(doc.root, container, origin, rects);
+      patchSubtree(mainRoot, container, origin, rects);
       return;
     }
 
+    const prevMain =
+      prevDoc !== undefined
+        ? (prevDoc.screens[currentScreenId]?.root ?? getRuntimeScreenRoot(prevDoc))
+        : undefined;
+
     const canSync =
+      !multiScreen &&
       prevDoc !== undefined &&
-      prevDoc.root.id === doc.root.id &&
-      findDirectChildByAiuiId(container, doc.root.id) !== null;
+      prevMain !== undefined &&
+      prevMain.id === mainRoot.id &&
+      findDirectChildByAiuiId(container, mainRoot.id) !== null;
 
     if (canSync && prevDoc) {
       try {
@@ -684,7 +735,7 @@ export function render(options: RenderOptions): RuntimeHandle {
         container.style.boxSizing = "border-box";
         container.style.minHeight = `${rootRect.height}px`;
         container.style.width = "100%";
-        syncNode(prevDoc.root, doc.root, container, origin, rects);
+        syncNode(prevMain, mainRoot, container, origin, rects);
         prevDoc = doc;
         prevConfigRef = config;
         return;
@@ -704,13 +755,49 @@ export function render(options: RenderOptions): RuntimeHandle {
 
     try {
       mountSubtree(
-        doc.root,
+        mainRoot,
         container,
         origin,
         rects,
         bindEvents,
         onNodeError,
       );
+
+      const topModalId = modalStack[modalStack.length - 1];
+      const modalRoot =
+        topModalId !== undefined ? doc.screens[topModalId]?.root : undefined;
+      if (modalRoot) {
+        const overlay = document.createElement("div");
+        overlay.dataset.aiuiModalOverlay = "1";
+        overlay.style.position = "absolute";
+        overlay.style.inset = "0";
+        overlay.style.zIndex = "999";
+        overlay.style.background = "rgba(0, 0, 0, 0.45)";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.pointerEvents = "auto";
+        overlay.style.boxSizing = "border-box";
+        container.appendChild(overlay);
+
+        const modalRects = layoutDocument(modalRoot, { width: lw });
+        const modalHost = document.createElement("div");
+        modalHost.style.position = "relative";
+        modalHost.style.maxWidth = "min(96vw, 720px)";
+        modalHost.style.maxHeight = "90vh";
+        modalHost.style.overflow = "auto";
+        overlay.appendChild(modalHost);
+        const modalOrigin: Rect = { x: 0, y: 0, width: 0, height: 0 };
+        mountSubtree(
+          modalRoot,
+          modalHost,
+          modalOrigin,
+          modalRects,
+          bindEvents,
+          onNodeError,
+        );
+      }
+
       prevDoc = doc;
       prevConfigRef = config;
     } catch (e) {

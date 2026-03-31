@@ -1,4 +1,4 @@
-import type { UiNode } from "@aiui/dsl-schema";
+import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 
 export type DocumentScaleLevel = "normal" | "large" | "very_large";
 
@@ -113,4 +113,21 @@ export function analyzeDocumentPerformance(
     guardrails,
     summary,
   };
+}
+
+/** Aggregate performance across all screens (multi-screen documents). */
+export function analyzeDocumentPerformanceFromDoc(
+  doc: AiuiDocument,
+): DocumentPerformanceDiagnostics {
+  let worst: DocumentPerformanceDiagnostics | undefined;
+  for (const screen of Object.values(doc.screens)) {
+    const p = analyzeDocumentPerformance(screen.root);
+    if (
+      !worst ||
+      p.estimatedComplexityScore > worst.estimatedComplexityScore
+    ) {
+      worst = p;
+    }
+  }
+  return worst ?? analyzeDocumentPerformance({ id: "x", type: "Box", props: {} });
 }

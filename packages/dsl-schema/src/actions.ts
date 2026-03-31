@@ -6,6 +6,8 @@ import { z } from "zod";
 export type Action =
   | { type: "setState"; path: string; value: unknown }
   | { type: "navigate"; href: string }
+  /** In-app screen transition (multi-screen documents). */
+  | { type: "navigateScreen"; screenId: string }
   | {
       type: "fetch";
       method: "GET" | "POST";
@@ -40,6 +42,11 @@ const setStateActionSchema = z.object({
 const navigateActionSchema = z.object({
   type: z.literal("navigate"),
   href: z.string().min(1),
+});
+
+const navigateScreenActionSchema = z.object({
+  type: z.literal("navigateScreen"),
+  screenId: z.string().min(1),
 });
 
 const httpActionSchema = z.object({
@@ -81,6 +88,7 @@ export const actionSchema: z.ZodType<Action> = z.lazy(() =>
   z.discriminatedUnion("type", [
     setStateActionSchema,
     navigateActionSchema,
+    navigateScreenActionSchema,
     fetchActionSchema,
     httpActionSchema,
     transformActionSchema,

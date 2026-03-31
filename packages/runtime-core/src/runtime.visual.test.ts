@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DSL_VERSION, LAYOUT_VERSION } from "@aiui/dsl-schema";
+import {
+  DEFAULT_SCREEN_ID,
+  DSL_VERSION,
+  LAYOUT_VERSION,
+} from "@aiui/dsl-schema";
 import { render } from "./runtime";
 
 const ROOT = "90000000-0000-4000-8000-000000000001";
@@ -12,19 +16,30 @@ function visualDoc() {
     version: DSL_VERSION,
     layoutVersion: LAYOUT_VERSION,
     state: { count: 1 },
-    root: {
-      id: ROOT,
-      type: "Stack",
-      props: { direction: "column", gap: 8 },
-      children: [
-        { id: BTN, type: "Button", props: { label: "Run" } },
-        {
-          id: CARD,
-          type: "Card",
-          props: { label: "Revenue", description: "Last 30 days" },
-          children: [{ id: BADGE, type: "Badge", props: { label: "Up 12%" } }],
+    screens: {
+      [DEFAULT_SCREEN_ID]: {
+        root: {
+          id: ROOT,
+          type: "Stack",
+          props: { direction: "column", gap: 8 },
+          children: [
+            { id: BTN, type: "Button", props: { label: "Run" } },
+            {
+              id: CARD,
+              type: "Card",
+              props: { label: "Revenue", description: "Last 30 days" },
+              children: [
+                { id: BADGE, type: "Badge", props: { label: "Up 12%" } },
+              ],
+            },
+          ],
         },
-      ],
+      },
+    },
+    initialScreenId: DEFAULT_SCREEN_ID,
+    flowLayout: {
+      positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+      edges: [],
     },
   };
 }

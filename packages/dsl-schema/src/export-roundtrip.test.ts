@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_SCREEN_ID,
   DSL_VERSION,
   LAYOUT_VERSION,
   exportGoldenJson,
@@ -16,10 +17,19 @@ function minimalDoc() {
   return {
     version: DSL_VERSION,
     layoutVersion: LAYOUT_VERSION,
-    root: {
-      id: ROOT_ID,
-      type: "Box",
-      props: {},
+    screens: {
+      [DEFAULT_SCREEN_ID]: {
+        root: {
+          id: ROOT_ID,
+          type: "Box",
+          props: {},
+        },
+      },
+    },
+    initialScreenId: DEFAULT_SCREEN_ID,
+    flowLayout: {
+      positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+      edges: [],
     },
   };
 }

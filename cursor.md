@@ -44,6 +44,8 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-03-31 - Multi-screen documents:** Prefer `screens` + `initialScreenId` + `flowLayout` as the source of truth; use `editorDocumentView(doc, activeScreenId)` wherever the builder still expects a single `root`; legacy `root`-only JSON is normalized in `migrateDocument` via `normalizeLegacyRootToScreens`.
+- **2026-03-31 - Screen graph + dnd-kit:** Bridge palette drops to React Flow coordinates with a ref to `screenToFlowPosition` and a document-level `pointermove` listener while dragging so drop placement is stable.
 - **2026-03-31 - Minimal builder shell:** Navbar is Preview + undo/redo + overflow actions; **component palette** lives in a **left sidebar**; **Design / Logic** tabs (dev mode) promote the React Flow logic map; walkthrough and document templates were removed from the UI; export panel, live JSON, and deep diagnostics stay behind `/?dev=1`; default `/preview` carries golden JSON import/export.
 - **2026-03-31 - Registry drop-ins:** `defaultChildren` provides composed starter trees (fresh ids via `cloneUiSubtreeWithNewIds`); `interactionPresets` lists beginner-friendly `Action[]` starters resolved in the app (`interaction-preset-actions.ts`).
 - **2026-03-31 - Runtime primitive content:** Decorative labels and table markup use `data-aiui-content`; positioned `data-aiui-id` nodes remain the layout engine’s responsibility.

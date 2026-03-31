@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DSL_VERSION, LAYOUT_VERSION } from "@aiui/dsl-schema";
+import {
+  DEFAULT_SCREEN_ID,
+  DSL_VERSION,
+  LAYOUT_VERSION,
+} from "@aiui/dsl-schema";
 import { render } from "./runtime";
 
 const ROOT = "10000000-0000-4000-8000-000000000001";
@@ -10,20 +14,29 @@ function minimalDoc() {
     version: DSL_VERSION,
     layoutVersion: LAYOUT_VERSION,
     state: { count: 0 },
-    root: {
-      id: ROOT,
-      type: "Box",
-      props: {},
-      children: [
-        {
-          id: CHILD,
+    screens: {
+      [DEFAULT_SCREEN_ID]: {
+        root: {
+          id: ROOT,
           type: "Box",
           props: {},
-          events: {
-            click: [{ type: "setState" as const, path: "count", value: 1 }],
-          },
+          children: [
+            {
+              id: CHILD,
+              type: "Box",
+              props: {},
+              events: {
+                click: [{ type: "setState" as const, path: "count", value: 1 }],
+              },
+            },
+          ],
         },
-      ],
+      },
+    },
+    initialScreenId: DEFAULT_SCREEN_ID,
+    flowLayout: {
+      positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+      edges: [],
     },
   };
 }
@@ -34,31 +47,40 @@ function parityDoc(initialCount = 0) {
     version: DSL_VERSION,
     layoutVersion: LAYOUT_VERSION,
     state: { count: initialCount },
-    root: {
-      id: ROOT,
-      type: "Stack",
-      props: { direction: "column", gap: 8 },
-      children: [
-        {
-          id: BTN,
-          type: "Button",
-          props: { label: "Increment" },
-          events: {
-            click: [
-              {
-                type: "setState" as const,
-                path: "count",
-                expression: "(state.count ?? 0) + 1",
+    screens: {
+      [DEFAULT_SCREEN_ID]: {
+        root: {
+          id: ROOT,
+          type: "Stack",
+          props: { direction: "column", gap: 8 },
+          children: [
+            {
+              id: BTN,
+              type: "Button",
+              props: { label: "Increment" },
+              events: {
+                click: [
+                  {
+                    type: "setState" as const,
+                    path: "count",
+                    expression: "(state.count ?? 0) + 1",
+                  },
+                ],
               },
-            ],
-          },
+            },
+            {
+              id: CHILD,
+              type: "Box",
+              props: {},
+            },
+          ],
         },
-        {
-          id: CHILD,
-          type: "Box",
-          props: {},
-        },
-      ],
+      },
+    },
+    initialScreenId: DEFAULT_SCREEN_ID,
+    flowLayout: {
+      positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+      edges: [],
     },
   };
 }
@@ -123,11 +145,21 @@ describe("render", () => {
 
     rt.update({
       version: DSL_VERSION,
-      root: {
-        id: ROOT,
-        type: "Box",
-        props: {},
-        children: [],
+      layoutVersion: LAYOUT_VERSION,
+      screens: {
+        [DEFAULT_SCREEN_ID]: {
+          root: {
+            id: ROOT,
+            type: "Box",
+            props: {},
+            children: [],
+          },
+        },
+      },
+      initialScreenId: DEFAULT_SCREEN_ID,
+      flowLayout: {
+        positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+        edges: [],
       },
     });
     expect(container.querySelector(`[data-aiui-id="${CHILD}"]`)).toBeNull();
@@ -167,14 +199,23 @@ describe("render", () => {
       version: DSL_VERSION,
       layoutVersion: LAYOUT_VERSION,
       state: {},
-      root: {
-        id: ROOT,
-        type: "Box",
-        props: {},
-        children: [
-          { id: A, type: "Box", props: {} },
-          { id: B, type: "Box", props: {} },
-        ],
+      screens: {
+        [DEFAULT_SCREEN_ID]: {
+          root: {
+            id: ROOT,
+            type: "Box",
+            props: {},
+            children: [
+              { id: A, type: "Box", props: {} },
+              { id: B, type: "Box", props: {} },
+            ],
+          },
+        },
+      },
+      initialScreenId: DEFAULT_SCREEN_ID,
+      flowLayout: {
+        positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+        edges: [],
       },
     };
 
@@ -184,12 +225,16 @@ describe("render", () => {
 
     rt.update({
       ...doc,
-      root: {
-        ...doc.root,
-        children: [
-          { id: B, type: "Box", props: {} },
-          { id: A, type: "Box", props: {} },
-        ],
+      screens: {
+        [DEFAULT_SCREEN_ID]: {
+          root: {
+            ...doc.screens[DEFAULT_SCREEN_ID].root,
+            children: [
+              { id: B, type: "Box", props: {} },
+              { id: A, type: "Box", props: {} },
+            ],
+          },
+        },
       },
     });
 

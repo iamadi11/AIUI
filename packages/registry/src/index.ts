@@ -703,7 +703,10 @@ export function getPaletteMeta(type: string) {
   return getDefinition(type)?.ux.palette;
 }
 
-/** All registered primitives in stable palette order (category, then name). */
+/**
+ * All registered primitives in stable palette order (category, then name).
+ * Current AIUI scope is shadcn-first: only registry primitives appear here.
+ */
 export function listPaletteDefinitions(): ComponentDefinition[] {
   return Object.values(primitives).sort((a, b) => {
     const ca = PALETTE_CATEGORY_ORDER.indexOf(a.ux.palette.category);
@@ -744,3 +747,5 @@ export const SHADCN_ADAPTER: UiAdapterDefinition = {
   getDefinition,
   listDefinitions: () => Object.values(primitives),
 };
+
+export * from "./screen-templates";

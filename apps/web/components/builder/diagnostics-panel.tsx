@@ -1,10 +1,13 @@
 "use client";
 
 import type { AiuiDocument } from "@aiui/dsl-schema";
-import { safeParseDocument } from "@aiui/dsl-schema";
+import { getRuntimeScreenRoot, safeParseDocument } from "@aiui/dsl-schema";
 import { useEffect, useMemo, useState } from "react";
-import { analyzeDocumentPerformance } from "@/lib/builder/document-performance";
-import { collectLayoutWarnings } from "@/lib/builder/layout-warnings";
+import {
+  analyzeDocumentPerformanceFromDoc,
+} from "@/lib/builder/document-performance";
+import { collectLayoutWarningsFromDoc } from "@/lib/builder/layout-warnings";
+import { collectPrototypeDiagnostics } from "@/lib/builder/prototype-diagnostics";
 import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
 import { createIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
 import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
@@ -41,30 +44,45 @@ export function DiagnosticsPanel(props: {
   const [runExpensiveChecks, setRunExpensiveChecks] = useState(false);
   const parse = safeParseDocument(document);
   const perf = useMemo(
-    () => analyzeDocumentPerformance(document.root),
-    [document.root],
+    () => analyzeDocumentPerformanceFromDoc(document),
+    [document],
   );
   const shouldRunExpensiveChecks =
     !perf.shouldDeferExpensiveDiagnostics || runExpensiveChecks;
   const layoutWarnings = useMemo(
     () =>
-      shouldRunExpensiveChecks ? collectLayoutWarnings(document.root) : [],
-    [document.root, shouldRunExpensiveChecks],
-  );
-  const viewportParity = useMemo(
-    () =>
       shouldRunExpensiveChecks
-        ? buildViewportParityReport(document.root)
-        : {
-            ok: true,
-            summary:
-              "Deferred for large document. Run full checks for parity details.",
-            rows: [],
-          },
-    [document.root, shouldRunExpensiveChecks],
+        ? collectLayoutWarningsFromDoc(document)
+        : [],
+    [document, shouldRunExpensiveChecks],
   );
+  const viewportParity = useMemo(() => {
+    if (!shouldRunExpensiveChecks) {
+      return {
+        ok: true,
+        summary:
+          "Deferred for large document. Run full checks for parity details.",
+        rows: [],
+      };
+    }
+    if (!parse.success) {
+      return {
+        ok: false,
+        summary: "Schema invalid — parity skipped.",
+        rows: [],
+      };
+    }
+    return buildViewportParityReport(getRuntimeScreenRoot(parse.data));
+  }, [parse.success, parse.data, shouldRunExpensiveChecks]);
   const failingParityRows = viewportParity.rows.filter(
     (row) => row.invalidRectCount > 0 || !row.deterministic,
+  );
+  const prototypeIssues = useMemo(
+    () =>
+      shouldRunExpensiveChecks
+        ? collectPrototypeDiagnostics(document)
+        : [],
+    [document, shouldRunExpensiveChecks],
   );
   const selectedIssue = useMemo(
     () => issues.find((issue) => issue.issueId === selectedIssueId) ?? issues[0] ?? null,
@@ -279,6 +297,22 @@ export function DiagnosticsPanel(props: {
           No overflow/constraint conflicts detected for current viewport presets.
         </p>
       )}
+      {prototypeIssues.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-destructive/35 bg-destructive/5 p-2">
+          <p className="text-[0.7rem] font-medium uppercase tracking-wide text-destructive">
+            Screen graph ({prototypeIssues.length})
+          </p>
+          <ul className="mt-1 space-y-1">
+            {prototypeIssues.map((p) => (
+              <li key={`${p.code}-${p.message}`}>
+                <p className="text-[0.68rem] leading-snug text-foreground">
+                  {p.message}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <div className="mt-3 rounded-lg border border-border/70 bg-muted/20 p-2">
         <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
           Viewport parity

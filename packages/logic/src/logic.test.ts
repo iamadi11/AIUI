@@ -17,6 +17,7 @@ describe("setPathImmutable", () => {
 function createEnv(initial: Record<string, unknown>) {
   let state = initial;
   const navigate = vi.fn();
+  const navigateScreen = vi.fn();
   const notify = vi.fn();
   const modal = vi.fn();
   const fetch = vi.fn().mockResolvedValue(new Response());
@@ -26,11 +27,12 @@ function createEnv(initial: Record<string, unknown>) {
       state = next;
     },
     navigate,
+    navigateScreen,
     notify,
     modal,
     fetch: fetch as typeof globalThis.fetch,
   };
-  return { env, navigate, fetch, notify, modal };
+  return { env, navigate, navigateScreen, fetch, notify, modal };
 }
 
 describe("runAction", () => {
@@ -45,6 +47,12 @@ describe("runAction", () => {
     const { env, navigate } = createEnv({});
     await runAction({ type: "navigate", href: "/x" }, env);
     expect(navigate).toHaveBeenCalledWith("/x");
+  });
+
+  it("runs navigateScreen", async () => {
+    const { env, navigateScreen } = createEnv({});
+    await runAction({ type: "navigateScreen", screenId: "screen-b" }, env);
+    expect(navigateScreen).toHaveBeenCalledWith("screen-b");
   });
 
   it("runs http with JSON body", async () => {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   bindingDescriptorSchema,
+  DEFAULT_SCREEN_ID,
+  DSL_VERSION,
   safeParseBindingDescriptor,
   safeParseDocument,
 } from "./index";
@@ -30,16 +32,25 @@ describe("bindingDescriptorSchema", () => {
 describe("document schema with bindings", () => {
   it("accepts bindings record on node", () => {
     const doc = {
-      version: "0.2.0",
+      version: DSL_VERSION,
       layoutVersion: "0.1.0",
-      root: {
-        id: ROOT_ID,
-        type: "Box",
-        props: {},
-        bindings: {
-          title: { kind: "static", value: "Revenue" },
-          rows: { kind: "query", source: "orders", path: "items" },
+      screens: {
+        [DEFAULT_SCREEN_ID]: {
+          root: {
+            id: ROOT_ID,
+            type: "Box",
+            props: {},
+            bindings: {
+              title: { kind: "static", value: "Revenue" },
+              rows: { kind: "query", source: "orders", path: "items" },
+            },
+          },
         },
+      },
+      initialScreenId: DEFAULT_SCREEN_ID,
+      flowLayout: {
+        positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+        edges: [],
       },
     };
     const r = safeParseDocument(doc);

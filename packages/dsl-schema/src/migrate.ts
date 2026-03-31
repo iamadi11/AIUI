@@ -12,6 +12,7 @@ export type MigrationFn = (
  */
 export const MIGRATION_REGISTRY: Record<string, MigrationFn> = {
   "0.1.0": migrate_0_1_0_to_0_2_0,
+  "0.2.0": migrate_0_2_0_to_0_3_0,
 };
 
 function migrate_0_1_0_to_0_2_0(
@@ -20,6 +21,35 @@ function migrate_0_1_0_to_0_2_0(
   // 0.2.0: migration chain in place; add breaking transforms here when the
   // schema shape changes (rename fields, wrap nodes, etc.).
   raw.version = "0.2.0";
+  return raw;
+}
+
+function migrate_0_2_0_to_0_3_0(
+  raw: Record<string, unknown>,
+): Record<string, unknown> {
+  if (
+    raw.screens &&
+    typeof raw.screens === "object" &&
+    !Array.isArray(raw.screens)
+  ) {
+    raw.version = "0.3.0";
+    return raw;
+  }
+  const root = raw.root;
+  if (!root || typeof root !== "object") {
+    raw.version = "0.3.0";
+    return raw;
+  }
+  raw.screens = {
+    default: { title: "Screen", root },
+  };
+  raw.initialScreenId = "default";
+  raw.flowLayout = {
+    positions: { default: { x: 0, y: 0 } },
+    edges: [],
+  };
+  delete raw.root;
+  raw.version = "0.3.0";
   return raw;
 }
 
@@ -65,5 +95,30 @@ export function migrateDocument(raw: unknown): unknown {
     data.layoutVersion = String(data.layoutVersion);
   }
   applyVersionMigrations(data);
+  normalizeLegacyRootToScreens(data);
   return data;
+}
+
+/** If `screens` is missing but `root` exists, wrap into a single default screen. */
+function normalizeLegacyRootToScreens(data: Record<string, unknown>): void {
+  if (
+    data.screens &&
+    typeof data.screens === "object" &&
+    !Array.isArray(data.screens)
+  ) {
+    return;
+  }
+  const root = data.root;
+  if (!root || typeof root !== "object") return;
+  data.screens = {
+    default: { title: "Screen", root },
+  };
+  data.initialScreenId = "default";
+  if (data.flowLayout === undefined) {
+    data.flowLayout = {
+      positions: { default: { x: 0, y: 0 } },
+      edges: [],
+    };
+  }
+  delete data.root;
 }

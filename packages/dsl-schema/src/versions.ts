@@ -1,5 +1,5 @@
 /** Semantic version of the document format (not layout algorithm). */
-export const DSL_VERSION = "0.2.0";
+export const DSL_VERSION = "0.3.0";
 
 /**
  * Layout algorithm version (deterministic engine in `@aiui/layout-engine`).

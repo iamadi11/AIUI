@@ -8,6 +8,8 @@ AIUI is a visual dashboard OS for non-technical users: drag and drop, connect da
 
 Baseline cleanup across builder, runtime, schema, registry; shared shortcuts/tree modules; runtime `relayout()`; consolidated logic/expression helpers; registry capability contract; runtime diagnostics envelope.
 
+**Screen graph (2026-03-31):** DSL supports multiple `screens` and a React Flow `flowLayout` (positions + prototype edges); runtime routes with `navigateScreen` and a modal overlay stack; builder edits one screen at a time via `activeScreenId` while the graph shows all screens.
+
 ## Core principles
 
 - Creator canvas and generated runtime share one rendering pipeline.

@@ -10,19 +10,20 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import type { UiNode } from "@aiui/dsl-schema";
+import type { PrototypeEdgeKind, UiNode } from "@aiui/dsl-schema";
+import { editorDocumentView } from "@aiui/dsl-schema";
 import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
 import { Button } from "@/components/ui/button";
 import { formatNodeTitle } from "@/lib/builder/node-display";
-import { analyzeDocumentPerformance } from "@/lib/builder/document-performance";
+import { analyzeDocumentPerformanceFromDoc } from "@/lib/builder/document-performance";
 import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
 import { createRuntimeIssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
 import { useIssueTelemetryStore } from "@/stores/issue-telemetry-store";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { BuilderNavbar } from "./builder-navbar";
 import { canvasPointerCollision } from "./builder-collision";
@@ -43,6 +44,10 @@ import { DRAG_COPY } from "./drag-copy";
 import { NodeTree } from "./node-tree";
 import { BuilderShortcutsHelp } from "./builder-shortcuts-help";
 import { useBuilderShortcuts } from "./use-builder-shortcuts";
+import {
+  ScreenFlowCanvas,
+  type ScreenFlowHandle,
+} from "./screen-flow-canvas";
 import { msg } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +82,10 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const redo = useDocumentStore((s) => s.redo);
   const updateNode = useDocumentStore((s) => s.updateNode);
   const reorderSibling = useDocumentStore((s) => s.reorderSibling);
+  const activeScreenId = useDocumentStore((s) => s.activeScreenId);
+  const setActiveScreenId = useDocumentStore((s) => s.setActiveScreenId);
+  const addScreenFromPalette = useDocumentStore((s) => s.addScreenFromPalette);
+  const removeScreen = useDocumentStore((s) => s.removeScreen);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
   const undoDepth = useDocumentStore((s) => s.past.length);
@@ -90,16 +99,34 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   const clearSelection = useSelectionStore((s) => s.clearSelection);
   const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
 
-  const rootId = document.root.id;
-  const userLayerCount = Math.max(0, countNodes(document.root) - 1);
+  const editorDoc = useMemo(
+    () => editorDocumentView(document, activeScreenId),
+    [document, activeScreenId],
+  );
+  const rootId = editorDoc.root.id;
+  const userLayerCount = Math.max(0, countNodes(editorDoc.root) - 1);
   const performance = useMemo(
-    () => analyzeDocumentPerformance(document.root),
-    [document.root],
+    () => analyzeDocumentPerformanceFromDoc(document),
+    [document],
   );
 
   const [activePalette, setActivePalette] = useState<PaletteDragData | null>(
     null,
   );
+  const [nextEdgeKind, setNextEdgeKind] =
+    useState<PrototypeEdgeKind>("navigate");
+  const flowRef = useRef<ScreenFlowHandle | null>(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!activePalette) return;
+    const fn = (e: PointerEvent) => {
+      pointerRef.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("pointermove", fn, { passive: true });
+    return () => window.removeEventListener("pointermove", fn);
+  }, [activePalette]);
+
   const [workspaceTab, setWorkspaceTab] = useState<"design" | "logic">(
     "design",
   );
@@ -111,7 +138,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
   );
 
   useBuilderShortcuts({
-    documentRoot: document.root,
+    documentRoot: editorDoc.root,
     selectedIds,
     selectedNodeId,
     rootId,
@@ -135,6 +162,15 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
     if (!over) return;
     const activeData = active.data.current;
     if (isPaletteDragData(activeData)) {
+      if (over?.id === "flow-canvas-drop") {
+        const pos = flowRef.current?.screenToFlowPosition(
+          pointerRef.current,
+        );
+        if (pos) {
+          addScreenFromPalette(activeData.componentType, pos);
+        }
+        return;
+      }
       const drop = over.data.current as CanvasDropData | undefined;
       if (!drop?.parentId) return;
       appendChildOfType(drop.parentId, activeData.componentType);
@@ -269,7 +305,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                           : selectedIds.length === 1
                             ? (() => {
                                 const path = getPathToNode(
-                                  document.root,
+                                  editorDoc.root,
                                   selectedNodeId!,
                                 );
                                 return path?.map(formatNodeTitle).join(" › ") ?? "—";
@@ -313,9 +349,49 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                   </>
                 ) : null}
 
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant={
+                        nextEdgeKind === "navigate" ? "default" : "outline"
+                      }
+                      size="sm"
+                      onClick={() => setNextEdgeKind("navigate")}
+                    >
+                      {msg("builder.edgeKindNavigate")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={nextEdgeKind === "modal" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setNextEdgeKind("modal")}
+                    >
+                      {msg("builder.edgeKindModal")}
+                    </Button>
+                    {Object.keys(document.screens).length > 1 ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeScreen(activeScreenId)}
+                      >
+                        {msg("builder.removeScreen")}
+                      </Button>
+                    ) : null}
+                  </div>
+                  <ScreenFlowCanvas
+                    ref={flowRef}
+                    document={document}
+                    activeScreenId={activeScreenId}
+                    nextEdgeKind={nextEdgeKind}
+                    onSelectScreen={setActiveScreenId}
+                  />
+                </div>
+
                 <div className="min-h-[min(70vh,560px)] flex-1">
                   <BuilderCanvas
-                    document={document}
+                    document={editorDoc}
                     onRuntimeDiagnostic={handleRuntimeDiagnostic}
                     selectedId={selectedNodeId}
                     onSelect={selectNode}
@@ -369,7 +445,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                         {msg("builder.tree")}
                       </p>
                       <NodeTree
-                        node={document.root}
+                        node={editorDoc.root}
                         depth={0}
                         selectedIds={selectedIds}
                         onSelect={selectNode}
@@ -379,7 +455,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                             selectNode(targetId);
                             return;
                           }
-                          const ids = collectNodeIds(document.root);
+                          const ids = collectNodeIds(editorDoc.root);
                           const a = ids.indexOf(selectedNodeId);
                           const b = ids.indexOf(targetId);
                           if (a < 0 || b < 0) {
@@ -400,7 +476,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
                     <DocumentStatePanel />
 
                     <LayoutDebugPanel
-                      root={document.root}
+                      root={editorDoc.root}
                       documentLayoutVersion={document.layoutVersion}
                     />
 
@@ -466,7 +542,10 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
               </>
             ) : (
               <div className="flex min-h-[min(70vh,560px)] min-w-0 flex-1 flex-col">
-                <LogicFlowPanel root={document.root} selectedId={selectedNodeId} />
+                <LogicFlowPanel
+                  root={editorDoc.root}
+                  selectedId={selectedNodeId}
+                />
               </div>
             )}
           </main>
@@ -476,7 +555,7 @@ function BuilderDemoShell(props: { builderDevMode: boolean }) {
             className="min-h-0 overflow-auto border-t border-border bg-muted/15 p-3 lg:border-l lg:border-t-0"
           >
             <PropertiesInspector
-              root={document.root}
+              root={editorDoc.root}
               selectedId={selectedNodeId}
               rootId={rootId}
             />

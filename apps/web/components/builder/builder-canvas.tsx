@@ -1,6 +1,6 @@
 "use client";
 
-import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
+import type { AiuiDocumentEditorView, UiNode } from "@aiui/dsl-schema";
 import type { RuntimeDiagnostic } from "@aiui/runtime-core";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import {
@@ -37,7 +37,7 @@ function isLeafNode(node: UiNode): boolean {
 }
 
 type BuilderCanvasProps = {
-  document: AiuiDocument;
+  document: AiuiDocumentEditorView;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onToggleSelect?: (id: string) => void;

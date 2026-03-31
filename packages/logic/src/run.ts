@@ -6,6 +6,8 @@ export type ActionEnvironment = {
   getState: () => Record<string, unknown>;
   setState: (next: Record<string, unknown>) => void;
   navigate: (href: string) => void;
+  /** In-app screen id (multi-screen runtime). */
+  navigateScreen?: (screenId: string) => void;
   fetch: typeof fetch;
   notify?: (payload: {
     level: "info" | "success" | "warning" | "error";
@@ -54,6 +56,9 @@ export async function runAction(
     }
     case "navigate":
       env.navigate(action.href);
+      return;
+    case "navigateScreen":
+      env.navigateScreen?.(action.screenId);
       return;
     case "fetch": {
       const payload = await runHttpLikeAction(action, env);

@@ -18,6 +18,7 @@ All items below are done unless marked otherwise.
 
 ## Recently completed (2026-03-31)
 
+- **Multi-screen DSL + screen graph:** Documents use `screens`, `initialScreenId`, and `flowLayout` (positions + prototype edges); migration wraps legacy `root`; builder adds **React Flow** screen nodes, palette drop to create screens, connect edges (navigate/modal) with actions synced via `applyPrototypeEdgeToDocument`; runtime supports `navigateScreen`, modal stack, and overlay; `navigateScreen` action + `editorDocumentView` for per-screen editing; registry [`screen-templates.ts`](packages/registry/src/screen-templates.ts) for future template labels.
 - Builder shell: **sidebar palette** (left), slim **navbar** (Preview + More); **`/?dev=1`** adds **Design / Logic** tabs (React Flow logic map + dev panels), tree, export, diagnostics, live JSON; **Advanced** → `/?dev=1` from default route.
 - **Preview** (`/preview`): download / copy / import JSON; **Edit** → `/`; optional **Developer preview** → `?dev=1`.
 - Shared **golden JSON** export logic: [`apps/web/lib/builder/golden-document-export.ts`](apps/web/lib/builder/golden-document-export.ts), [`use-golden-document-export.ts`](apps/web/lib/builder/use-golden-document-export.ts).
@@ -29,4 +30,5 @@ All items below are done unless marked otherwise.
 
 - [ ] Optional React shadcn renderer path if imperative DOM is not enough for visual parity.
 - [ ] Extend `interactionPresets` across more primitives and tune copy.
-- [ ] Optional: editable React Flow graph synced to `Action[]` (advanced); document-template UI if reintroduced.
+- [ ] Visual events editor: `navigateScreen` step (screen picker) alongside URL navigate; edge inspector to pick trigger node when multiple buttons exist.
+- [ ] “Add screen from template” using [`SCREEN_TEMPLATE_LABELS`](packages/registry/src/screen-templates.ts) and composed starter trees.

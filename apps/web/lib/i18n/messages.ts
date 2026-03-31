@@ -8,6 +8,10 @@ const EN_MESSAGES = {
   "builder.workspaceTabDesign": "Design",
   "builder.workspaceTabLogic": "Logic",
   "builder.workspaceTabList": "Workspace",
+  "builder.screenFlowHeading": "Screens (React Flow)",
+  "builder.edgeKindNavigate": "Next connection: navigate",
+  "builder.edgeKindModal": "Next connection: modal",
+  "builder.removeScreen": "Remove screen",
   "builder.actionsAriaLabel": "Builder actions",
   "builder.undo": "Undo",
   "builder.undoTitle": "Undo (⌘Z / Ctrl+Z)",
@@ -29,7 +33,7 @@ const EN_MESSAGES = {
   "builder.selectionMany": "{count} layers selected",
   "builder.emptyStateTitle": "Start with one small step",
   "builder.emptyStateBody":
-    "Your page is empty. Drag a component from the left palette onto the canvas, or add a Box or Stack from the menu.",
+    "Your page is empty. Drag a component from the left palette onto the screen graph (top) or the canvas below, or add a Box or Stack from the menu.",
   "builder.nearEmptyState":
     "Nice start. Add one more section to make your layout easier to work with.",
   "builder.tree": "Tree",

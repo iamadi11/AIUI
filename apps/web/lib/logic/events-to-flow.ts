@@ -13,6 +13,8 @@ export function formatActionLabel(action: Action): string {
       return `setState → ${action.path}`;
     case "navigate":
       return `navigate → ${action.href}`;
+    case "navigateScreen":
+      return `navigateScreen → ${action.screenId}`;
     case "http":
       return `${action.method} ${action.url}`;
     case "fetch":

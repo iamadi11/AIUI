@@ -1,5 +1,9 @@
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
-import { DSL_VERSION, LAYOUT_VERSION } from "@aiui/dsl-schema";
+import {
+  DEFAULT_SCREEN_ID,
+  DSL_VERSION,
+  LAYOUT_VERSION,
+} from "@aiui/dsl-schema";
 import { getDefinition } from "@aiui/registry";
 import { newNodeId } from "@/lib/id";
 
@@ -39,12 +43,22 @@ export function createNodeFromType(
 }
 
 export function createInitialDocument(rootType: string): AiuiDocument {
+  const root = createNodeFromType(rootType, { id: INITIAL_DOCUMENT_ROOT_ID });
   return {
     version: DSL_VERSION,
     layoutVersion: LAYOUT_VERSION,
-    root: createNodeFromType(rootType, { id: INITIAL_DOCUMENT_ROOT_ID }),
+    initialScreenId: DEFAULT_SCREEN_ID,
+    screens: {
+      [DEFAULT_SCREEN_ID]: { title: "Home", root },
+    },
+    flowLayout: {
+      positions: { [DEFAULT_SCREEN_ID]: { x: 0, y: 0 } },
+      edges: [],
+    },
   };
 }
+
+export { DEFAULT_SCREEN_ID };
 
 /** Deep clone for undo/redo snapshots (JSON-safe document shape). */
 export function cloneDocument(doc: AiuiDocument): AiuiDocument {
