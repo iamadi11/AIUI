@@ -43,7 +43,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Add action blocks: fetch, set state, transform, condition, modal open/close, notify, navigate.
 - [x] Add scenario template: button click -> fetch -> populate table.
 - [x] Add scenario template: row action -> modal -> submit -> refresh table.
-- [ ] Add visibility/interactivity rule builder.
+- [x] Add visibility/interactivity rule builder.
 
 ### Phase 5 - Parity and preview contract
 
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 4 visibility/interactivity rule builder added:
+  - Added guided rule inputs for `visibleWhen` and `interactiveWhen` expressions in the Visibility section.
+  - Persisted rules on the node under a stable props key for later runtime parity consumption.
+  - Replaced placeholder copy with actionable authoring controls and examples.
 - **2026-03-31** - Phase 4 scenario template added (`row action -> modal -> submit -> refresh`):
   - Added one-click row-action workflow template in Events panel.
   - Template wires modal open/close, submit fetch, table refresh fetch, and success notify in sequence.

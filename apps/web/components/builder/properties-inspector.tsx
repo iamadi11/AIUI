@@ -26,6 +26,13 @@ type PropertiesInspectorProps = {
   rootId: string;
 };
 
+type VisibilityRules = {
+  visibleWhen?: string;
+  interactiveWhen?: string;
+};
+
+const RULES_PROP_KEY = "__uiRules";
+
 function applyMarginSidesUpdate(node: UiNode, next: MarginSides): UiNode {
   const prev = node.layout ? { ...node.layout } : {};
   const out = { ...prev } as Record<string, unknown>;
@@ -182,6 +189,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
     canShowActionsSection ||
     inspectorOrder.includes("data") ||
     inspectorOrder.includes("visibility");
+  const nodeRules = (node.props[RULES_PROP_KEY] as VisibilityRules | undefined) ?? {};
 
   function applyField(field: InspectorField, value: unknown) {
     const scope = fieldScope(field);
@@ -220,6 +228,21 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
         return copy;
       }
       return { ...n, bindings: next };
+    });
+  }
+
+  function applyVisibilityRules(next: VisibilityRules | undefined) {
+    updateNode(editingId, (n) => {
+      const props = { ...n.props } as Record<string, unknown>;
+      if (
+        !next ||
+        (next.visibleWhen === undefined && next.interactiveWhen === undefined)
+      ) {
+        delete props[RULES_PROP_KEY];
+      } else {
+        props[RULES_PROP_KEY] = next;
+      }
+      return { ...n, props };
     });
   }
 
@@ -334,10 +357,56 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                     </div>
                   ) : null}
 
-                  {showVisibilityHint && sectionFields.length === 0 ? (
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      Visibility rules will appear here in a later phase.
-                    </p>
+                  {showVisibilityHint ? (
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <label
+                          className="mb-1 block text-[0.65rem] font-medium text-muted-foreground"
+                          htmlFor={`visible-rule-${editingId}`}
+                        >
+                          Visible when (expression)
+                        </label>
+                        <input
+                          id={`visible-rule-${editingId}`}
+                          type="text"
+                          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          value={nodeRules.visibleWhen ?? ""}
+                          placeholder={'status === "active"'}
+                          onChange={(e) =>
+                            applyVisibilityRules({
+                              visibleWhen: e.target.value.trim() || undefined,
+                              interactiveWhen: nodeRules.interactiveWhen,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="mb-1 block text-[0.65rem] font-medium text-muted-foreground"
+                          htmlFor={`interactive-rule-${editingId}`}
+                        >
+                          Interactive when (expression)
+                        </label>
+                        <input
+                          id={`interactive-rule-${editingId}`}
+                          type="text"
+                          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          value={nodeRules.interactiveWhen ?? ""}
+                          placeholder="permissions.canEdit"
+                          onChange={(e) =>
+                            applyVisibilityRules({
+                              visibleWhen: nodeRules.visibleWhen,
+                              interactiveWhen:
+                                e.target.value.trim() || undefined,
+                            })
+                          }
+                        />
+                      </div>
+                      <p className="text-[0.65rem] leading-snug text-muted-foreground">
+                        Rules are saved with this node as expressions and can be
+                        interpreted by runtime parity tooling in later phases.
+                      </p>
+                    </div>
                   ) : null}
                 </section>
               );
