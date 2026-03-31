@@ -4,14 +4,59 @@ import type { BindingDescriptor, UiNode } from "@aiui/dsl-schema";
 import { useMemo, useState } from "react";
 import {
   SAMPLE_DATA_SOURCES,
+  SAMPLE_STATE,
   SAMPLE_STATE_PATHS,
   listDataPaths,
+  resolveDataPath,
 } from "@/lib/builder/sample-data-sources";
 
 const controlClass =
   "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 type BindingMode = BindingDescriptor["kind"];
+
+function formatPreview(value: unknown): string {
+  if (value === undefined) return "undefined";
+  if (value === null) return "null";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function evaluateBindingPreview(binding: BindingDescriptor): unknown {
+  if (binding.kind === "static") return binding.value;
+  if (binding.kind === "state") {
+    const resolved = resolveDataPath(SAMPLE_STATE, binding.path);
+    return resolved === undefined ? binding.fallback : resolved;
+  }
+  if (binding.kind === "query") {
+    const sourceData = SAMPLE_DATA_SOURCES[binding.source];
+    const resolved = resolveDataPath(sourceData, binding.path);
+    return resolved === undefined ? binding.fallback : resolved;
+  }
+  // Lightweight expression preview:
+  // replace {{path}} tokens from sample state/query roots for quick feedback.
+  const tokenized = binding.expression.replace(
+    /\{\{\s*([^}]+)\s*\}\}/g,
+    (_, rawPath: string) => {
+      const p = rawPath.trim();
+      const fromState = resolveDataPath(SAMPLE_STATE, p);
+      if (fromState !== undefined) return formatPreview(fromState);
+      const [src, ...rest] = p.split(".");
+      const srcVal = SAMPLE_DATA_SOURCES[src];
+      if (srcVal !== undefined) {
+        const resolved = resolveDataPath(srcVal, rest.join("."));
+        if (resolved !== undefined) return formatPreview(resolved);
+      }
+      return `{{${p}}}`;
+    },
+  );
+  return tokenized;
+}
 
 export function DataBindingPanel(props: {
   node: UiNode;
@@ -32,6 +77,24 @@ export function DataBindingPanel(props: {
     () => listDataPaths(SAMPLE_DATA_SOURCES[source]).filter(Boolean),
     [source],
   );
+  const draftPreview = useMemo(() => {
+    if (mode === "query" && path) {
+      return evaluateBindingPreview({ kind: "query", source, path });
+    }
+    if (mode === "state" && statePath) {
+      return evaluateBindingPreview({ kind: "state", path: statePath });
+    }
+    if (mode === "expression" && expression.trim()) {
+      return evaluateBindingPreview({
+        kind: "expression",
+        expression: expression.trim(),
+      });
+    }
+    if (mode === "static") {
+      return evaluateBindingPreview({ kind: "static", value: staticValue });
+    }
+    return undefined;
+  }, [expression, mode, path, source, statePath, staticValue]);
 
   function apply(next: BindingDescriptor) {
     const merged = { ...existing, [targetKey]: next };
@@ -189,6 +252,13 @@ export function DataBindingPanel(props: {
         </div>
       ) : null}
 
+      <div className="rounded-md border border-border/70 bg-muted/20 px-2 py-1.5">
+        <p className="text-[0.65rem] font-medium text-muted-foreground">Sample preview</p>
+        <p className="mt-0.5 text-[0.7rem] leading-snug text-foreground/90">
+          {draftPreview === undefined ? "Select a binding path/value to preview." : formatPreview(draftPreview)}
+        </p>
+      </div>
+
       {Object.keys(existing).length > 0 ? (
         <div className="border-t border-border pt-2">
           <p className="mb-1 text-[0.65rem] font-medium text-muted-foreground">Active bindings</p>
@@ -197,6 +267,9 @@ export function DataBindingPanel(props: {
               <li key={key} className="flex items-center justify-between gap-2 text-[0.7rem]">
                 <span className="truncate">
                   <span className="font-medium">{key}</span> {"->"} {binding.kind}
+                </span>
+                <span className="max-w-36 truncate text-[0.65rem] text-muted-foreground">
+                  {formatPreview(evaluateBindingPreview(binding))}
                 </span>
                 <button
                   type="button"

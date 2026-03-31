@@ -32,7 +32,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 - [x] Define binding descriptor schema (static, expression, state path, query path).
 - [x] Build non-technical data source picker and path browser.
-- [ ] Add sample-data aware binding preview.
+- [x] Add sample-data aware binding preview.
 - [ ] Implement reusable property editor primitives for registry-driven UI.
 - [ ] Add validation and user-facing messages for broken bindings.
 
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 3 sample-data-aware binding preview added:
+  - Added sample preview output for in-progress binding drafts (query/state/expression/static).
+  - Added live preview values alongside active bindings list for fast validation.
+  - Added shared sample state + path resolver utility for consistent preview behavior.
 - **2026-03-31** - Phase 3 data source picker + path browser added:
   - Added Data bindings panel in inspector Data section for non-technical binding setup.
   - Added source/path browser backed by sample query datasets and state-path presets.
