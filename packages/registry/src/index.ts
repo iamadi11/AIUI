@@ -27,6 +27,39 @@ export const PALETTE_CATEGORY_LABELS: Record<PaletteCategory, string> = {
   advanced: "Advanced",
 };
 
+/** Beginner-first ordering for inspector sections. */
+export type InspectorSectionId =
+  | "content"
+  | "data"
+  | "actions"
+  | "visibility"
+  | "layout"
+  | "style"
+  | "accessibility"
+  | "advanced";
+
+export const INSPECTOR_SECTION_ORDER: readonly InspectorSectionId[] = [
+  "content",
+  "data",
+  "actions",
+  "visibility",
+  "layout",
+  "style",
+  "accessibility",
+  "advanced",
+] as const;
+
+export const INSPECTOR_SECTION_LABELS: Record<InspectorSectionId, string> = {
+  content: "Content",
+  data: "Data",
+  actions: "Actions",
+  visibility: "Visibility",
+  layout: "Layout",
+  style: "Style",
+  accessibility: "Accessibility",
+  advanced: "Advanced",
+};
+
 /** Where the field writes: node `props` (default) or `layout` (layout engine). */
 export type InspectorFieldScope = "props" | "layout";
 
@@ -63,163 +96,180 @@ export type InspectorField =
       scope?: InspectorFieldScope;
     };
 
+export type ComponentCapabilities = {
+  supportsDataSource?: boolean;
+  supportsActions?: boolean;
+  supportsRowActions?: boolean;
+  supportsVisibilityRules?: boolean;
+  supportedLayoutModes?: readonly ("flow" | "stack" | "grid" | "absolute")[];
+};
+
+/**
+ * Standardized builder UX metadata. This keeps palette/search/inspector behavior
+ * on one explicit contract instead of spread across ad-hoc top-level fields.
+ */
+export type ComponentUxMetadata = {
+  palette: {
+    category: PaletteCategory;
+    keywords?: readonly string[];
+    description?: string;
+  };
+  inspector?: {
+    fields: readonly InspectorField[];
+    defaultSection?: InspectorSectionId;
+    sectionOrder?: readonly InspectorSectionId[];
+  };
+  capabilities?: ComponentCapabilities;
+};
+
 export type ComponentDefinition = {
   type: string;
   displayName: string;
   defaultProps: Record<string, unknown>;
-  /** Builder palette section. */
-  paletteCategory: PaletteCategory;
-  /** Extra tokens for palette search (lowercased when matching). */
-  paletteKeywords?: readonly string[];
-  /** One-line builder hint under the display name. */
-  paletteDescription?: string;
+  /** Builder UX metadata contract (palette + inspector + capabilities). */
+  ux: ComponentUxMetadata;
   /** Optional tree fragment inserted when dropping this type on the canvas. */
   defaultChildren?: UiNode[];
-  /** Builder-only hints for the properties panel (not serialized separately). */
-  inspectorFields?: readonly InspectorField[];
-  /**
-   * Capability contract consumed by builder/runtime to decide which editing
-   * affordances are available for this component type.
-   */
-  capabilities?: {
-    supportsDataSource?: boolean;
-    supportsActions?: boolean;
-    supportsRowActions?: boolean;
-    supportsVisibilityRules?: boolean;
-    supportedLayoutModes?: readonly ("flow" | "stack" | "grid" | "absolute")[];
-  };
 };
 
 export const primitives: Record<string, ComponentDefinition> = {
   [BOX_TYPE]: {
     type: BOX_TYPE,
     displayName: "Box",
-    paletteCategory: "layout",
-    paletteKeywords: ["box", "container", "group", "frame", "div"],
-    paletteDescription: "Simple container",
     defaultProps: { label: "" },
-    capabilities: {
-      supportsActions: true,
-      supportsVisibilityRules: true,
-      supportedLayoutModes: ["flow", "stack", "grid", "absolute"],
+    ux: {
+      palette: {
+        category: "layout",
+        keywords: ["box", "container", "group", "frame", "div"],
+        description: "Simple container",
+      },
+      capabilities: {
+        supportsActions: true,
+        supportsVisibilityRules: true,
+        supportedLayoutModes: ["flow", "stack", "grid", "absolute"],
+      },
+      inspector: {
+        defaultSection: "content",
+        sectionOrder: INSPECTOR_SECTION_ORDER,
+        fields: [
+          {
+            kind: "text",
+            key: "label",
+            label: "Label",
+            placeholder: "Name this layer...",
+          },
+          {
+            kind: "number",
+            key: "padding",
+            label: "Padding (px)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
+          {
+            kind: "marginSides",
+            key: "margin",
+            label: "Margin (px)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
+          {
+            kind: "number",
+            key: "width",
+            label: "Width (px, empty leaf)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
+          {
+            kind: "number",
+            key: "height",
+            label: "Height (px, empty leaf)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
+        ],
+      },
     },
-    inspectorFields: [
-      {
-        kind: "text",
-        key: "label",
-        label: "Label",
-        placeholder: "Name this layer…",
-      },
-      {
-        kind: "number",
-        key: "padding",
-        label: "Padding (px)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-      {
-        kind: "marginSides",
-        key: "margin",
-        label: "Margin (px)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-      {
-        kind: "number",
-        key: "width",
-        label: "Width (px, empty leaf)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-      {
-        kind: "number",
-        key: "height",
-        label: "Height (px, empty leaf)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-    ],
   },
   [STACK_TYPE]: {
     type: STACK_TYPE,
     displayName: "Stack",
-    paletteCategory: "layout",
-    paletteKeywords: [
-      "stack",
-      "flex",
-      "row",
-      "column",
-      "gap",
-      "layout",
-      "list",
-    ],
-    paletteDescription: "Row or column with gap",
     defaultProps: { direction: "column" as const, gap: 0, label: "" },
-    capabilities: {
-      supportsActions: true,
-      supportsVisibilityRules: true,
-      supportedLayoutModes: ["flow", "stack", "grid"],
-    },
-    inspectorFields: [
-      {
-        kind: "text",
-        key: "label",
-        label: "Label",
-        placeholder: "Name this layer…",
+    ux: {
+      palette: {
+        category: "layout",
+        keywords: ["stack", "flex", "row", "column", "gap", "layout", "list"],
+        description: "Row or column with gap",
       },
-      {
-        kind: "select",
-        key: "direction",
-        label: "Direction",
-        options: [
-          { value: "column", label: "Column" },
-          { value: "row", label: "Row" },
+      capabilities: {
+        supportsActions: true,
+        supportsVisibilityRules: true,
+        supportedLayoutModes: ["flow", "stack", "grid"],
+      },
+      inspector: {
+        defaultSection: "content",
+        sectionOrder: INSPECTOR_SECTION_ORDER,
+        fields: [
+          {
+            kind: "text",
+            key: "label",
+            label: "Label",
+            placeholder: "Name this layer...",
+          },
+          {
+            kind: "select",
+            key: "direction",
+            label: "Direction",
+            options: [
+              { value: "column", label: "Column" },
+              { value: "row", label: "Row" },
+            ],
+          },
+          {
+            kind: "number",
+            key: "gap",
+            label: "Gap (px)",
+            min: 0,
+            step: 1,
+          },
+          {
+            kind: "number",
+            key: "padding",
+            label: "Padding (px)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
+          {
+            kind: "marginSides",
+            key: "margin",
+            label: "Margin (px)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
+          {
+            kind: "number",
+            key: "width",
+            label: "Width (px, empty leaf)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
+          {
+            kind: "number",
+            key: "height",
+            label: "Height (px, empty leaf)",
+            min: 0,
+            step: 1,
+            scope: "layout",
+          },
         ],
       },
-      {
-        kind: "number",
-        key: "gap",
-        label: "Gap (px)",
-        min: 0,
-        step: 1,
-      },
-      {
-        kind: "number",
-        key: "padding",
-        label: "Padding (px)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-      {
-        kind: "marginSides",
-        key: "margin",
-        label: "Margin (px)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-      {
-        kind: "number",
-        key: "width",
-        label: "Width (px, empty leaf)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-      {
-        kind: "number",
-        key: "height",
-        label: "Height (px, empty leaf)",
-        min: 0,
-        step: 1,
-        scope: "layout",
-      },
-    ],
+    },
   },
 };
 
@@ -234,18 +284,22 @@ export function getDefinition(type: string): ComponentDefinition | undefined {
 export function getInspectorFields(
   type: string,
 ): readonly InspectorField[] | undefined {
-  return getDefinition(type)?.inspectorFields;
+  return getDefinition(type)?.ux.inspector?.fields;
 }
 
 export function getCapabilities(type: string) {
-  return getDefinition(type)?.capabilities;
+  return getDefinition(type)?.ux.capabilities;
+}
+
+export function getPaletteMeta(type: string) {
+  return getDefinition(type)?.ux.palette;
 }
 
 /** All registered primitives in stable palette order (category, then name). */
 export function listPaletteDefinitions(): ComponentDefinition[] {
   return Object.values(primitives).sort((a, b) => {
-    const ca = PALETTE_CATEGORY_ORDER.indexOf(a.paletteCategory);
-    const cb = PALETTE_CATEGORY_ORDER.indexOf(b.paletteCategory);
+    const ca = PALETTE_CATEGORY_ORDER.indexOf(a.ux.palette.category);
+    const cb = PALETTE_CATEGORY_ORDER.indexOf(b.ux.palette.category);
     if (ca !== cb) return ca - cb;
     return a.displayName.localeCompare(b.displayName);
   });
@@ -265,8 +319,8 @@ export function matchesPaletteSearch(
   const hay = [
     def.displayName,
     def.type,
-    ...(def.paletteKeywords ?? []),
-    def.paletteDescription ?? "",
+    ...(def.ux.palette.keywords ?? []),
+    def.ux.palette.description ?? "",
   ]
     .join(" ")
     .toLowerCase();

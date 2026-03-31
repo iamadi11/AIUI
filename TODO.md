@@ -14,7 +14,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 1 - No-code UX foundation (shadcn-first)
 
-- [ ] Define registry UX metadata standard for all shadcn components.
+- [x] Define registry UX metadata standard for all shadcn components.
 - [ ] Standardize drag-drop placement language and visual affordances.
 - [ ] Refactor inspector into beginner-first sections.
 - [ ] Add smart defaults/templates for table/button/card/filter/chart starter dashboard.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 1 registry UX metadata standard implemented:
+  - Introduced canonical `ComponentDefinition.ux` contract (`palette`, `inspector`, `capabilities`) in `@aiui/registry`.
+  - Migrated existing primitives to standardized UX metadata paths and exposed `getPaletteMeta`.
+  - Updated builder palette consumer to read registry metadata from `ux.palette` instead of ad-hoc fields.
 - **2026-03-31** - Aggressive cleanup wave completed across repository:
   - Builder feature slicing started (`node-tree`, `use-builder-shortcuts`) and `builder-demo` orchestration reduced.
   - Store architecture improved with command-style `commitDocumentChange` and selection reconciliation API (`reconcileSelection`).

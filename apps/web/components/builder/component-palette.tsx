@@ -65,9 +65,9 @@ function PaletteItem(props: { definition: ComponentDefinition }) {
         <span className="block truncate text-sm font-medium text-card-foreground">
           {definition.displayName}
         </span>
-        {definition.paletteDescription ? (
+        {definition.ux.palette.description ? (
           <span className="mt-0.5 block truncate text-[0.65rem] leading-tight text-muted-foreground">
-            {definition.paletteDescription}
+            {definition.ux.palette.description}
           </span>
         ) : null}
       </span>
@@ -83,7 +83,7 @@ function groupByCategory(
     map.set(cat, []);
   }
   for (const def of defs) {
-    const list = map.get(def.paletteCategory);
+    const list = map.get(def.ux.palette.category);
     if (list) list.push(def);
   }
   return map;

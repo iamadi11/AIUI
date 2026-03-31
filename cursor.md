@@ -50,3 +50,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Store coupling:** Avoid direct cross-store mutation with raw `setState`; expose explicit reconciliation APIs (`reconcileSelection`) and route document mutations through a command-style commit helper.
 - **2026-03-31 - Runtime lifecycle:** Resize handling should call `relayout()` instead of `update(document)` to preserve interaction state; keep state reset reserved for actual config updates.
 - **2026-03-31 - Shared semantics:** Keep truthiness and unsafe path-segment checks in one package (`@aiui/expression`) and reuse from logic to prevent subtle divergence.
+- **2026-03-31 - Registry UX contract:** Keep builder-facing palette/inspector/capability metadata under one `ComponentDefinition.ux` object so new components inherit discoverable UX behavior without extra app-level wiring.
