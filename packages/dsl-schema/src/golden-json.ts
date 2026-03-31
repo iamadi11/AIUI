@@ -1,5 +1,8 @@
-import type { AiuiDocument } from "@aiui/dsl-schema";
-import { safeParseDocument } from "@aiui/dsl-schema";
+import type { AiuiDocument } from "./document";
+import {
+  safeParseDocument,
+  safeParseDocumentWithMigration,
+} from "./document";
 
 export type GoldenJsonResult =
   | { ok: true; json: string; document: AiuiDocument }
@@ -24,7 +27,7 @@ export function exportGoldenJson(doc: AiuiDocument): GoldenJsonResult {
   };
 }
 
-/** Parse a JSON file/string and validate as `AiuiDocument`. */
+/** Parse a JSON file/string, migrate older shapes, then validate as `AiuiDocument`. */
 export function importGoldenJson(text: string): GoldenJsonResult {
   let raw: unknown;
   try {
@@ -32,7 +35,7 @@ export function importGoldenJson(text: string): GoldenJsonResult {
   } catch {
     return { ok: false, message: "Input is not valid JSON." };
   }
-  const r = safeParseDocument(raw);
+  const r = safeParseDocumentWithMigration(raw);
   if (!r.success) {
     return {
       ok: false,

@@ -1,7 +1,7 @@
 "use client";
 
 import type { AiuiDocument } from "@aiui/dsl-schema";
-import { exportGoldenJson, importGoldenJson } from "@/lib/dsl/golden-json";
+import { exportGoldenJson, importGoldenJson } from "@aiui/dsl-schema";
 import { useDocumentStore } from "@/stores/document-store";
 import { Button } from "@/components/ui/button";
 import { Copy, Download, Upload } from "lucide-react";

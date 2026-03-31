@@ -46,9 +46,9 @@ _Baseline shipped — see **Done**._
 
 ## Phase 6 — Export system
 
-- [ ] Full-document Zod validation everywhere exports/imports touch the DSL (builder golden path exists; extend to CI/runtime)
-- [ ] Version field + migration stub for older JSON
-- [ ] Round-trip tests: builder export → runtime import
+_Baseline shipped — see **Done**._
+
+- [ ] Extend `migrateDocument` / `MIGRATION_REGISTRY` when `DSL_VERSION` bumps incompatibly
 
 ---
 
@@ -69,6 +69,7 @@ _Baseline shipped — see **Done**._
 
 ## Done
 
+- **2026-03-31** — **Phase 6 — Export / migration:** `migrateDocument` + `safeParseDocumentWithMigration`; `MIGRATION_REGISTRY` stub; `exportGoldenJson` / `importGoldenJson` live in `@aiui/dsl-schema`; builder import uses package; `runtime-core` parses with migration; Vitest round-trip + migration tests; root `pnpm test` includes DSL suites
 - **2026-03-31** — **Phase 5 — Runtime bundles:** Vite library builds — `packages/runtime-core` (`vite.lib.config.ts` → `dist/index.mjs` + d.ts), `packages/runtime-react` (peer: React; external `@aiui/runtime-core`); root `pnpm bundle:check` enforces size budgets; `AiuiRuntime` in `@aiui/runtime-react`; preview uses adapter
 - **2026-03-31** — **Preview `/preview`:** `RuntimePreview` mounts `@aiui/runtime-core` (ResizeObserver → `update` on width change); React `DslPreview` kept as labeled dev host; `transpilePackages` includes runtime-core, logic, expression
 - **2026-03-31** — **`@aiui/runtime-core`:** `render({ container, config })` → validate DSL, `layoutDocument`, nested absolute DOM from registry primitives, `events` → `runActions` with document `state`; `queueMicrotask` batch after actions; per-node mount error UI; Vitest + happy-dom

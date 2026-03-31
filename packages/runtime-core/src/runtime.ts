@@ -1,5 +1,5 @@
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
-import { safeParseDocument } from "@aiui/dsl-schema";
+import { safeParseDocumentWithMigration } from "@aiui/dsl-schema";
 import {
   BOX_TYPE,
   STACK_TYPE,
@@ -194,7 +194,7 @@ export function render(options: RenderOptions): RuntimeHandle {
     listenerDisposers.length = 0;
     container.replaceChildren();
 
-    const parsed = safeParseDocument(config);
+    const parsed = safeParseDocumentWithMigration(config);
     if (!parsed.success) {
       showParseError(
         container,

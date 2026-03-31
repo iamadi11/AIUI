@@ -13,10 +13,12 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "lint": "echo \"no lint yet\"",
-    "build": "echo \"source-only package\""
+    "build": "echo \"source-only package\"",
+    "test": "vitest run"
   }
 }
