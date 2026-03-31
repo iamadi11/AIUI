@@ -2,23 +2,19 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## AIUI builder (`apps/web`)
 
-From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**: **left palette**, canvas, properties, and (with `?dev=1`) tree, export, layout debug, and a **Design / Logic** workspace (logic map uses React Flow). **Preview** lives at `/preview`.
+From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home page hosts the **builder**.
 
-**Builder UX:** The **canvas** is the same **`@aiui/runtime-core`** view as **Preview** (`AiuiRuntime`). Click a layer to select; **Cmd/Ctrl+Click** toggles multi-select; **Cmd/Ctrl+A** selects all layers; click empty chrome to deselect; **Esc** clears selection. Double-click a node in the preview or the **label** chip on the selection outline to rename (`props.label`). Selection shows a breadcrumb path for a single layer (or a count for multi-select); full ids are in tooltips / a subtle hover chip. The **component palette** sits in the **left sidebar** (grouped by category with **search**; registry-driven keywords + names).
+**Product direction (see repo [`PLAN.md`](../../PLAN.md)):** **one page** built on a **full-window React Flow canvas** — **drag and drop** from the palette to compose the dashboard. **Preview** (`/preview`) must show the **same** runtime output as the canvas for the same document (parity). Configuration uses contextual panels (e.g. **Sheet** for properties); **`?dev=1`** adds tree, export, diagnostics, and optional advanced views.
 
-See `packages/registry/README.md` for palette metadata when adding primitives.
+**Builder UX (target):** The **canvas** uses the same **`@aiui/runtime-core`** view as **Preview** where possible. Click to select; keyboard shortcuts and selection behavior as implemented in code. The **component palette** is registry-driven (see [`packages/registry/README.md`](../../packages/registry/README.md)).
 
-**Layout:** Properties can target `node.layout` (padding, per-side **margin** T/R/B/L, width/height for empty leaves). On the canvas, use the **grip** beside a nested node to **reorder** among siblings; select an **empty** Box/Stack and drag the **resize** handle (bottom-right) to change intrinsic size — values snap to 8px (minimum 32px) and can align to neighboring edges.
+**Layout & events:** Inspector sections are registry-driven. Canvas affordances (reorder, resize where supported) should match runtime layout rules.
 
-**Events:** Under **Properties → Actions**, configure **When** (preset or custom) and **Steps** (state, URL, HTTP, one-level **If**, HTTP body) or **Edit as JSON** for `sequence` / nested logic; blur fields to save.
+**Initial state:** Document state defaults for expressions and `setState` paths live in the document model (see builder panels).
 
-**Initial state:** Edit `document.state` key/value defaults for expressions and `setState` paths (panel below export).
+**Diagnostics:** With **`?dev=1`**, diagnostics and optional logic visualization are available without cluttering the default builder.
 
-**Logic map:** On **`/?dev=1`**, open the **Logic** tab for a read-only React Flow view of the selected node’s `events`; `sequence` and `condition` are expanded into steps. Click a step to inspect its action JSON; edit the same logic under **Properties → Actions**.
-
-**Diagnostics:** A dedicated **Diagnostics** panel shows schema validity, selection count, node/leaf/event/action counts, and undo/redo depth.
-
-**Shortcuts:** With **`/?dev=1`**, open **Keyboard shortcuts** for undo/redo, Esc, Delete/Backspace, ⌘/Ctrl+D (duplicate), and ⌘/Ctrl+A (select all). In the tree, use **Shift+Click** to range-select between the current primary selection and the clicked layer; use **Alt+↑** to jump selection to the parent layer.
+See [`packages/registry/README.md`](../../packages/registry/README.md) for palette metadata when adding primitives.
 
 ## Getting Started
 
@@ -47,4 +43,4 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Check out [the Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) to learn more.

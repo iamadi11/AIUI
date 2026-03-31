@@ -39,11 +39,12 @@ After each phase or sub-milestone:
 
 ## Current focus
 
-- Roadmap phases 0–8 are complete; **flow-first builder** (palette + resizable screen graph + canvas, inspector in Sheet) is shipped; optional follow-ups in [`TODO.md`](TODO.md) phase 9+.
+- **Forward roadmap** (see [`PLAN.md`](PLAN.md)): **single-page**, **full-window React Flow as the page canvas**, **drag-and-drop-first** composition, **strict preview parity**, **lean inspector** with **drop-time defaults** from the registry. Prior work (multi-screen graph, bindings, runtime packages) remains the technical baseline; UX is being re-centered on the one-page dashboard story.
 - Keep parity-first and non-technical UX-first acceptance criteria for new work.
 
 ## Learnings
 
+- **2026-04-01 - Dashboard revamp direction:** The product narrative shifts to **one page = full React Flow workspace** + **DnD structure**, with **preview identical** to the canvas runtime path. **Multi-screen** and **screen graph** are **deferred** to a later optional phase so the default experience stays simple; document this in `PLAN.md`/`TODO.md` to avoid mixed messaging.
 - **2026-03-31 - shadcn-only palette:** The builder palette uses `listShadcnPaletteDefinitions()` (Button, Input, Card, Table, Badge). **Box** and **Stack** stay in the registry for templates, screen builders, and navbar quick-adds, but are not listed as palette drags so the sidebar reads as shadcn/ui primitives only.
 - **2026-03-31 - Flow-first builder + Sheet inspector:** Use exclusive selection between **prototype edges** and **canvas nodes** (`selectedEdgeId` vs `selection-store`); closing the Sheet clears via one helper (`clearSelectionEx`). **`react-resizable-panels` v4** uses **`orientation`** on `Group`, not `direction`. Edge trigger changes use **`reassignPrototypeEdgeTrigger`** to strip the old navigate/modal action from the previous trigger before **`applyPrototypeEdgeToDocument`** on the new trigger.
 - **2026-03-31 - shadcn MCP + pnpm workspaces:** `shadcn mcp init` runs `pnpm add -D shadcn@latest` at the repo root without `-w`, which pnpm blocks by default; set `ignore-workspace-root-check=true` in root `.npmrc` (or pass `-w` manually only works for your own installs, not the CLI’s internal step).

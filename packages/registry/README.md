@@ -2,6 +2,8 @@
 
 Component **definitions** for the builder and any host that maps `UiNode.type` to UI behavior.
 
+**Product direction:** The builder targets a **single-page** dashboard composed on a **full React Flow canvas** with **drop-time defaults** (sensible initial props/layout from registry metadata) and **preview parity** — see the repo root [`PLAN.md`](../../PLAN.md).
+
 ## Adapter interface (Phase 6 baseline)
 
 `@aiui/registry` exports a formal `UiAdapterDefinition` contract for UI-library integrations:

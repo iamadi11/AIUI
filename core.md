@@ -2,8 +2,7 @@
 
 ## Product intent
 
-Build a Figma-like dashboard creator for non-technical users.
-Users should drag, configure, preview, and publish without engineering help.
+Build a **dashboard creator** where **one page** is composed **on a full-window React Flow canvas** via **drag-and-drop**, then configured (state, data, bindings, actions) without engineering help. **Preview must match** what the canvas runtime shows for the same document.
 
 ## Non-negotiable decisions
 
@@ -14,27 +13,25 @@ Users should drag, configure, preview, and publish without engineering help.
   - `update(config)`
   - `relayout()`
   - `destroy()`
-- Creator, preview, and runtime must stay behaviorally identical.
+- **Creator canvas and preview** must stay on the **same rendering path** (parity).
 - Keep shadcn as current component baseline.
 - Future component ecosystems must use adapter contracts.
 
 ## User experience constraints
 
-- UI must be intuitive for non-technical users.
-- Builder default: **palette + screen graph + page canvas**; inspector and edge wiring in overlays (e.g. Sheet), not permanent third rails.
-- Keep controls clean and contextual; avoid exposing raw internals by default.
-- Provide visual side-effects and visibility logic builders.
-- Include guided templates for common workflows:
-  - button -> fetch -> table
-  - row action -> modal -> submit -> refresh
+- **Primary surface:** **Palette + full-area React Flow page canvas**; configuration in contextual overlays (e.g. Sheet), not permanent third rails.
+- **Drop-time defaults:** Registry supplies sensible initial props/layout when a component lands on the canvas.
+- **Fewer fields:** Avoid redundant inspector controls; progressive disclosure for advanced and JSON.
+- **Developer-aligned workflow:** layout → state/data → bind to UI → side effects and CTAs.
+- Include guided templates for common workflows (e.g. fetch → table; row action → modal → refresh).
 
 ## Technical direction
 
 - Builder: Next.js App Router + TypeScript + Tailwind + shadcn.
-- Interaction model: dnd-kit for canvas movement, React Flow for advanced logic graph.
+- **Interaction model:** React Flow as the **page canvas**; dnd-kit (or equivalent) for palette-to-canvas and in-tree moves; optional React Flow for **advanced** logic visualization behind dev mode.
 - Validation: Zod and versioned DSL schemas.
 - Runtime: deterministic engine with framework-agnostic core and React adapter.
-- Layout: responsive-first constraints, avoid unnecessary fixed sizing.
+- Layout: responsive-first constraints; avoid unnecessary fixed sizing.
 
 ## Developer operability
 
@@ -44,6 +41,6 @@ Users should drag, configure, preview, and publish without engineering help.
 
 ## Canonical planning source
 
-Use `PLAN.md` for full phase breakdown and acceptance gates.
-Use `TODO.md` for executable tasks.
-Use `cursor.md` for durable conventions and learnings.
+Use [`PLAN.md`](PLAN.md) for the **phased roadmap** and acceptance gates.
+Use [`TODO.md`](TODO.md) for executable tasks.
+Use [`cursor.md`](cursor.md) for durable conventions and learnings.
