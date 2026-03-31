@@ -71,7 +71,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ### Phase 8 - Adoption hardening
 
-- [ ] Add onboarding tour and empty-state education.
+- [x] Add onboarding tour and empty-state education.
 - [ ] Add migration assistant for older dashboard DSL versions.
 - [ ] Add performance hardening path for large documents.
 - [ ] Complete accessibility pass.
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 8 onboarding + empty-state education added:
+  - Replaced internal first-time QA checklist with a non-technical quick-start onboarding panel focused on first actions and simple progress.
+  - Added clear call-to-action buttons (add box, add stack, starter dashboard, preview) directly in onboarding to reduce first-screen friction.
+  - Added empty/near-empty document guidance in builder surfaces with progressive hints as users add content.
 - **2026-03-31** - Phase 7 MCP debug endpoint baseline implemented:
   - Added `@aiui/debug-mcp` package with concrete tool handlers matching spec names: `list_issues`, `get_issue_context`, `suggest_fix`, `apply_safe_fix_patch`, `validate_fix`.
   - Added strict Zod input/output schemas for all MCP operations and typed issue/fix models for consistent structured responses.

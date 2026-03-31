@@ -56,6 +56,16 @@ function collectNodeIds(root: UiNode): string[] {
   return ids;
 }
 
+function countNodes(root: UiNode): number {
+  let total = 0;
+  function walk(node: UiNode) {
+    total += 1;
+    for (const child of node.children ?? []) walk(child);
+  }
+  walk(root);
+  return total;
+}
+
 export function BuilderDemo() {
   const document = useDocumentStore((s) => s.document);
   const appendChildOfType = useDocumentStore((s) => s.appendChildOfType);
@@ -81,6 +91,10 @@ export function BuilderDemo() {
   const recordIssue = useIssueTelemetryStore((s) => s.recordIssue);
 
   const rootId = document.root.id;
+  const starterDashboardTemplate = BUILDER_DOCUMENT_TEMPLATES.find(
+    (tpl) => tpl.id === "starter-dashboard",
+  );
+  const userLayerCount = Math.max(0, countNodes(document.root) - 1);
 
   const [activePalette, setActivePalette] = useState<PaletteDragData | null>(
     null,
@@ -270,6 +284,13 @@ export function BuilderDemo() {
             <FirstTimeWalkthroughPanel
               document={document}
               selectedCount={selectedIds.length}
+              onAddBox={() => appendChildOfType(rootId, BOX_TYPE)}
+              onAddStack={() => appendChildOfType(rootId, STACK_TYPE)}
+              onInsertStarterTemplate={() => {
+                if (!starterDashboardTemplate) return;
+                const parentId = selectedNodeId ?? rootId;
+                insertChild(parentId, starterDashboardTemplate.create());
+              }}
             />
 
             <p className="text-xs text-muted-foreground">
@@ -314,6 +335,23 @@ export function BuilderDemo() {
                 })
               }
             />
+
+            {userLayerCount === 0 ? (
+              <div className="rounded-xl border border-dashed border-primary/40 bg-primary/4 p-4">
+                <p className="text-sm font-medium text-foreground">Start with one small step</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Your page is empty. Add a Box, add a Stack, or drop in a starter
+                  dashboard from above to begin.
+                </p>
+              </div>
+            ) : userLayerCount <= 2 ? (
+              <div className="rounded-xl border border-border/80 bg-muted/20 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Nice start. Add one more section to make your layout easier to
+                  work with.
+                </p>
+              </div>
+            ) : null}
 
             <div className="space-y-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
