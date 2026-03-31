@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  closestCenter,
   DndContext,
   DragOverlay,
   PointerSensor,
@@ -30,6 +31,7 @@ import { PropertiesInspector } from "./properties-inspector";
 import {
   type CanvasDropData,
   type PaletteDragData,
+  isCanvasSiblingData,
   isPaletteDragData,
 } from "./dnd-types";
 
@@ -41,6 +43,7 @@ export function BuilderDemo() {
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
   const updateNode = useDocumentStore((s) => s.updateNode);
+  const reorderSibling = useDocumentStore((s) => s.reorderSibling);
   const canUndo = useDocumentStore((s) => s.past.length > 0);
   const canRedo = useDocumentStore((s) => s.future.length > 0);
 
@@ -97,10 +100,23 @@ export function BuilderDemo() {
     const { active, over } = event;
     if (!over) return;
     const activeData = active.data.current;
-    if (!isPaletteDragData(activeData)) return;
-    const drop = over.data.current as CanvasDropData | undefined;
-    if (!drop?.parentId) return;
-    appendChildOfType(drop.parentId, activeData.componentType);
+    if (isPaletteDragData(activeData)) {
+      const drop = over.data.current as CanvasDropData | undefined;
+      if (!drop?.parentId) return;
+      appendChildOfType(drop.parentId, activeData.componentType);
+      return;
+    }
+    if (isCanvasSiblingData(activeData)) {
+      const overData = over.data.current;
+      if (!isCanvasSiblingData(overData)) return;
+      if (activeData.parentId !== overData.parentId) return;
+      if (active.id === over.id) return;
+      reorderSibling(
+        activeData.parentId,
+        String(active.id),
+        String(over.id),
+      );
+    }
   }
 
   function handleDragCancel() {
@@ -110,7 +126,11 @@ export function BuilderDemo() {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={canvasPointerCollision}
+      collisionDetection={(args) => {
+        const kind = args.active.data.current;
+        if (isPaletteDragData(kind)) return canvasPointerCollision(args);
+        return closestCenter(args);
+      }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}

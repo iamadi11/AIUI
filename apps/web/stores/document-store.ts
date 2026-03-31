@@ -9,6 +9,7 @@ import {
   findNodeById,
   insertChild as insertChildInTree,
   removeNodeById,
+  reorderSibling as reorderSiblingInTree,
   updateNodeById,
 } from "@/lib/document/tree";
 import { useSelectionStore } from "@/stores/selection-store";
@@ -42,6 +43,8 @@ type DocumentState = {
   updateNode: (id: string, updater: (node: UiNode) => UiNode) => void;
   insertChild: (parentId: string, child: UiNode, index?: number) => void;
   appendChildOfType: (parentId: string, type: string) => void;
+  /** Reorder a direct child among siblings (undoable). */
+  reorderSibling: (parentId: string, activeId: string, overId: string) => void;
   /** Does nothing if `id` is the document root. */
   removeNode: (id: string) => void;
   reset: () => void;
@@ -98,6 +101,23 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   appendChildOfType: (parentId, type) => {
     const child = createNodeFromType(type);
     get().insertChild(parentId, child);
+  },
+
+  reorderSibling: (parentId, activeId, overId) => {
+    const { document, past } = get();
+    if (!findNodeById(document.root, parentId)) return;
+    const nextRoot = reorderSiblingInTree(
+      document.root,
+      parentId,
+      activeId,
+      overId,
+    );
+    if (nextRoot === document.root) return;
+    set({
+      past: truncatePast([...past, cloneDocument(document)]),
+      future: [],
+      document: { ...document, root: nextRoot },
+    });
   },
 
   removeNode: (id) => {

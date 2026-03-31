@@ -22,12 +22,28 @@ function isRow(node: UiNode): boolean {
 export const BOX_TYPE = "Box";
 export const STACK_TYPE = "Stack";
 
+/**
+ * Optional explicit size for **leaf** nodes (no children) via `layout.width` / `layout.height` (px).
+ * When either is missing or invalid, falls back to intrinsics map or `MIN_LEAF`.
+ */
+function intrinsicSizeFromLayout(node: UiNode): IntrinsicSize | null {
+  const rawW = node.layout?.width;
+  const rawH = node.layout?.height;
+  if (typeof rawW !== "number" || !Number.isFinite(rawW)) return null;
+  if (typeof rawH !== "number" || !Number.isFinite(rawH)) return null;
+  const w = Math.max(MIN_LEAF, rawW);
+  const h = Math.max(MIN_LEAF, rawH);
+  return { width: w, height: h };
+}
+
 function leafIntrinsic(
   node: UiNode,
   intrinsics: Map<string, IntrinsicSize>,
 ): IntrinsicSize {
   const hit = intrinsics.get(node.id);
   if (hit) return hit;
+  const fromLayout = intrinsicSizeFromLayout(node);
+  if (fromLayout) return fromLayout;
   return { width: MIN_LEAF, height: MIN_LEAF };
 }
 

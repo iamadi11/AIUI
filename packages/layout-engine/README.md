@@ -6,7 +6,7 @@ Deterministic layout for AIUI DSL nodes — **no React**. Produces `Map<nodeId, 
 
 - **Box** — column of children (gap `0`), optional `layout.padding` (number or `{ top, right, bottom, left }`).
 - **Stack** — `props.direction` `row` | `column` (default column), `props.gap` (px, non-negative), same padding as Box.
-- **Leaves** — default intrinsic size `32×32` unless overridden via `intrinsics` map.
+- **Leaves** — default intrinsic size `32×32` unless overridden via `intrinsics` map, or via **`layout.width`** and **`layout.height`** (both required and ≥ min leaf) for empty containers.
 
 ## Not yet
 

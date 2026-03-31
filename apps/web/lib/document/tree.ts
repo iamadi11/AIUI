@@ -65,6 +65,25 @@ export function insertChild(
   });
 }
 
+/** Reorder a direct child among its siblings (same parent). No-op if ids are missing or equal. */
+export function reorderSibling(
+  root: UiNode,
+  parentId: string,
+  activeId: string,
+  overId: string,
+): UiNode {
+  return updateNodeById(root, parentId, (node) => {
+    const ch = node.children ?? [];
+    const from = ch.findIndex((c) => c.id === activeId);
+    const to = ch.findIndex((c) => c.id === overId);
+    if (from < 0 || to < 0 || from === to) return node;
+    const next = [...ch];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    return { ...node, children: next };
+  });
+}
+
 /** Removes the node with `id`. Returns `null` if `root` was removed. */
 export function removeNodeById(root: UiNode, id: string): UiNode | null {
   if (root.id === id) return null;

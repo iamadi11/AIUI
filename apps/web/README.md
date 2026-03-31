@@ -8,6 +8,8 @@ From the **monorepo root**, run `pnpm dev` (see root `package.json`). The home p
 
 See `packages/registry/README.md` for palette metadata when adding primitives.
 
+**Layout:** Properties can target `node.layout` (padding, width/height for empty leaves). On the canvas, use the **grip** beside a nested node to **reorder** among siblings.
+
 ## Getting Started
 
 First, run the development server (from repo root, `pnpm dev`):

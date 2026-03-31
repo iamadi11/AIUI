@@ -29,15 +29,69 @@ function resolveProp(
   return undefined;
 }
 
+function resolveLayoutNumber(node: UiNode, key: string): number {
+  const layout = node.layout as Record<string, unknown> | undefined;
+  const raw = layout?.[key];
+  if (key === "padding") {
+    if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+      const o = raw as Record<string, unknown>;
+      const t = Number(o.top) || 0;
+      const r = Number(o.right) || 0;
+      const b = Number(o.bottom) || 0;
+      const l = Number(o.left) || 0;
+      return (t + r + b + l) / 4;
+    }
+    return 0;
+  }
+  if (key === "width" || key === "height") {
+    if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+    return 0;
+  }
+  return 0;
+}
+
+function applyLayoutUpdate(node: UiNode, key: string, value: unknown): UiNode {
+  const prev = node.layout ? { ...node.layout } : {};
+  const next = { ...prev } as Record<string, unknown>;
+  if (key === "padding") {
+    const n = typeof value === "number" && Number.isFinite(value) ? Math.max(0, value) : 0;
+    if (n === 0) delete next.padding;
+    else next.padding = n;
+    return {
+      ...node,
+      layout: Object.keys(next).length ? next : undefined,
+    };
+  }
+  if (key === "width" || key === "height") {
+    const n = typeof value === "number" && Number.isFinite(value) ? value : 0;
+    if (n <= 0) delete next[key];
+    else next[key] = Math.max(32, Math.round(n));
+    return {
+      ...node,
+      layout: Object.keys(next).length ? next : undefined,
+    };
+  }
+  return node;
+}
+
+function fieldScope(field: InspectorField): "props" | "layout" {
+  return field.scope ?? "props";
+}
+
 function FieldEditor(props: {
   node: UiNode;
   field: InspectorField;
   defaults: Record<string, unknown>;
-  onChange: (key: string, value: unknown) => void;
+  onChange: (field: InspectorField, value: unknown) => void;
 }) {
   const { node, field, defaults, onChange } = props;
+  const scope = fieldScope(field);
 
   if (field.kind === "text") {
+    if (scope === "layout") {
+      return null;
+    }
     const current = resolveProp(node, field.key, defaults);
     const value = typeof current === "string" ? current : "";
     return (
@@ -55,13 +109,16 @@ function FieldEditor(props: {
           value={value}
           placeholder={field.placeholder}
           autoComplete="off"
-          onChange={(e) => onChange(field.key, e.target.value)}
+          onChange={(e) => onChange(field, e.target.value)}
         />
       </div>
     );
   }
 
   if (field.kind === "select") {
+    if (scope === "layout") {
+      return null;
+    }
     const current = resolveProp(node, field.key, defaults);
     const value =
       typeof current === "string" ? current : String(field.options[0]?.value ?? "");
@@ -77,7 +134,7 @@ function FieldEditor(props: {
           id={`prop-${node.id}-${field.key}`}
           className={controlClass}
           value={value}
-          onChange={(e) => onChange(field.key, e.target.value)}
+          onChange={(e) => onChange(field, e.target.value)}
         >
           {field.options.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -85,6 +142,41 @@ function FieldEditor(props: {
             </option>
           ))}
         </select>
+      </div>
+    );
+  }
+
+  if (field.kind === "number" && scope === "layout") {
+    const layoutVal = resolveLayoutNumber(node, field.key);
+    const isIntrinsic = field.key === "width" || field.key === "height";
+    const displayVal =
+      isIntrinsic && layoutVal === 0 ? "" : String(layoutVal);
+    return (
+      <div>
+        <label
+          className="mb-1 block text-xs font-medium text-muted-foreground"
+          htmlFor={`layout-${node.id}-${field.key}`}
+        >
+          {field.label}
+        </label>
+        <input
+          id={`layout-${node.id}-${field.key}`}
+          type="number"
+          className={controlClass}
+          min={field.min}
+          step={field.step ?? "any"}
+          value={displayVal}
+          placeholder={isIntrinsic ? "Auto" : undefined}
+          onChange={(e) => {
+            const raw = e.target.value;
+            if (raw === "") {
+              onChange(field, 0);
+              return;
+            }
+            const next = Number(raw);
+            onChange(field, Number.isFinite(next) ? next : 0);
+          }}
+        />
       </div>
     );
   }
@@ -116,7 +208,7 @@ function FieldEditor(props: {
         onChange={(e) => {
           const raw = e.target.value;
           const next = raw === "" ? 0 : Number(raw);
-          onChange(field.key, Number.isFinite(next) ? next : 0);
+          onChange(field, Number.isFinite(next) ? next : 0);
         }}
       />
     </div>
@@ -392,10 +484,15 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
   const hasEditorFields = fields && fields.length > 0;
   const editingId = node.id;
 
-  function applyProp(key: string, value: unknown) {
+  function applyField(field: InspectorField, value: unknown) {
+    const scope = fieldScope(field);
+    if (scope === "layout") {
+      updateNode(editingId, (n) => applyLayoutUpdate(n, field.key, value));
+      return;
+    }
     updateNode(editingId, (n) => ({
       ...n,
-      props: { ...n.props, [key]: value },
+      props: { ...n.props, [field.key]: value },
     }));
   }
 
@@ -433,11 +530,11 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
           <div className="space-y-3">
             {fields.map((field) => (
               <FieldEditor
-                key={field.key}
+                key={`${fieldScope(field)}-${field.kind}-${field.key}`}
                 node={node}
                 field={field}
                 defaults={defaults}
-                onChange={applyProp}
+                onChange={applyField}
               />
             ))}
           </div>

@@ -396,6 +396,12 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 - **Registry:** `paletteCategory`, optional `paletteKeywords` and `paletteDescription` on each `ComponentDefinition`; `listPaletteDefinitions()` and `matchesPaletteSearch()` for the builder.
 - **Palette UI:** Search field (tokenized match), sections in fixed category order, subtle empty-state copy for categories with no primitives yet; cards show title + description; technical `type` is not emphasized (available in `title` tooltip).
 
-### Phases 3–8 (planned)
+### Phase 3 — Layout (shipped baseline)
 
-Layout manipulation; event and logic UIs without raw JSON for common cases; React Flow alignment; builder/runtime visual parity; power-user tooling. Details in `PLAN.md` §14.
+- **Engine:** Optional `layout.width` / `layout.height` on **leaf** nodes (empty Box/Stack) set intrinsic size; `layout.padding` unchanged (number or per-side object).
+- **Inspector:** Padding and intrinsic width/height for Box/Stack via `scope: "layout"` fields (no raw JSON for these keys).
+- **Canvas:** **Grip** drag to **reorder siblings**; drop targets and palette drag unchanged.
+
+### Phases 4–8 (planned)
+
+Event and logic UIs without raw JSON for common cases; React Flow alignment; builder/runtime visual parity; power-user tooling; optional follow-ups for on-canvas resize handles, snapping, and margin in the engine. Details in `PLAN.md` §14.

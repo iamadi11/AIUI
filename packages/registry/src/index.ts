@@ -27,12 +27,16 @@ export const PALETTE_CATEGORY_LABELS: Record<PaletteCategory, string> = {
   advanced: "Advanced",
 };
 
+/** Where the field writes: node `props` (default) or `layout` (layout engine). */
+export type InspectorFieldScope = "props" | "layout";
+
 export type InspectorField =
   | {
       kind: "select";
       key: string;
       label: string;
       options: readonly { value: string; label: string }[];
+      scope?: InspectorFieldScope;
     }
   | {
       kind: "number";
@@ -40,12 +44,14 @@ export type InspectorField =
       label: string;
       min?: number;
       step?: number;
+      scope?: InspectorFieldScope;
     }
   | {
       kind: "text";
       key: string;
       label: string;
       placeholder?: string;
+      scope?: InspectorFieldScope;
     };
 
 export type ComponentDefinition = {
@@ -78,6 +84,30 @@ export const primitives: Record<string, ComponentDefinition> = {
         key: "label",
         label: "Label",
         placeholder: "Name this layer…",
+      },
+      {
+        kind: "number",
+        key: "padding",
+        label: "Padding (px)",
+        min: 0,
+        step: 1,
+        scope: "layout",
+      },
+      {
+        kind: "number",
+        key: "width",
+        label: "Width (px, empty leaf)",
+        min: 0,
+        step: 1,
+        scope: "layout",
+      },
+      {
+        kind: "number",
+        key: "height",
+        label: "Height (px, empty leaf)",
+        min: 0,
+        step: 1,
+        scope: "layout",
       },
     ],
   },
@@ -118,6 +148,30 @@ export const primitives: Record<string, ComponentDefinition> = {
         label: "Gap (px)",
         min: 0,
         step: 1,
+      },
+      {
+        kind: "number",
+        key: "padding",
+        label: "Padding (px)",
+        min: 0,
+        step: 1,
+        scope: "layout",
+      },
+      {
+        kind: "number",
+        key: "width",
+        label: "Width (px, empty leaf)",
+        min: 0,
+        step: 1,
+        scope: "layout",
+      },
+      {
+        kind: "number",
+        key: "height",
+        label: "Height (px, empty leaf)",
+        min: 0,
+        step: 1,
+        scope: "layout",
       },
     ],
   },
