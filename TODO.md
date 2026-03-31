@@ -26,7 +26,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Add anti-hardcode guidance in properties editor.
 - [x] Add desktop/tablet/mobile viewport presets in preview mode.
 - [x] Add overflow/constraint conflict warnings.
-- [ ] Validate runtime/editor consistency across viewport presets.
+- [x] Validate runtime/editor consistency across viewport presets.
 
 ### Phase 3 - Universal properties and data binding
 
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 2 viewport parity validation added:
+  - Added shared viewport parity validator over desktop/tablet/mobile widths.
+  - Added diagnostics reporting for per-viewport validity/determinism checks.
+  - Surfaced explicit pass/fail status to track runtime/editor consistency across presets.
 - **2026-03-31** - Phase 2 overflow/constraint warnings added:
   - Added layout warning analysis for conflicting min/max bounds and fixed-size constraint violations.
   - Added row-stack overflow detection across desktop/tablet/mobile preset widths when wrapping is disabled.

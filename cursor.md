@@ -59,3 +59,4 @@ After each phase or sub-milestone:
 - **2026-03-31 - Responsive editing guardrail:** In layout editing UX, treat fixed width/height as an exception path and surface inline caution copy whenever hardcoded dimensions are present.
 - **2026-03-31 - Viewport simulation:** Keep preview viewport presets centralized and explicit (desktop/tablet/mobile) so responsive checks use consistent widths across features and tests.
 - **2026-03-31 - Constraint diagnostics:** Responsive readiness needs proactive warnings, not post-hoc debugging; compute layout conflicts (min/max and nowrap overflow) and surface them in builder diagnostics with suggested fixes.
+- **2026-03-31 - Parity visibility:** Treat viewport parity as a first-class diagnostic with explicit per-preset status so editor/runtime consistency is continuously visible during development.

@@ -3,6 +3,7 @@
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 import { safeParseDocument } from "@aiui/dsl-schema";
 import { collectLayoutWarnings } from "@/lib/builder/layout-warnings";
+import { buildViewportParityReport } from "@/lib/builder/viewport-parity";
 
 function countTree(root: UiNode): {
   nodeCount: number;
@@ -43,6 +44,7 @@ export function DiagnosticsPanel(props: {
   const parse = safeParseDocument(document);
   const tree = countTree(document.root);
   const layoutWarnings = collectLayoutWarnings(document.root);
+  const viewportParity = buildViewportParityReport(document.root);
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
@@ -115,6 +117,30 @@ export function DiagnosticsPanel(props: {
           No overflow/constraint conflicts detected for current viewport presets.
         </p>
       )}
+      <div className="mt-3 rounded-lg border border-border/70 bg-muted/20 p-2">
+        <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
+          Viewport parity
+        </p>
+        <p
+          className={
+            viewportParity.ok
+              ? "mt-1 text-[0.68rem] text-emerald-700"
+              : "mt-1 text-[0.68rem] text-amber-700"
+          }
+        >
+          {viewportParity.summary}
+        </p>
+        <ul className="mt-1 space-y-1">
+          {viewportParity.rows.map((row) => (
+            <li key={row.viewportId} className="text-[0.68rem] text-foreground/90">
+              {row.viewportLabel} ({row.width}px):{" "}
+              {row.invalidRectCount === 0 && row.deterministic
+                ? "ok"
+                : `${row.invalidRectCount} invalid rect(s), deterministic=${row.deterministic}`}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
