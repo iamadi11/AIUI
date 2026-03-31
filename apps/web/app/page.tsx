@@ -20,7 +20,7 @@ export default function Home() {
 
         <div className="flex flex-wrap gap-3">
           <p className="text-sm text-muted-foreground">
-            Next: undo/redo, preview route, golden JSON export.
+            Next: preview route, golden JSON export.
           </p>
         </div>
       </main>

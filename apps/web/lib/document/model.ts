@@ -43,3 +43,8 @@ export function createInitialDocument(rootType: string): AiuiDocument {
     root: createNodeFromType(rootType, { id: INITIAL_DOCUMENT_ROOT_ID }),
   };
 }
+
+/** Deep clone for undo/redo snapshots (JSON-safe document shape). */
+export function cloneDocument(doc: AiuiDocument): AiuiDocument {
+  return structuredClone(doc);
+}

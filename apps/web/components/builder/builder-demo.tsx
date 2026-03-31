@@ -14,7 +14,8 @@ import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
 import { Button } from "@/components/ui/button";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
-import { useState } from "react";
+import { Redo2, Undo2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
 import { canvasPointerCollision } from "./builder-collision";
 import { ComponentPalette } from "./component-palette";
@@ -30,6 +31,10 @@ export function BuilderDemo() {
   const appendChildOfType = useDocumentStore((s) => s.appendChildOfType);
   const reset = useDocumentStore((s) => s.reset);
   const removeNode = useDocumentStore((s) => s.removeNode);
+  const undo = useDocumentStore((s) => s.undo);
+  const redo = useDocumentStore((s) => s.redo);
+  const canUndo = useDocumentStore((s) => s.past.length > 0);
+  const canRedo = useDocumentStore((s) => s.future.length > 0);
 
   const selectedNodeId = useSelectionStore((s) => s.selectedNodeId);
   const selectNode = useSelectionStore((s) => s.selectNode);
@@ -45,6 +50,30 @@ export function BuilderDemo() {
       activationConstraint: { distance: 6 },
     }),
   );
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.closest?.("input, textarea, select, [contenteditable=true]")
+      ) {
+        return;
+      }
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if (meta && (e.key === "y" || e.key === "Y")) {
+        e.preventDefault();
+        redo();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [undo, redo]);
 
   function handleDragStart(event: DragStartEvent) {
     const data = event.active.data.current;
@@ -79,6 +108,30 @@ export function BuilderDemo() {
           <ComponentPalette />
           <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                disabled={!canUndo}
+                onClick={() => undo()}
+                title="Undo (⌘Z / Ctrl+Z)"
+              >
+                <Undo2 className="size-3.5" aria-hidden />
+                Undo
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                disabled={!canRedo}
+                onClick={() => redo()}
+                title="Redo (⌘⇧Z / Ctrl+Y)"
+              >
+                <Redo2 className="size-3.5" aria-hidden />
+                Redo
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -124,8 +177,8 @@ export function BuilderDemo() {
                 {selectedNodeId ?? "none"}
               </span>
               {" · "}
-              Click a row in the tree or a card on the canvas. Root cannot be
-              removed.
+              Click tree or canvas to select. Root cannot be removed. Undo/redo:
+              ⌘Z / ⌘⇧Z (Ctrl+Z / Ctrl+Shift+Z or Ctrl+Y).
             </p>
 
             <BuilderCanvas
