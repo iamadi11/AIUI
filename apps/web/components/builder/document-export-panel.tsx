@@ -1,7 +1,7 @@
 "use client";
 
 import type { AiuiDocument } from "@aiui/dsl-schema";
-import { exportGoldenJson, importGoldenJson } from "@aiui/dsl-schema";
+import { exportGoldenJson, inspectGoldenJsonImport, importGoldenJson } from "@aiui/dsl-schema";
 import { useDocumentStore } from "@/stores/document-store";
 import { Button } from "@/components/ui/button";
 import { Copy, Download, Upload } from "lucide-react";
@@ -29,6 +29,12 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pendingImport, setPendingImport] = useState<{
+    document: AiuiDocument;
+    warnings: string[];
+    originalVersion: string | null;
+    migratedVersion: string;
+  } | null>(null);
   const noticeTimer = useRef(0);
 
   function flash(msg: string) {
@@ -70,11 +76,26 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
 
   async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setError(null);
+    setPendingImport(null);
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     try {
       const text = await file.text();
+      const inspected = inspectGoldenJsonImport(text);
+      if (!inspected.ok) {
+        setError(inspected.message);
+        return;
+      }
+      if (inspected.requiresMigration) {
+        setPendingImport({
+          document: inspected.document,
+          warnings: inspected.warnings,
+          originalVersion: inspected.originalVersion,
+          migratedVersion: inspected.migratedVersion,
+        });
+        return;
+      }
       const r = importGoldenJson(text);
       if (!r.ok) {
         setError(r.message);
@@ -87,6 +108,13 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
     }
   }
 
+  function applyPendingImport() {
+    if (!pendingImport) return;
+    setDocument(pendingImport.document);
+    setPendingImport(null);
+    flash("Migrated and imported document (history cleared).");
+  }
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
       <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -95,7 +123,7 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
       <p className="mb-3 text-xs text-muted-foreground leading-relaxed">
         Export runs <code className="font-mono text-[0.65rem]">safeParseDocument</code>{" "}
         so the file matches the shared Zod schema. Import replaces the document and
-        clears undo history.
+        clears undo history. Older documents open a migration assistant before import.
       </p>
       <div className="flex flex-wrap gap-2">
         <Button
@@ -140,6 +168,42 @@ export function DocumentExportPanel(props: { document: AiuiDocument }) {
         <p className="mt-2 text-xs font-medium text-primary" role="status">
           {notice}
         </p>
+      ) : null}
+      {pendingImport ? (
+        <div className="mt-3 rounded-lg border border-amber-300/70 bg-amber-50/60 p-3">
+          <p className="text-xs font-medium text-amber-900">Migration assistant</p>
+          <p className="mt-1 text-[0.7rem] leading-relaxed text-amber-900/90">
+            {pendingImport.originalVersion
+              ? `This file uses DSL version ${pendingImport.originalVersion}.`
+              : "This file has no explicit DSL version."}{" "}
+            It will be migrated to {pendingImport.migratedVersion} before import.
+          </p>
+          {pendingImport.warnings.length > 0 ? (
+            <ul className="mt-2 space-y-1">
+              {pendingImport.warnings.map((warning, i) => (
+                <li
+                  key={`${warning}-${i}`}
+                  className="text-[0.68rem] leading-snug text-amber-900/90"
+                >
+                  - {warning}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" size="sm" onClick={applyPendingImport}>
+              Migrate and import
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPendingImport(null)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
       ) : null}
       {error ? (
         <pre className="mt-2 max-h-40 overflow-auto rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive whitespace-pre-wrap">

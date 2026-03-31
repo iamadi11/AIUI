@@ -3,6 +3,7 @@ import {
   DSL_VERSION,
   LAYOUT_VERSION,
   exportGoldenJson,
+  inspectGoldenJsonImport,
   importGoldenJson,
   migrateDocument,
   safeParseDocument,
@@ -105,5 +106,45 @@ describe("golden JSON", () => {
     if (im.ok) {
       expect(im.document.layoutVersion).toBe(LAYOUT_VERSION);
     }
+  });
+
+  it("reports migration guidance for older DSL versions", () => {
+    const json = JSON.stringify({
+      version: "0.1.0",
+      layoutVersion: LAYOUT_VERSION,
+      root: {
+        id: ROOT_ID,
+        type: "Box",
+        props: {},
+      },
+    });
+    const im = inspectGoldenJsonImport(json);
+    expect(im.ok).toBe(true);
+    if (!im.ok) return;
+    expect(im.requiresMigration).toBe(true);
+    expect(im.originalVersion).toBe("0.1.0");
+    expect(im.migratedVersion).toBe(DSL_VERSION);
+    expect(im.warnings.length).toBeGreaterThan(0);
+  });
+
+  it("reports missing metadata defaults in migration assistant", () => {
+    const json = JSON.stringify({
+      root: {
+        id: ROOT_ID,
+        type: "Box",
+        props: {},
+      },
+    });
+    const im = inspectGoldenJsonImport(json);
+    expect(im.ok).toBe(true);
+    if (!im.ok) return;
+    expect(im.requiresMigration).toBe(true);
+    expect(im.originalVersion).toBeNull();
+    expect(im.warnings.some((w) => w.includes("did not include a DSL version"))).toBe(
+      true,
+    );
+    expect(
+      im.warnings.some((w) => w.includes("did not include layoutVersion")),
+    ).toBe(true);
   });
 });

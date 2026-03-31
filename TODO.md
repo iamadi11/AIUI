@@ -72,13 +72,17 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 ### Phase 8 - Adoption hardening
 
 - [x] Add onboarding tour and empty-state education.
-- [ ] Add migration assistant for older dashboard DSL versions.
+- [x] Add migration assistant for older dashboard DSL versions.
 - [ ] Add performance hardening path for large documents.
 - [ ] Complete accessibility pass.
 - [ ] Complete internationalization readiness pass.
 
 ## Done
 
+- **2026-03-31** - Phase 8 migration assistant for older dashboard DSL versions added:
+  - Added `inspectGoldenJsonImport()` in `@aiui/dsl-schema` to detect version/default migrations and return import guidance metadata.
+  - Added builder import confirmation UX that shows migration warnings and requires explicit "Migrate and import" acceptance before replacing the active document.
+  - Added schema tests covering migration-assistant reporting for legacy versions and missing metadata defaults.
 - **2026-03-31** - Phase 8 onboarding + empty-state education added:
   - Replaced internal first-time QA checklist with a non-technical quick-start onboarding panel focused on first actions and simple progress.
   - Added clear call-to-action buttons (add box, add stack, starter dashboard, preview) directly in onboarding to reduce first-screen friction.
