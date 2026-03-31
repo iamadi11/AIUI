@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { ingestTelemetryIssue } from "@aiui/debug-mcp";
 import type { IssueTelemetryEnvelope } from "@/lib/diagnostics/issue-telemetry";
 
 type StoredIssue = IssueTelemetryEnvelope & {
@@ -17,6 +18,7 @@ const MAX_ISSUES = 200;
 export const useIssueTelemetryStore = create<IssueTelemetryState>((set) => ({
   issues: [],
   recordIssue: (issue) => {
+    ingestTelemetryIssue(issue);
     set((state) => {
       const idx = state.issues.findIndex((i) => i.fingerprint === issue.fingerprint);
       if (idx < 0) {

@@ -207,3 +207,5 @@ Validates fix impact and regression status.
 - End-user UI surfaces only `userMessage`.
 - Developer diagnostics panel surfaces trace + issue ids + recommended fixes.
 - Cursor consumes MCP tools to inspect issues and execute guarded repair loops.
+- Current repository implementation lives in `packages/debug-mcp` (`@aiui/debug-mcp`).
+- Tool handlers expose first-pass structured responses and dry-run safety checks; patch application is intentionally scope-limited and non-destructive by default.

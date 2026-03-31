@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aiui/debug-mcp": "workspace:*",
     "@aiui/dsl-schema": "workspace:*",
     "@aiui/layout-engine": "workspace:*",
     "@aiui/registry": "workspace:*",

@@ -65,9 +65,9 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 - [x] Add issue telemetry envelope in runtime and builder.
 - [x] Add diagnostics panel with trace drilldown for developers.
-- [ ] Implement MCP server endpoints from `docs/mcp/debug-mcp-spec.md`.
-- [ ] Add redaction policy and sensitive-data masking.
-- [ ] Add safe patch guardrails and validation loop for automated fixes.
+- [x] Implement MCP server endpoints from `docs/mcp/debug-mcp-spec.md`.
+- [x] Add redaction policy and sensitive-data masking.
+- [x] Add safe patch guardrails and validation loop for automated fixes.
 
 ### Phase 8 - Adoption hardening
 
@@ -79,6 +79,11 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 7 MCP debug endpoint baseline implemented:
+  - Added `@aiui/debug-mcp` package with concrete tool handlers matching spec names: `list_issues`, `get_issue_context`, `suggest_fix`, `apply_safe_fix_patch`, `validate_fix`.
+  - Added strict Zod input/output schemas for all MCP operations and typed issue/fix models for consistent structured responses.
+  - Wired builder/runtime issue telemetry ingestion into default MCP issue repository via `ingestTelemetryIssue()` for immediate issue availability in tool queries.
+  - Added first-pass safe-fix workflow with risk/confidence scoring, dry-run apply support, and explicit safety checks (`schemaValid`, `testsPassed`, `forbiddenPathsTouched`).
 - **2026-03-31** - Phase 7 diagnostics trace drilldown added in builder diagnostics panel:
   - Added compact issue trace list with selection state and occurrence counts for recent telemetry events.
   - Added per-trace drilldown metadata (`source`, `category`, `code`, `nodeId`, timestamp, trace ids, document version, fingerprint).

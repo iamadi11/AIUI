@@ -14,6 +14,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@aiui/debug-mcp':
+        specifier: workspace:*
+        version: link:../../packages/debug-mcp
       '@aiui/dsl-schema':
         specifier: workspace:*
         version: link:../../packages/dsl-schema
@@ -115,6 +118,19 @@ importers:
       vite:
         specifier: ^6.3.5
         version: 6.4.1(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)
+
+  packages/debug-mcp:
+    dependencies:
+      zod:
+        specifier: ^4.1.11
+        version: 4.3.6
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.37
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
 
   packages/dsl-schema:
     dependencies:
@@ -3972,6 +3988,9 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
@@ -7981,6 +8000,8 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.3.6: {}
 
   zustand@4.5.7(@types/react@19.2.14)(react@19.2.4):
     dependencies:
