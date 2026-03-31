@@ -53,7 +53,10 @@ export function BuilderDemo() {
   const canRedo = useDocumentStore((s) => s.future.length > 0);
 
   const selectedNodeId = useSelectionStore((s) => s.selectedNodeId);
+  const selectedIds = useSelectionStore((s) => s.selectedIds);
   const selectNode = useSelectionStore((s) => s.selectNode);
+  const toggleNode = useSelectionStore((s) => s.toggleNode);
+  const clearSelection = useSelectionStore((s) => s.clearSelection);
 
   const rootId = document.root.id;
 
@@ -89,20 +92,24 @@ export function BuilderDemo() {
       }
       if (meta && (e.key === "d" || e.key === "D")) {
         e.preventDefault();
-        if (selectedNodeId && selectedNodeId !== rootId) {
-          duplicateNode(selectedNodeId);
+        const targets = selectedIds.filter((id) => id !== rootId);
+        if (targets.length === 0) return;
+        for (const id of targets) {
+          duplicateNode(id);
         }
         return;
       }
       if (e.key === "Delete" || e.key === "Backspace") {
-        if (selectedNodeId && selectedNodeId !== rootId) {
-          e.preventDefault();
-          removeNode(selectedNodeId);
+        const targets = selectedIds.filter((id) => id !== rootId);
+        if (targets.length === 0) return;
+        e.preventDefault();
+        for (const id of targets) {
+          removeNode(id);
         }
         return;
       }
       if (e.key === "Escape") {
-        selectNode(null);
+        clearSelection();
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -111,6 +118,7 @@ export function BuilderDemo() {
     undo,
     redo,
     selectNode,
+    clearSelection,
     duplicateNode,
     removeNode,
     selectedNodeId,
@@ -261,15 +269,17 @@ export function BuilderDemo() {
 
             <BuilderShortcutsHelp />
 
-            <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
               Selection:{" "}
               <span className="text-foreground">
-                {selectedNodeId
-                  ? (() => {
-                      const path = getPathToNode(document.root, selectedNodeId);
-                      return path?.map(formatNodeTitle).join(" › ") ?? "—";
-                    })()
-                  : "none"}
+                {selectedIds.length === 0
+                  ? "none"
+                  : selectedIds.length === 1
+                    ? (() => {
+                        const path = getPathToNode(document.root, selectedNodeId!);
+                        return path?.map(formatNodeTitle).join(" › ") ?? "—";
+                      })()
+                    : `${selectedIds.length} layers selected`}
               </span>
               {" · "}
               Click canvas or tree; double-click a label to rename. Esc clears
@@ -282,6 +292,7 @@ export function BuilderDemo() {
               document={document}
               selectedId={selectedNodeId}
               onSelect={selectNode}
+              onToggleSelect={toggleNode}
               onLabelChange={(id, label) =>
                 updateNode(id, (n) => ({
                   ...n,
@@ -306,8 +317,9 @@ export function BuilderDemo() {
               <NodeTree
                 node={document.root}
                 depth={0}
-                selectedId={selectedNodeId}
+                selectedIds={selectedIds}
                 onSelect={selectNode}
+                onToggle={toggleNode}
                 rootId={rootId}
               />
             </div>
@@ -355,11 +367,12 @@ export function BuilderDemo() {
 function NodeTree(props: {
   node: UiNode;
   depth: number;
-  selectedId: string | null;
+  selectedIds: string[];
   onSelect: (id: string | null) => void;
+  onToggle: (id: string) => void;
   rootId: string;
 }) {
-  const { node, depth, selectedId, onSelect, rootId } = props;
+  const { node, depth, selectedIds, onSelect, onToggle, rootId } = props;
   const pad = depth * 12;
   const isRoot = node.id === rootId;
   const title = formatNodeTitle(node);
@@ -372,11 +385,17 @@ function NodeTree(props: {
         className={cn(
           "flex w-full rounded-md border border-transparent px-2 py-1.5 text-left transition-colors",
           "hover:border-border hover:bg-muted/50",
-          selectedId === node.id &&
+          selectedIds.includes(node.id) &&
             "border-primary/40 bg-muted/80 shadow-sm",
         )}
         style={{ paddingLeft: pad + 8 }}
-        onClick={() => onSelect(node.id)}
+        onClick={(e) => {
+          if (e.metaKey || e.ctrlKey) {
+            onToggle(node.id);
+          } else {
+            onSelect(node.id);
+          }
+        }}
       >
         <span className="shrink-0 font-medium text-foreground">{title}</span>
         {isRoot ? (
@@ -390,8 +409,9 @@ function NodeTree(props: {
           key={child.id}
           node={child}
           depth={depth + 1}
-          selectedId={selectedId}
+          selectedIds={selectedIds}
           onSelect={onSelect}
+          onToggle={onToggle}
           rootId={rootId}
         />
       ))}

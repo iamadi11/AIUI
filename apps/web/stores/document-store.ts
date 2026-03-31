@@ -30,9 +30,21 @@ function truncateFuture(future: AiuiDocument[]): AiuiDocument[] {
 }
 
 function sanitizeSelection(document: AiuiDocument) {
-  const selectedId = useSelectionStore.getState().selectedNodeId;
-  if (selectedId && !findNodeById(document.root, selectedId)) {
-    useSelectionStore.getState().selectNode(null);
+  const state = useSelectionStore.getState();
+  const { selectedNodeId, selectedIds } = state;
+  const exists = (id: string) => !!findNodeById(document.root, id);
+
+  const filtered = selectedIds.filter((id) => exists(id));
+  let nextPrimary: string | null = selectedNodeId;
+  if (nextPrimary && !exists(nextPrimary)) {
+    nextPrimary = filtered.length > 0 ? filtered[0] : null;
+  }
+
+  if (nextPrimary !== selectedNodeId || filtered.length !== selectedIds.length) {
+    useSelectionStore.setState({
+      selectedNodeId: nextPrimary,
+      selectedIds: filtered,
+    });
   }
 }
 

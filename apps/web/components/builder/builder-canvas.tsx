@@ -36,6 +36,7 @@ type BuilderCanvasProps = {
   document: AiuiDocument;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  onToggleSelect?: (id: string) => void;
   onLabelChange: (id: string, label: string) => void;
   /** Set intrinsic `layout.width` / `layout.height` for empty leaves (snapped to 8px, min 32). */
   onLeafLayoutResize?: (id: string, width: number, height: number) => void;
@@ -242,8 +243,14 @@ function SelectionChrome(props: {
 }
 
 export function BuilderCanvas(props: BuilderCanvasProps) {
-  const { document, selectedId, onSelect, onLabelChange, onLeafLayoutResize } =
-    props;
+  const {
+    document,
+    selectedId,
+    onSelect,
+    onToggleSelect,
+    onLabelChange,
+    onLeafLayoutResize,
+  } = props;
   const root = document.root;
 
   const measureRef = useRef<HTMLDivElement>(null);
@@ -458,11 +465,18 @@ export function BuilderCanvas(props: BuilderCanvasProps) {
     if (t.closest("[data-aiui-grip]")) return;
     const hit = t.closest("[data-aiui-id]");
     const id = hit?.getAttribute("data-aiui-id");
+    const isToggle = e.metaKey || e.ctrlKey;
     if (id) {
-      onSelect(id);
+      if (isToggle && onToggleSelect) {
+        onToggleSelect(id);
+      } else {
+        onSelect(id);
+      }
       return;
     }
-    onSelect(null);
+    if (!isToggle) {
+      onSelect(null);
+    }
   }
 
   function handleDoubleClickCapture(e: React.MouseEvent<HTMLDivElement>) {

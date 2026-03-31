@@ -65,7 +65,7 @@ _Baseline shipped — see **Done**._
 _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation is incremental; do not break DSL/runtime boundaries._
 
 - [ ] **Phase 3 — Layout UX (remaining):** —
-- [ ] **Phase 8 — Power features (remaining):** Multi-select; optional dedicated diagnostics panel
+- [ ] **Phase 8 — Power features (remaining):** Optional dedicated diagnostics panel
 
 ---
 
