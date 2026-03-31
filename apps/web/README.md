@@ -16,6 +16,8 @@ See `packages/registry/README.md` for palette metadata when adding primitives.
 
 **Logic graph:** The **Logic** panel renders a read-only React Flow chain from the selected node’s `events`; `sequence` and `condition` are expanded into steps. Click a step to inspect its action JSON; edit bindings in **Properties → Events**.
 
+**Shortcuts & templates:** Open **Keyboard shortcuts** on the builder for undo/redo, Esc, Delete/Backspace, and ⌘/Ctrl+D (duplicate). Use **Row + two boxes** to insert a row stack with two boxes under the selection (or under root).
+
 ## Getting Started
 
 First, run the development server (from repo root, `pnpm dev`):

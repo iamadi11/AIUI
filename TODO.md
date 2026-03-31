@@ -65,12 +65,13 @@ _Baseline shipped — see **Done**._
 _Roadmap in `PLAN.md` §14 and `core.md` (Builder UX appendix). Implementation is incremental; do not break DSL/runtime boundaries._
 
 - [ ] **Phase 3 — Layout UX (follow-up):** Visual resize handles on canvas, snapping/guides, margin in engine, constraint UI
-- [ ] **Phase 8 — Power features:** Multi-select, templates, shortcuts, debug panels
+- [ ] **Phase 8 — Power features (remaining):** Multi-select; more document templates; optional dedicated diagnostics panel
 
 ---
 
 ## Done
 
+- **2026-03-31** — **Product UX — Phase 8 (power features, baseline):** `duplicateNode` + `cloneUiSubtreeWithNewIds`; Delete/Backspace and ⌘/Ctrl+D; **BuilderShortcutsHelp**; **Row + two boxes** template (`lib/builder/document-templates.ts`); `removeNode` → `sanitizeSelection`
 - **2026-03-31** — **Product UX — Phase 7 (builder / runtime convergence):** Builder **Canvas** uses `AiuiRuntime` (same as `/preview`); `layoutDocument`-aligned **palette** drop overlays + **sortable** grips; selection via `data-aiui-id`; label chrome overlay; `/preview` drops duplicate `DslPreview` panel
 - **2026-03-31** — **Product UX — Phase 6 (advanced logic / React Flow):** `flattenActions()` expands `sequence` / `condition` for graph layout; `eventsToFlowElements` + `flowGraphStats`; **Logic** panel — “Synced with Properties” badge, per-step **inspect** (`JSON.stringify` when `data.action`), stats line (events · expanded steps); `logic-flow-panel.tsx` + `lib/logic/events-to-flow.ts`
 - **2026-03-31** — **Product UX — Phase 5 (logic / side effects UX):** Visual **If** step (`condition` with branch-only then/else) + **HTTP body** field; `BranchActionFields` for nested branches; `document.state` **Initial state** panel (`setDocumentState` in store); `event-actions` helpers (`defaultBranchAction`, `defaultConditionAction`, HTTP body parse/format)

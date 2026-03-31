@@ -421,6 +421,10 @@ This appendix tracks **product-facing** builder experience work. **Engine milest
 - **Canvas:** `BuilderCanvas` mounts `AiuiRuntime` (`@aiui/runtime-react` / `@aiui/runtime-core`) — same DOM pipeline as `/preview`. Selection uses `data-aiui-id` hit-testing; palette drops and sibling reorder use `layoutDocument` rects aligned to the measured canvas width.
 - **`/preview`:** Single runtime preview (removed separate Tailwind `DslPreview` host).
 
-### Phase 8 (planned)
+### Phase 8 — Power features (partial baseline)
 
-Power features (multi-select, templates, shortcuts, diagnostics). Optional layout follow-ups (on-canvas resize, snapping, margin). Details in `PLAN.md` §14.
+- **Shortcuts:** Delete / Backspace removes the selected layer (not root); ⌘/Ctrl+D duplicates the subtree as the next sibling (fresh ids); collapsible **Keyboard shortcuts** reference in the builder.
+- **Templates:** `BUILDER_DOCUMENT_TEMPLATES` + **Row + two boxes** inserts a row `Stack` with two `Box` children under the selected node (or root if none selected).
+- **Store:** `duplicateNode` uses `cloneUiSubtreeWithNewIds`; `removeNode` clears selection when the selected id disappears.
+
+**Remaining:** Multi-select, richer template library, optional dedicated diagnostics panel. Layout follow-ups: `PLAN.md` §14 Product UX Phase 3.

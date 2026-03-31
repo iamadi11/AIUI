@@ -15,6 +15,7 @@ import { BOX_TYPE, STACK_TYPE } from "@aiui/registry";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatNodeTitle } from "@/lib/builder/node-display";
+import { BUILDER_DOCUMENT_TEMPLATES } from "@/lib/builder/document-templates";
 import { getPathToNode } from "@/lib/document/tree";
 import { useDocumentStore } from "@/stores/document-store";
 import { useSelectionStore } from "@/stores/selection-store";
@@ -22,6 +23,7 @@ import { Redo2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BuilderCanvas } from "./builder-canvas";
+import { BuilderShortcutsHelp } from "./builder-shortcuts-help";
 import { canvasPointerCollision } from "./builder-collision";
 import { DocumentExportPanel } from "./document-export-panel";
 import { DocumentStatePanel } from "./document-state-panel";
@@ -41,6 +43,8 @@ export function BuilderDemo() {
   const appendChildOfType = useDocumentStore((s) => s.appendChildOfType);
   const reset = useDocumentStore((s) => s.reset);
   const removeNode = useDocumentStore((s) => s.removeNode);
+  const duplicateNode = useDocumentStore((s) => s.duplicateNode);
+  const insertChild = useDocumentStore((s) => s.insertChild);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
   const updateNode = useDocumentStore((s) => s.updateNode);
@@ -83,13 +87,35 @@ export function BuilderDemo() {
         redo();
         return;
       }
+      if (meta && (e.key === "d" || e.key === "D")) {
+        e.preventDefault();
+        if (selectedNodeId && selectedNodeId !== rootId) {
+          duplicateNode(selectedNodeId);
+        }
+        return;
+      }
+      if (e.key === "Delete" || e.key === "Backspace") {
+        if (selectedNodeId && selectedNodeId !== rootId) {
+          e.preventDefault();
+          removeNode(selectedNodeId);
+        }
+        return;
+      }
       if (e.key === "Escape") {
         selectNode(null);
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [undo, redo, selectNode]);
+  }, [
+    undo,
+    redo,
+    selectNode,
+    duplicateNode,
+    removeNode,
+    selectedNodeId,
+    rootId,
+  ]);
 
   function handleDragStart(event: DragStartEvent) {
     const data = event.active.data.current;
@@ -196,19 +222,41 @@ export function BuilderDemo() {
                 Reset document
               </Button>
               {selectedNodeId && selectedNodeId !== rootId ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    removeNode(selectedNodeId);
-                    selectNode(null);
-                  }}
-                >
-                  Remove selected
-                </Button>
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => duplicateNode(selectedNodeId)}
+                    title="Duplicate layer (⌘D / Ctrl+D)"
+                  >
+                    Duplicate
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => removeNode(selectedNodeId)}
+                  >
+                    Remove selected
+                  </Button>
+                </>
               ) : null}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                title={BUILDER_DOCUMENT_TEMPLATES[0].description}
+                onClick={() => {
+                  const parentId = selectedNodeId ?? rootId;
+                  insertChild(parentId, BUILDER_DOCUMENT_TEMPLATES[0].create());
+                }}
+              >
+                {BUILDER_DOCUMENT_TEMPLATES[0].label}
+              </Button>
             </div>
+
+            <BuilderShortcutsHelp />
 
             <p className="text-xs text-muted-foreground">
               Selection:{" "}
@@ -222,8 +270,9 @@ export function BuilderDemo() {
               </span>
               {" · "}
               Click canvas or tree; double-click a label to rename. Esc clears
-              selection. Root cannot be removed. Undo/redo: ⌘Z / ⌘⇧Z (Ctrl+Z /
-              Ctrl+Shift+Z or Ctrl+Y).
+              selection. Root cannot be removed. Delete/Backspace removes the
+              selection; ⌘/Ctrl+D duplicates. Undo/redo: ⌘Z / ⌘⇧Z (Ctrl+Z /
+              Ctrl+Shift+Z or Ctrl+Y). See the Keyboard shortcuts panel below.
             </p>
 
             <BuilderCanvas

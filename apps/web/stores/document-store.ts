@@ -2,11 +2,13 @@ import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 import { create } from "zustand";
 import {
   cloneDocument,
+  cloneUiSubtreeWithNewIds,
   createInitialDocument,
   createNodeFromType,
 } from "@/lib/document/model";
 import {
   findNodeById,
+  findParentOf,
   insertChild as insertChildInTree,
   removeNodeById,
   reorderSibling as reorderSiblingInTree,
@@ -49,6 +51,8 @@ type DocumentState = {
   reorderSibling: (parentId: string, activeId: string, overId: string) => void;
   /** Does nothing if `id` is the document root. */
   removeNode: (id: string) => void;
+  /** Deep-copy `id` as the next sibling (new ids). Selects the copy. No-op for root. */
+  duplicateNode: (id: string) => void;
   reset: () => void;
   undo: () => void;
   redo: () => void;
@@ -148,6 +152,31 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       future: [],
       document: { ...document, root: nextRoot },
     });
+    sanitizeSelection(get().document);
+  },
+
+  duplicateNode: (id) => {
+    const { document, past } = get();
+    if (document.root.id === id) return;
+    const node = findNodeById(document.root, id);
+    if (!node) return;
+    const parent = findParentOf(document.root, id);
+    if (!parent) return;
+    const copy = cloneUiSubtreeWithNewIds(node);
+    const idx = (parent.children ?? []).findIndex((c) => c.id === id);
+    const nextRoot = insertChildInTree(
+      document.root,
+      parent.id,
+      copy,
+      idx + 1,
+    );
+    if (nextRoot === document.root) return;
+    set({
+      past: truncatePast([...past, cloneDocument(document)]),
+      future: [],
+      document: { ...document, root: nextRoot },
+    });
+    useSelectionStore.getState().selectNode(copy.id);
   },
 
   reset: () => {

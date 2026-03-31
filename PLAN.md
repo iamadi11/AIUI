@@ -237,6 +237,6 @@ These phases improve **how** users edit the DSL in the Next.js builder. They sit
 | **5 — Logic** | API/state/conditions UI, progressive disclosure, hide raw JSON for typical flows *(baseline: If + HTTP body + initial `state` panel)* |
 | **6 — Graph** | React Flow workflows, sync with simple mode, debug *(baseline: flattened action chain, inspect step JSON, stats; Properties remains source of truth)* |
 | **7 — Convergence** | Builder uses runtime engine; preview parity *(baseline: builder canvas = `AiuiRuntime`; layout-aligned palette drops + grips; `/preview` runtime-only)* |
-| **8 — Power** | Multi-select, templates, shortcuts, diagnostics |
+| **8 — Power** | Multi-select, templates, shortcuts, diagnostics *(baseline: delete/duplicate/⌘D, shortcuts help, one row template; multi-select deferred)* |
 
 **Principles:** Visual-first, smart defaults, progressive disclosure, never expose raw DSL to end users in product flows; keep `AiuiDocument` as source of truth.

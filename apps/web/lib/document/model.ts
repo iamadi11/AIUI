@@ -9,11 +9,12 @@ import { newNodeId } from "@/lib/id";
  */
 export const INITIAL_DOCUMENT_ROOT_ID = "a0000000-0000-4000-8000-000000000001";
 
-function cloneNodeWithNewIds(node: UiNode): UiNode {
+/** Deep-copy a node and subtree with fresh ids (for duplicate / template expansion). */
+export function cloneUiSubtreeWithNewIds(node: UiNode): UiNode {
   return {
     ...node,
     id: newNodeId(),
-    children: node.children?.map(cloneNodeWithNewIds),
+    children: node.children?.map(cloneUiSubtreeWithNewIds),
   };
 }
 
@@ -33,7 +34,7 @@ export function createNodeFromType(
   if (!def.defaultChildren?.length) return base;
   return {
     ...base,
-    children: def.defaultChildren.map(cloneNodeWithNewIds),
+    children: def.defaultChildren.map(cloneUiSubtreeWithNewIds),
   };
 }
 
