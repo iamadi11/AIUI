@@ -61,3 +61,4 @@ _Add dated or milestone notes below as the project progresses._
 - **2026-03-31 — Builder preview:** Keep a small React renderer keyed by registry `type` (`DslPreview`); it is a dev host, not `runtime-core`—when the real runtime exists, align flex/gap behavior or share layout from `layout-engine`.
 - **2026-03-31 — Golden JSON:** Always run `safeParseDocument` before writing bytes to disk or clipboard so exports cannot drift from `documentSchema`; re-validate on import before `setDocument`.
 - **2026-03-31 — Layout engine package:** Keep `@aiui/layout-engine` free of React; pass intrinsic sizes via `intrinsics` map until text nodes exist; document `layoutVersion` (`LAYOUT_VERSION`) separately from DSL `version`.
+- **2026-03-31 — Expressions:** Keep evaluation in `@aiui/expression` (AST + context lookup only; no `eval`); reject `__proto__` / `constructor` / `prototype` path segments; use `interpolateTemplate` for `{{ }}` in bindings and copy.

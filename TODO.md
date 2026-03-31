@@ -24,7 +24,6 @@ _Shipped baseline — see **Done** and `packages/layout-engine/README.md`._
 
 ## Phase 3 — Logic system
 
-- [ ] Expression parser/evaluator (safe; no `eval`)
 - [ ] Event bindings and action types: `setState`, `navigate`, `http`
 - [ ] Wire builder inspector for events/actions (linear list first)
 - [ ] Integrate React Flow for logic graph (optional in same phase after linear path works)
@@ -72,6 +71,7 @@ _Shipped baseline — see **Done** and `packages/layout-engine/README.md`._
 
 ## Done
 
+- **2026-03-31** — `@aiui/expression`: lexer + AST parser + `evaluate` / `evaluateExpression`; `interpolateTemplate` for `{{ }}`; blocks unsafe path segments; Vitest coverage
 - **2026-03-31** — `@aiui/layout-engine`: `layoutDocument` → `Map<id, Rect>`; Box column + Stack row/column + `gap`; `layout.padding`; `measure.ts` text cache stub; `LAYOUT_VERSION` on `AiuiDocument`; builder **Layout debug** panel
 - **2026-03-31** — Golden export/import: `exportGoldenJson` / `importGoldenJson` via `safeParseDocument`; builder panel — download, copy, file import (`setDocument`, clears history); filename `aiui-document-<version>.json`
 - **2026-03-31** — Preview route `/preview`: client page reads live Zustand document; `DslPreview` maps `Box` / `Stack` via `@aiui/registry`; `safeParseDocument` banner; link from builder toolbar
