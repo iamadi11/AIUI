@@ -7,6 +7,11 @@
     ".": {
       "types": "./src/index.tsx",
       "default": "./src/index.tsx"
+    },
+    "./bundled": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     }
   },
   "dependencies": {
