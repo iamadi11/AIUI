@@ -2,7 +2,6 @@
 
 import { safeParseDocument } from "@aiui/dsl-schema";
 import Link from "next/link";
-import { DslPreview } from "@/components/preview/dsl-preview";
 import { RuntimePreview } from "@/components/preview/runtime-preview";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -62,16 +61,6 @@ export default function PreviewPage() {
             Runtime preview (DOM)
           </h2>
           <RuntimePreview document={document} />
-        </section>
-
-        <section className="space-y-2">
-          <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            React host (dev)
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Tailwind layout for quick visual checks; behavior should converge with runtime-core.
-          </p>
-          <DslPreview root={document.root} />
         </section>
       </main>
     </div>

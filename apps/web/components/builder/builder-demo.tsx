@@ -227,8 +227,7 @@ export function BuilderDemo() {
             </p>
 
             <BuilderCanvas
-              root={document.root}
-              rootId={rootId}
+              document={document}
               selectedId={selectedNodeId}
               onSelect={selectNode}
               onLabelChange={(id, label) =>

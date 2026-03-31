@@ -102,12 +102,12 @@ export function eventsToFlowElements(
 
     const flat = flattenActions(actions);
     let prev = eid;
-    let y = rowH * 2;
+    const baseY = rowH * 2;
     flat.forEach((item, i) => {
       const aid = `act-${col}-${i}-${safe}`;
       nodes.push({
         id: aid,
-        position: { x: col * colW, y: y + i * rowH },
+        position: { x: col * colW, y: baseY + i * rowH },
         data: { label: item.label, action: item.action },
       });
       edges.push({

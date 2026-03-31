@@ -9,7 +9,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from "@xyflow/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   eventsToFlowElements,
   flowGraphStats,
@@ -23,6 +23,100 @@ type LogicFlowPanelProps = {
   root: UiNode;
   selectedId: string | null;
 };
+
+type FlowBodyProps = {
+  nodes: ReturnType<typeof eventsToFlowElements>["nodes"];
+  edges: ReturnType<typeof eventsToFlowElements>["edges"];
+  stats: ReturnType<typeof flowGraphStats>;
+};
+
+/** Owns inspect state; parent remounts this via `key` when `flowKey` changes. */
+function LogicFlowGraphBody(props: FlowBodyProps) {
+  const { nodes, edges, stats } = props;
+
+  const [inspect, setInspect] = useState<{
+    label: string;
+    action: Action;
+  } | null>(null);
+
+  return (
+    <>
+      <div className="nodrag nopan h-[min(320px,50vh)] w-full overflow-hidden rounded-lg border border-border bg-muted/20">
+        <ReactFlowProvider>
+          <ReactFlow
+            className="h-full w-full"
+            defaultNodes={nodes}
+            defaultEdges={edges}
+            fitView
+            fitViewOptions={{ padding: 0.2 }}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable
+            nodesFocusable
+            panOnScroll
+            zoomOnScroll
+            minZoom={0.15}
+            maxZoom={1.25}
+            proOptions={{ hideAttribution: true }}
+            onNodeClick={(_, n) => {
+              const data = n.data as LogicFlowNodeData | undefined;
+              if (data?.action) {
+                setInspect({
+                  label: String(data.label ?? n.id),
+                  action: data.action,
+                });
+              }
+            }}
+          >
+            <Background gap={16} size={1} />
+            <Controls showInteractive={false} />
+            <MiniMap
+              className="bg-card!"
+              maskColor="rgb(0 0 0 / 0.12)"
+              zoomable
+              pannable
+            />
+          </ReactFlow>
+        </ReactFlowProvider>
+      </div>
+      <p className="mt-2 text-[0.6rem] text-muted-foreground">
+        {stats.eventCount} event{stats.eventCount === 1 ? "" : "s"} ·{" "}
+        {stats.stepCount} step{stats.stepCount === 1 ? "" : "s"} (after
+        expansion)
+      </p>
+      {inspect ? (
+        <div className="mt-2 rounded-lg border border-border bg-muted/25 p-3">
+          <div className="mb-1 flex items-start justify-between gap-2">
+            <p className="text-xs font-medium leading-snug text-foreground">
+              {inspect.label}
+            </p>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0"
+              title="Close"
+              onClick={() => setInspect(null)}
+            >
+              <X className="size-3" aria-hidden />
+            </Button>
+          </div>
+          <pre className="max-h-36 overflow-auto rounded-md border border-border/60 bg-background/80 p-2 font-mono text-[0.65rem] leading-relaxed text-foreground">
+            {JSON.stringify(inspect.action, null, 2)}
+          </pre>
+          <p className="mt-2 text-[0.6rem] leading-snug text-muted-foreground">
+            This view is read-only. Update the same logic under Properties →
+            Events — the graph refreshes automatically.
+          </p>
+        </div>
+      ) : (
+        <p className="mt-2 text-[0.6rem] text-muted-foreground">
+          Tip: click a step node to inspect its action payload.
+        </p>
+      )}
+    </>
+  );
+}
 
 export function LogicFlowPanel(props: LogicFlowPanelProps) {
   const { root, selectedId } = props;
@@ -43,15 +137,6 @@ export function LogicFlowPanel(props: LogicFlowPanelProps) {
   const stats = useMemo(() => flowGraphStats(events), [events]);
 
   const flowKey = `${selectedId ?? "none"}-${eventsFingerprint}`;
-
-  const [inspect, setInspect] = useState<{
-    label: string;
-    action: Action;
-  } | null>(null);
-
-  useEffect(() => {
-    setInspect(null);
-  }, [flowKey]);
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
@@ -75,81 +160,7 @@ export function LogicFlowPanel(props: LogicFlowPanelProps) {
           Select a node to preview its logic flow.
         </p>
       ) : (
-        <>
-          <div className="nodrag nopan h-[min(320px,50vh)] w-full overflow-hidden rounded-lg border border-border bg-muted/20">
-            <ReactFlowProvider key={flowKey}>
-              <ReactFlow
-                className="h-full w-full"
-                defaultNodes={nodes}
-                defaultEdges={edges}
-                fitView
-                fitViewOptions={{ padding: 0.2 }}
-                nodesDraggable={false}
-                nodesConnectable={false}
-                elementsSelectable
-                nodesFocusable
-                panOnScroll
-                zoomOnScroll
-                minZoom={0.15}
-                maxZoom={1.25}
-                proOptions={{ hideAttribution: true }}
-                onNodeClick={(_, n) => {
-                  const data = n.data as LogicFlowNodeData | undefined;
-                  if (data?.action) {
-                    setInspect({
-                      label: String(data.label ?? n.id),
-                      action: data.action,
-                    });
-                  }
-                }}
-              >
-                <Background gap={16} size={1} />
-                <Controls showInteractive={false} />
-                <MiniMap
-                  className="bg-card!"
-                  maskColor="rgb(0 0 0 / 0.12)"
-                  zoomable
-                  pannable
-                />
-              </ReactFlow>
-            </ReactFlowProvider>
-          </div>
-          <p className="mt-2 text-[0.6rem] text-muted-foreground">
-            {stats.eventCount} event{stats.eventCount === 1 ? "" : "s"} ·{" "}
-            {stats.stepCount} step{stats.stepCount === 1 ? "" : "s"} (after
-            expansion)
-          </p>
-          {inspect ? (
-            <div className="mt-2 rounded-lg border border-border bg-muted/25 p-3">
-              <div className="mb-1 flex items-start justify-between gap-2">
-                <p className="text-xs font-medium leading-snug text-foreground">
-                  {inspect.label}
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 shrink-0"
-                  title="Close"
-                  onClick={() => setInspect(null)}
-                >
-                  <X className="size-3.5" aria-hidden />
-                </Button>
-              </div>
-              <pre className="max-h-36 overflow-auto rounded-md border border-border/60 bg-background/80 p-2 font-mono text-[0.65rem] leading-relaxed text-foreground">
-                {JSON.stringify(inspect.action, null, 2)}
-              </pre>
-              <p className="mt-2 text-[0.6rem] leading-snug text-muted-foreground">
-                This view is read-only. Update the same logic under
-                Properties → Events — the graph refreshes automatically.
-              </p>
-            </div>
-          ) : (
-            <p className="mt-2 text-[0.6rem] text-muted-foreground">
-              Tip: click a step node to inspect its action payload.
-            </p>
-          )}
-        </>
+        <LogicFlowGraphBody key={flowKey} nodes={nodes} edges={edges} stats={stats} />
       )}
     </div>
   );
