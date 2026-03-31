@@ -60,6 +60,39 @@ function applyPrimitiveStyle(el: HTMLElement, node: UiNode): void {
   }
 }
 
+function findDirectChildByAiuiId(
+  parent: HTMLElement,
+  id: string,
+): HTMLElement | null {
+  const kids = parent.children;
+  for (let i = 0; i < kids.length; i++) {
+    const c = kids[i];
+    if (c instanceof HTMLElement && c.dataset.aiuiId === id) {
+      return c;
+    }
+  }
+  return null;
+}
+
+function patchSubtree(
+  node: UiNode,
+  parentEl: HTMLElement,
+  parentRect: Rect,
+  rects: Map<string, Rect>,
+): void {
+  const rect = rects.get(node.id);
+  if (!rect) return;
+  const el = findDirectChildByAiuiId(parentEl, node.id);
+  if (!el) return;
+  el.style.left = `${rect.x - parentRect.x}px`;
+  el.style.top = `${rect.y - parentRect.y}px`;
+  el.style.width = `${rect.width}px`;
+  el.style.height = `${rect.height}px`;
+  for (const child of node.children ?? []) {
+    patchSubtree(child, el, rect, rects);
+  }
+}
+
 function mountSubtree(
   node: UiNode,
   parentEl: HTMLElement,
@@ -106,7 +139,6 @@ function mountSubtree(
 }
 
 function showParseError(container: HTMLElement, message: string): void {
-  container.replaceChildren();
   const wrap = document.createElement("div");
   wrap.style.boxSizing = "border-box";
   wrap.style.padding = "12px";
@@ -126,6 +158,10 @@ export function render(options: RenderOptions): RuntimeHandle {
 
   let disposed = false;
   let state: Record<string, unknown> = {};
+  /** Reset `state` from `doc.state` only after `update()` or initial mount. */
+  let shouldResetStateFromDoc = true;
+  /** Same `config` reference as last successful full mount → layout-only fast path. */
+  let prevConfigRef: unknown;
   const listenerDisposers: (() => void)[] = [];
 
   let flushPending = false;
@@ -137,6 +173,12 @@ export function render(options: RenderOptions): RuntimeHandle {
       if (disposed) return;
       rebuild();
     });
+  }
+
+  function clearListenersAndDom(): void {
+    for (const d of listenerDisposers) d();
+    listenerDisposers.length = 0;
+    container.replaceChildren();
   }
 
   const env: ActionEnvironment = {
@@ -190,12 +232,10 @@ export function render(options: RenderOptions): RuntimeHandle {
   }
 
   function rebuild(): void {
-    for (const d of listenerDisposers) d();
-    listenerDisposers.length = 0;
-    container.replaceChildren();
-
     const parsed = safeParseDocumentWithMigration(config);
     if (!parsed.success) {
+      clearListenersAndDom();
+      prevConfigRef = undefined;
       showParseError(
         container,
         `Invalid DSL: ${parsed.error.issues.map((i) => i.message).join("; ")}`,
@@ -204,22 +244,38 @@ export function render(options: RenderOptions): RuntimeHandle {
     }
 
     const doc: AiuiDocument = parsed.data;
-    state = cloneState(doc.state);
+    if (shouldResetStateFromDoc) {
+      state = cloneState(doc.state);
+      shouldResetStateFromDoc = false;
+    }
 
     const lw = rootLayoutWidth(container, layoutWidthOpt);
     const rects = layoutDocument(doc.root, { width: lw });
     const rootRect = rects.get(doc.root.id);
     if (!rootRect) {
+      clearListenersAndDom();
+      prevConfigRef = undefined;
       showParseError(container, "Layout failed: missing root rect.");
       return;
     }
+
+    const origin: Rect = { x: 0, y: 0, width: 0, height: 0 };
+    const canLayoutOnly =
+      prevConfigRef === config && listenerDisposers.length > 0;
+
+    if (canLayoutOnly) {
+      container.style.minHeight = `${rootRect.height}px`;
+      patchSubtree(doc.root, container, origin, rects);
+      return;
+    }
+
+    clearListenersAndDom();
 
     container.style.position = "relative";
     container.style.boxSizing = "border-box";
     container.style.minHeight = `${rootRect.height}px`;
     container.style.width = "100%";
 
-    const origin: Rect = { x: 0, y: 0, width: 0, height: 0 };
     try {
       mountSubtree(
         doc.root,
@@ -229,7 +285,10 @@ export function render(options: RenderOptions): RuntimeHandle {
         bindEvents,
         onNodeError,
       );
+      prevConfigRef = config;
     } catch (e) {
+      clearListenersAndDom();
+      prevConfigRef = undefined;
       showParseError(
         container,
         `Render failed: ${e instanceof Error ? e.message : String(e)}`,
@@ -240,15 +299,15 @@ export function render(options: RenderOptions): RuntimeHandle {
   function update(next: unknown): void {
     if (disposed) return;
     config = next;
+    shouldResetStateFromDoc = true;
     rebuild();
   }
 
   function destroy(): void {
     if (disposed) return;
     disposed = true;
-    for (const d of listenerDisposers) d();
-    listenerDisposers.length = 0;
-    container.replaceChildren();
+    clearListenersAndDom();
+    prevConfigRef = undefined;
   }
 
   function getState(): Record<string, unknown> {

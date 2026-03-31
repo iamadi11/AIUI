@@ -32,7 +32,7 @@ _Logic graph shipped — see **Done**._
 
 _Baseline shipped — `@aiui/runtime-core` (`render` / `update` / `destroy`); see **Done**._
 
-- [ ] Partial re-layout / DOM diff after state changes (currently full rebuild microtask after actions)
+- [ ] Fine-grained DOM diff (add/remove nodes without full remount when tree structure changes)
 
 ---
 
@@ -66,11 +66,11 @@ _Baseline shipped — see **Done**._
 
 ## Done
 
+- **2026-03-31** — **Phase 4 — Runtime flush:** Layout-only path when `prevConfigRef === config` + listeners → `patchSubtree`; `update()` / initial mount re-seed `state` from `doc.state`; action flush preserves `state`; full remount + `clearListenersAndDom` on errors; per-node error UI unchanged; Vitest DOM reuse after click
 - **2026-03-31** — **Phase 7 — Adapters:** `AiuiRuntime` uses `useLayoutEffect` for `render`/`update` on `document` (before paint), `ResizeObserver` in `useEffect`, `destroy` on unmount; `examples/vanilla-runtime` (Vite) + README; `pnpm-workspace.yaml` includes `examples/*`
 - **2026-03-31** — **Phase 6 — Export / migration:** `migrateDocument` + `safeParseDocumentWithMigration`; `MIGRATION_REGISTRY` stub; `exportGoldenJson` / `importGoldenJson` live in `@aiui/dsl-schema`; builder import uses package; `runtime-core` parses with migration; Vitest round-trip + migration tests; root `pnpm test` includes DSL suites
 - **2026-03-31** — **Phase 5 — Runtime bundles:** Vite library builds (`vite.lib.config.ts` → `dist/index.mjs` + d.ts), `pnpm bundle:check`; `exports["./bundled"]` on `@aiui/runtime-core` / `@aiui/runtime-react`; READMEs for workspace source + `transpilePackages` vs `@aiui/.../bundled`; peers + `AiuiRuntime` + preview
 - **2026-03-31** — **Preview `/preview`:** `RuntimePreview` mounts `@aiui/runtime-core` (ResizeObserver → `update` on width change); React `DslPreview` kept as labeled dev host; `transpilePackages` includes runtime-core, logic, expression
-- **2026-03-31** — **`@aiui/runtime-core`:** `render({ container, config })` → validate DSL, `layoutDocument`, nested absolute DOM from registry primitives, `events` → `runActions` with document `state`; `queueMicrotask` batch after actions; per-node mount error UI; Vitest + happy-dom
 - **2026-03-31** — **React Flow** (`@xyflow/react`): read-only **Logic graph** panel for selected node — `events` → Start → event name → action chain; `eventsToFlowElements`; styles in `globals.css`; `nodrag nopan` + DnD context; `hideAttribution`
 - **2026-03-31** — Builder **Properties** → **Events**: linear list of bindings (event name + JSON actions array), validated with `safeParseActionsArray`; blur / add / remove commits to `node.events`
 - **2026-03-31** — Logic DSL + executor: `Action` union + Zod `actionSchema`; document `state` + node `events`; `@aiui/logic` — `runAction` / `runActions`, `setPathImmutable`, `setState` / `navigate` / `http` / `sequence` / `condition` (expressions via `@aiui/expression`); Vitest

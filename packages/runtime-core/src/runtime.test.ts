@@ -40,10 +40,14 @@ describe("render", () => {
     expect(inner).not.toBeNull();
     expect(rt.getState()).toEqual({ count: 0 });
 
+    const beforeFlush = container.querySelector(`[data-aiui-id="${CHILD}"]`);
     inner!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     await Promise.resolve();
 
     expect(rt.getState()).toEqual({ count: 1 });
+    expect(container.querySelector(`[data-aiui-id="${CHILD}"]`)).toBe(
+      beforeFlush,
+    );
 
     rt.destroy();
     document.body.removeChild(container);
