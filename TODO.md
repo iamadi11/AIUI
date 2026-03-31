@@ -54,8 +54,7 @@ _Baseline shipped — see **Done**._
 
 ## Phase 7 — Adapters
 
-- [ ] React adapter component + `useEffect` / `useLayoutEffect` sync for `config` updates
-- [ ] Vanilla JS example in `examples/` or README snippet
+_Baseline shipped — see **Done**._
 
 ---
 
@@ -69,6 +68,7 @@ _Baseline shipped — see **Done**._
 
 ## Done
 
+- **2026-03-31** — **Phase 7 — Adapters:** `AiuiRuntime` uses `useLayoutEffect` for `render`/`update` on `document` (before paint), `ResizeObserver` in `useEffect`, `destroy` on unmount; `examples/vanilla-runtime` (Vite) + README; `pnpm-workspace.yaml` includes `examples/*`
 - **2026-03-31** — **Phase 6 — Export / migration:** `migrateDocument` + `safeParseDocumentWithMigration`; `MIGRATION_REGISTRY` stub; `exportGoldenJson` / `importGoldenJson` live in `@aiui/dsl-schema`; builder import uses package; `runtime-core` parses with migration; Vitest round-trip + migration tests; root `pnpm test` includes DSL suites
 - **2026-03-31** — **Phase 5 — Runtime bundles:** Vite library builds — `packages/runtime-core` (`vite.lib.config.ts` → `dist/index.mjs` + d.ts), `packages/runtime-react` (peer: React; external `@aiui/runtime-core`); root `pnpm bundle:check` enforces size budgets; `AiuiRuntime` in `@aiui/runtime-react`; preview uses adapter
 - **2026-03-31** — **Preview `/preview`:** `RuntimePreview` mounts `@aiui/runtime-core` (ResizeObserver → `update` on width change); React `DslPreview` kept as labeled dev host; `transpilePackages` includes runtime-core, logic, expression
