@@ -28,6 +28,7 @@ import {
   isBranchAction,
   isSimpleActionsList,
   buttonClickFetchPopulateTableTemplate,
+  rowActionModalSubmitRefreshTemplate,
   parseHttpBodyInput,
   parseValueInput,
 } from "@/lib/builder/event-actions";
@@ -1061,6 +1062,38 @@ export function EventBindingsPanel(props: {
     });
   }
 
+  function applyRowActionTemplate() {
+    const template = rowActionModalSubmitRefreshTemplate();
+    setRows((prev) => {
+      const existingIndex = prev.findIndex((row) => row.name === template.eventName);
+      const nextRow: EventBindingRow = {
+        id: newRowId(),
+        name: template.eventName,
+        namePreset: "custom",
+        mode: "simple",
+        simpleActions: template.actions,
+        jsonText: JSON.stringify(template.actions, null, 2),
+      };
+      let nextRows: EventBindingRow[];
+      if (existingIndex >= 0) {
+        nextRows = prev.map((row, index) =>
+          index === existingIndex
+            ? {
+                ...row,
+                mode: "simple",
+                simpleActions: template.actions,
+                jsonText: JSON.stringify(template.actions, null, 2),
+              }
+            : row,
+        );
+      } else {
+        nextRows = [...prev, nextRow];
+      }
+      queueMicrotask(() => commitFromRows(nextRows));
+      return nextRows;
+    });
+  }
+
   function removeRow(id: string) {
     setRows((prev) => {
       const nextRows = prev.filter((row) => row.id !== id);
@@ -1235,6 +1268,15 @@ export function EventBindingsPanel(props: {
           onClick={applyButtonFetchTemplate}
         >
           Template: click -&gt; fetch -&gt; populate table
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="h-7 text-[0.65rem]"
+          onClick={applyRowActionTemplate}
+        >
+          Template: row action -&gt; modal -&gt; submit -&gt; refresh
         </Button>
       </div>
       {formError ? (

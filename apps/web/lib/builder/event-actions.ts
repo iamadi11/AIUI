@@ -142,3 +142,28 @@ export function buttonClickFetchPopulateTableTemplate(): {
     ],
   };
 }
+
+export function rowActionModalSubmitRefreshTemplate(): {
+  eventName: string;
+  actions: Action[];
+} {
+  return {
+    eventName: "rowAction",
+    actions: [
+      { type: "modal", action: "open", target: "row-edit" },
+      {
+        type: "fetch",
+        method: "POST",
+        url: "https://api.example.com/row/submit",
+      },
+      { type: "modal", action: "close", target: "row-edit" },
+      {
+        type: "fetch",
+        method: "GET",
+        url: "https://api.example.com/table",
+        assignTo: "table.rows",
+      },
+      { type: "notify", level: "success", message: "Row saved" },
+    ],
+  };
+}
