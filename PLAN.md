@@ -1,242 +1,322 @@
-# AIUI — UI Operating System + Runtime Platform
+# AIUI Product Plan - Non-Technical Dashboard Builder
 
-**Product vision:** A drag-and-drop UI dashboard creator (Retool × Webflow × Figma) that exports a **Universal JSON DSL** and a **JavaScript runtime bundle** — not framework-specific source code.
+## Product goal
 
-**End usage (target):**
+AIUI is a visual dashboard operating system for non-technical users.
+Users drag and drop components, connect data and side effects, and publish working dashboards without writing code.
 
-```js
-const runtime = await import("your-runtime-bundle");
-runtime.render({ container: document.getElementById("app"), config: exportedDSL });
+## Core principles
+
+- Creator canvas and generated runtime must use the same rendering pipeline.
+- Preview is a mode toggle, not a second renderer.
+- UX is progressive: simple mode first, advanced mode optional.
+- Responsive by default; fixed width and height only when explicitly chosen.
+- End-user mode hides technical noise (ids, raw schema, internal traces).
+- Shadcn is the primary component library in current scope.
+- Future UI libraries can be supported only through adapter contracts.
+
+## Target architecture
+
+```mermaid
+flowchart LR
+  nonTechUsers[NonTechUsers] --> builderUi[BuilderUI]
+  builderUi --> dslStore[VersionedDSL]
+  dslStore --> runtimeCore[RuntimeCore]
+  runtimeCore --> renderOutput[RenderedDashboard]
+  runtimeCore --> effectsEngine[EffectsEngine]
+  effectsEngine --> httpLayer[HTTPDataSources]
+  effectsEngine --> stateLayer[StateVisibilityRules]
+  builderUi --> previewMode[PreviewMode]
+  previewMode --> runtimeCore
+  developers[Developers] --> diagnosticsView[DiagnosticsView]
+  diagnosticsView --> debugMcp[DebugMCPServer]
+  debugMcp --> cursorFixLoop[CursorFixLoop]
 ```
 
----
+## Roadmap and phase gates
 
-## Executive summary
+### Phase 0 - Documentation reset and simplification
 
-| Topic | Decision |
-|--------|----------|
-| **Export model** | DSL JSON + runtime SDK (no React/Vue codegen as the primary artifact) |
-| **Builder** | Next.js App Router, React, TypeScript, Tailwind, shadcn/ui |
-| **Canvas / graphs** | dnd-kit (builder DnD), React Flow (logic/workflows) |
-| **Layout** | Deterministic layout engine (Pretext-inspired); minimize DOM measurement |
-| **Validation** | Zod for DSL and shared types |
-| **Builder state** | Zustand (recommended): fewer boilerplate, domain-split stores; RTK optional if normalized entity complexity grows |
-| **AI in product** | Out of scope for initial implementation; design hooks only in later phases |
+**Goal**
+- Create one canonical product narrative and remove stale planning noise.
 
----
+**Deliverables**
+- `PLAN.md` rewritten around product principles, phases, and acceptance gates.
+- `TODO.md` mapped to actionable phase tasks.
+- `cursor.md` updated with durable operating conventions.
+- `core.md` summarized to strategic constraints only.
 
-## 1. High-level architecture
-
-| Layer | Responsibility |
-|--------|----------------|
-| **Builder app** | Palette, canvas, inspector, tree, history, export UI |
-| **Component registry** | Maps DSL `type` → metadata, default props, layout hints, capabilities |
-| **UI tree model** | Canonical document: nodes, ids, parent/child, component refs |
-| **Layout engine** | Deterministic box model → frames (x, y, w, h); measure rarely |
-| **Logic DSL** | Events → actions; conditions; expressions over state |
-| **State model** | Declared in DSL; runtime instance with schema |
-| **Graph layer (React Flow)** | Workflow / logic graphs; serialized as part of DSL |
-| **Runtime engine** | Load DSL → layout → render → events → action pipeline |
-| **Runtime bundle** | Packaged SDK: core + optional React adapter |
-| **Export** | Serialize, validate (Zod), version field |
-| **Adapters** | Vanilla `render`, React `<Runtime config={dsl} />`, future hosts |
-
-**Data flow:** Author → in-memory document → **export** → JSON → **runtime** (parse/validate → layout → render → bind → actions → state → partial update).
+**Gate**
+- All planning documents are aligned and non-duplicative.
 
 ---
 
-## 2. Core data models (shared via `packages/dsl-schema` or `lib/dsl`)
+### Phase 1 - No-code UX foundation (shadcn-first)
 
-Define as TypeScript types **and** Zod schemas (single source of truth):
+**Goal**
+- A first-time non-technical user can assemble a basic dashboard without JSON.
 
-- **UI tree:** `id`, `type`, `props`, `children[]`, optional layout/style tokens
-- **Component definition (registry):** keyed by `type`; not necessarily duplicated in every export if versioned catalog exists
-- **Layout metadata:** flex/grid/stack constraints, spacing — only what the layout engine implements
-- **Logic:** events, actions (discriminated union), optional graph reference
-- **State model:** `initial`, schema, optional persistence hints
-- **Expressions:** `{{path}}` strings compiled to safe AST evaluation (no `eval`)
+**Scope**
+- Component palette from registry metadata (labels, categories, searchable keywords).
+- Drag/drop placement with clear insert, nest, and reorder affordances.
+- Beginner inspector sections:
+  - Content
+  - Data
+  - Actions
+  - Visibility
+  - Layout
+  - Style
+  - Accessibility
+- Smart starter defaults for:
+  - Table
+  - Button
+  - Card
+  - Filter controls
+  - Basic chart placeholder
 
----
+**APIs and abstractions**
+- Registry metadata contract for non-technical editing UX.
+- Primitive property editor components shared across all widgets.
 
-## 3. Runtime bundle
+**Risks**
+- Too much information in inspector can overwhelm new users.
+- Inconsistent defaults across components can break trust.
 
-**Contains:** DSL loader/validator, layout engine, renderer (DOM or React host), state, event dispatcher, action executor, expression evaluator, optional React glue.
-
-**Properties:** Framework-agnostic core; optional React entry; ES modules; tree-shakeable; lazy-loadable where beneficial.
-
-**Public API:**
-
-```ts
-render({ container, config })
-update(config)
-destroy()
-```
-
----
-
-## 4. Execution flow (runtime)
-
-1. Load and validate DSL  
-2. Initialize state from `initial` + schema  
-3. Instantiate component tree  
-4. Layout pass (deterministic; measure only for intrinsic unknowns, e.g. text)  
-5. Render  
-6. Bind events → actions  
-7. On action: evaluate expressions → mutate state → schedule update  
-8. Dirty tracking → partial re-layout / patch  
+**Acceptance gate**
+- New user creates a simple header + table + button dashboard without raw JSON.
 
 ---
 
-## 5. Phase-by-phase implementation
+### Phase 2 - Responsive layout and visual constraints
 
-### Phase 1 — Builder MVP
+**Goal**
+- Dashboards adapt across viewport sizes by default.
 
-- **Goals:** Editing loop: palette → canvas → tree; document model that survives later phases.
-- **Features:** Next.js app; palette; dnd-kit canvas; stack/grid in editor; tree panel; props panel; preview route (React preview or runtime stub).
-- **Decisions:** Stable node IDs (UUID); undo/redo (commands or immer + history); **serialize DSL-shaped document from day one** so preview/runtime do not diverge.
-- **Risks:** Preview ≠ runtime → **mitigation:** shared `registry` package immediately.
+**Scope**
+- Layout tokens for stack/grid responsiveness, wrapping, min/max constraints.
+- Viewport presets for desktop/tablet/mobile with overflow warnings.
+- Guidance to prefer content-based sizing over fixed values.
 
-### Phase 2 — Layout engine
+**APIs and abstractions**
+- DSL layout constraints that avoid hardcoded dimensions unless explicit.
+- Shared viewport simulation controls in editor/preview.
 
-- **Goals:** Deterministic `layout(tree, constraints) → Map<id, Rect>`.
-- **Features:** Stack, row/column, grid; padding/gap; batched/cached text measurement.
-- **Decisions:** Pretext-style constraint passes; explicit supported subset; `layoutVersion` in DSL.
-- **Location:** Pure TS package (`packages/layout-engine` or `lib/layout`), no React.
+**Risks**
+- Overly complex constraints can confuse non-technical users.
+- Divergence between editor width simulation and runtime container width.
 
-### Phase 3 — Logic system
-
-- **Goals:** Event → action model; `{{state.path}}`; binding props to state.
-- **Features:** Actions: `setState`, `navigate`, `http`, sequences, conditions; React Flow for complex graphs (can start linear, then graph).
-- **Decisions:** Whitelist expression functions; AST-only evaluation.
-
-### Phase 4 — Runtime engine
-
-- **Goals:** Interpreter matching builder behavior; core without React dependency.
-- **Features:** Full pipeline; per-node error isolation; batched updates.
-- **Decisions:** Microtask batching; deterministic action order for tests.
-
-### Phase 5 — Runtime bundle packaging
-
-- **Goals:** Publishable package with `exports` for `core` vs `react`.
-- **Features:** Vite/Rollup; source maps; size budgets in CI.
-- **Decisions:** Monorepo packages; `peerDependencies` for React adapter.
-
-### Phase 6 — Export system
-
-- **Goals:** Validated export/import round-trip.
-- **Features:** Zod for full document; `version` field; optional minification.
-- **Decisions:** Semantic versioning of DSL; runtime supports N previous major versions via small adapters.
-
-### Phase 7 — Multi-platform adapters
-
-- **Goals:** Vanilla and React hosts as in product spec.
-- **Features:** `destroy()` cleans listeners; React wrapper syncs `update` on config change.
-- **Python / backends:** Store and validate JSON in FastAPI/Django; **browser runtime stays JS** unless a separate server-side executor is explicitly scoped.
-
-### Phase 8 — Future enhancements
-
-- AI-assisted generation (DSL output only), collaboration/CRDT, plugins, marketplace — roadmap only until prioritized.
+**Acceptance gate**
+- Same dashboard layout remains usable across all presets with no manual rewiring.
 
 ---
 
-## 6. Per-phase deliverables checklist
+### Phase 3 - Universal properties and data binding
 
-For each phase, track: **goals, features, technical decisions, folder layout, key abstractions, public/internal APIs, risks.**
+**Goal**
+- Any component can use a consistent binding model.
 
-Suggested monorepo:
+**Scope**
+- Property binding modes:
+  - Static value
+  - Expression
+  - State path
+  - Query result path
+- Data source picker with path browser and sample-data feedback.
+- Reusable prop editors so newly added components automatically inherit UX.
 
-```
-apps/web/                 # Next.js builder
-packages/dsl-schema/
-packages/registry/
-packages/layout-engine/
-packages/runtime-core/
-packages/runtime-react/
-```
+**APIs and abstractions**
+- Binding descriptor schema in DSL.
+- Component capability map for bindable properties.
 
----
+**Risks**
+- Ambiguous data paths reduce confidence.
+- Mixed value types can produce hard-to-understand runtime errors.
 
-## 7. Layout engine deep dive
-
-- **Computation:** Bottom-up intrinsics (text, known image dims) → top-down constraints for flex/grid.
-- **Text:** Measure with font key; cache; batch reads to avoid thrashing.
-- **Tradeoff vs browser:** Determinism and testability vs full CSS — acceptable with explicit DSL subset.
-- **DOM measurement:** Only when intrinsic size is unknown (e.g. dynamic text); isolate in `measure` module.
-
----
-
-## 8. Logic DSL
-
-- **Action types:** `setState`, `navigate`, `http`, `sequence`, `condition`, optional `delay`; dev-only `log`.
-- **Execution:** Sync default; async HTTP with loading/error state conventions.
-- **Errors:** Per-action handling; `runtime.onError` callback.
+**Acceptance gate**
+- Table rows, button text, modal visibility/content are bound through one unified model.
 
 ---
 
-## 9. Runtime engine
+### Phase 4 - Side effects and workflow orchestration (React Flow)
 
-- **Rendering pipeline:** validate → instantiate → layout → render → bind.
-- **State:** Predictable immutable updates internally.
-- **Events:** Prefer delegation where possible to limit listeners.
+**Goal**
+- Complex behavior is configurable visually, no coding required.
 
----
+**Scope**
+- Dual editing modes:
+  - Simple mode: wizard/action-list for common flows
+  - Flow mode: React Flow for branching and advanced logic
+- Action blocks:
+  - Fetch
+  - Set state
+  - Transform
+  - Condition
+  - Open modal
+  - Close modal
+  - Notify
+  - Navigate
+- Guided templates:
+  - Button click -> fetch data -> populate table
+  - Row action -> open modal -> submit -> refresh table
+- Visibility/interactivity rule builder:
+  - Show/hide
+  - Enable/disable
+  - Rules by state, data, role
 
-## 10. React Flow
+**APIs and abstractions**
+- Action DSL with deterministic execution order.
+- React Flow projection generated from action graph model.
 
-- **Primary:** Logic/workflow graph (triggers, branches).
-- **Optional:** Relationship view for UI hierarchy — same DSL, different projection.
-- **Sync:** Debounced two-way sync; validate cycles where required.
+**Risks**
+- Editing in two modes can cause synchronization drift if not single-source.
 
----
-
-## 11. Export philosophy
-
-- **DSL + runtime** avoids framework churn and keeps one interpreter to version.
-- **Dynamic import** keeps host apps minimal.
-- **Compatibility:** `version` + capability flags + migration helpers.
-
----
-
-## 12. Implementation strategy
-
-| Build first | Defer |
-|-------------|--------|
-| Document + registry + import/export | Marketplace, AI |
-| Layout subset for core primitives | Full CSS |
-| Linear actions + expressions | Full graph UI (or follow immediately after) |
-| Runtime core + React adapter | Vanilla adapter until needed |
-| Zod everywhere | Plugin sandboxing |
-
-**Performance:** Virtualize large trees in builder; incremental layout in runtime.
-
----
-
-## 13. Related project files
-
-| File | Purpose |
-|------|---------|
-| `core.md` | Original product / architecture prompt |
-| `cursor.md` | Cursor/agent conventions and pointers (update as the project learns) |
-| `TODO.md` | Actionable backlog; agents update as work completes |
-| `.cursor/skills/` | Project skills for DSL/runtime and repo upkeep |
-
-This document should evolve when major architectural decisions change; note changes in `cursor.md` or git history.
+**Acceptance gate**
+- Both guided scenario templates are fully configurable through UI only.
 
 ---
 
-## 14. Builder product UX phases (visual programming)
+### Phase 5 - Runtime parity and preview contract
 
-These phases improve **how** users edit the DSL in the Next.js builder. They sit alongside the engine milestones above; **status** lives in `TODO.md`.
+**Goal**
+- No mismatch between builder canvas, preview, and exported runtime.
 
-| Phase | Focus |
-|-------|--------|
-| **1 — Foundation** | Canvas interaction, selection/hover, inline labels, clear affordances, low-friction basics |
-| **2 — Components** | Palette layout, categories, search, registry-driven extensibility *(baseline: registry metadata + grouped searchable palette)* |
-| **3 — Layout** | Drag/resize, spacing controls, snapping, constraints *(baseline: padding + margin in engine + inspector; leaf W/H + canvas resize w/ snap; sibling reorder)* |
-| **4 — Events** | Friendly event list/editor, discoverability *(baseline: visual steps + presets + advanced JSON)* |
-| **5 — Logic** | API/state/conditions UI, progressive disclosure, hide raw JSON for typical flows *(baseline: If + HTTP body + initial `state` panel)* |
-| **6 — Graph** | React Flow workflows, sync with simple mode, debug *(baseline: flattened action chain, inspect step JSON, stats; Properties remains source of truth)* |
-| **7 — Convergence** | Builder uses runtime engine; preview parity *(baseline: builder canvas = `AiuiRuntime`; layout-aligned palette drops + grips; `/preview` runtime-only)* |
-| **8 — Power** | Multi-select, templates, shortcuts, diagnostics *(baseline: delete/duplicate/⌘D, shortcuts help, one row template; multi-select deferred)* |
+**Scope**
+- Formal parity contract:
+  - same DSL
+  - same viewport
+  - same data snapshot
+  - same behavior/layout output
+- Preview button toggles runtime-only view without editor chrome.
+- Visual parity regression suite and high-priority interaction snapshots.
 
-**Principles:** Visual-first, smart defaults, progressive disclosure, never expose raw DSL to end users in product flows; keep `AiuiDocument` as source of truth.
+**APIs and abstractions**
+- Shared renderer path for create/edit/preview/export runtime.
+
+**Risks**
+- Any fallback renderer in builder can silently drift from runtime semantics.
+
+**Acceptance gate**
+- Parity tests pass for all critical components and key interactions.
+
+---
+
+### Phase 6 - Extensible component-library strategy
+
+**Goal**
+- Keep current shadcn velocity while preparing for future library adapters.
+
+**Scope**
+- Maintain shadcn as only production library in current implementation.
+- Introduce adapter boundaries for future MUI/Ant/custom components.
+- Define capability schema:
+  - supportsDataSource
+  - supportsActions
+  - supportsRowActions
+  - supportsVisibilityRules
+  - supportedLayoutModes
+- Certification checklist before exposing a component to end users.
+
+**APIs and abstractions**
+- Registry adapter interface and capability validation.
+
+**Risks**
+- Mixing multiple libraries too early harms UX consistency and supportability.
+
+**Acceptance gate**
+- New components are onboarded by metadata and adapter compliance, not one-off editor coding.
+
+---
+
+### Phase 7 - Developer diagnostics and Cursor MCP
+
+**Goal**
+- End users remain shielded from complexity while developers debug quickly.
+
+**Scope**
+- Diagnostic stream from builder/runtime:
+  - action traces
+  - binding failures
+  - schema violations
+  - performance warnings
+- MCP contract for Cursor automation:
+  - `list_issues`
+  - `get_issue_context`
+  - `suggest_fix`
+  - `apply_safe_fix_patch`
+  - `validate_fix`
+- Safety controls:
+  - data redaction
+  - patch safety checks
+  - scope-limited fixes
+- Split UX:
+  - user-friendly issue messages in product UI
+  - deep traces only in developer diagnostics surface
+
+**APIs and abstractions**
+- Standardized issue envelope shared by runtime, builder, and MCP server.
+
+**Risks**
+- Overly broad auto-fix capability can introduce unsafe code changes.
+
+**Acceptance gate**
+- Developers can inspect and resolve common issues through MCP-guided workflows.
+
+---
+
+### Phase 8 - Adoption hardening and UX polish
+
+**Goal**
+- Production readiness for non-technical teams at scale.
+
+**Scope**
+- Guided onboarding and template-driven starts.
+- Migration assistant for older DSL versions.
+- Performance hardening for large dashboards.
+- Accessibility and i18n readiness pass.
+
+**Acceptance gate**
+- First-time users can publish confidently; large dashboards stay stable and responsive.
+
+## Detailed execution policy per phase
+
+After each completed phase:
+
+1. Update `PLAN.md`:
+   - status
+   - design decisions
+   - architecture deltas
+   - next-phase gates
+2. Update `TODO.md`:
+   - remove completed tasks
+   - add discovered follow-ups
+   - re-prioritize pending work
+3. Update `cursor.md`:
+   - durable lessons and conventions
+4. Update `core.md`:
+   - keep strategic constraints only
+   - summarize stale context
+5. If phase includes diagnostics/MCP updates:
+   - update `docs/mcp/debug-mcp-spec.md` versioned schema and examples
+
+## Build-first vs defer
+
+**Build first**
+- Non-technical UX flow
+- Responsive layout defaults
+- Unified binding model
+- Side effects templates with React Flow support
+- Runtime parity enforcement
+
+**Defer**
+- Multi-library production rollout
+- AI generation features
+- Marketplace/plugin ecosystem
+
+## Success criteria
+
+- Non-technical users can build:
+  - data-driven table dashboard
+  - button-triggered fetch and populate flow
+  - row-action modal workflow with post-submit refresh
+- Creator, preview, and exported runtime stay behaviorally identical.
+- Developers can debug quickly through diagnostics + MCP without exposing technical complexity to end users.
