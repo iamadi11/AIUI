@@ -23,7 +23,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 ### Phase 2 - Responsive layout defaults
 
 - [x] Expand layout schema for responsive stack/grid constraints and wrapping.
-- [ ] Add anti-hardcode guidance in properties editor.
+- [x] Add anti-hardcode guidance in properties editor.
 - [ ] Add desktop/tablet/mobile viewport presets in preview mode.
 - [ ] Add overflow/constraint conflict warnings.
 - [ ] Validate runtime/editor consistency across viewport presets.
@@ -79,6 +79,9 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 2 anti-hardcode guidance in inspector:
+  - Added contextual guidance in the Layout section to discourage fixed width/height unless necessary.
+  - Guidance now warns when one or both dimensions are hardcoded and recommends intrinsic/content-driven sizing for responsiveness.
 - **2026-03-31** - Phase 2 layout schema expansion (responsive + wrapping):
   - Added typed `UiLayout` schema contract in `@aiui/dsl-schema` with stack/grid constraint fields (`wrap`, `rowGap`, `columnGap`, `minChildWidth`, `gridColumns`, min/max size bounds) plus responsive tablet/mobile overrides.
   - Updated layout-engine row stack behavior to support wrapping with configurable row gaps and minimum child width constraints.

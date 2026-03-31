@@ -140,6 +140,38 @@ function helperCopyForSection(section: InspectorSectionId): string | null {
   return null;
 }
 
+function hasFiniteLayoutNumber(node: UiNode, key: "width" | "height"): boolean {
+  const raw = node.layout?.[key];
+  return typeof raw === "number" && Number.isFinite(raw) && raw > 0;
+}
+
+function layoutGuidance(node: UiNode): {
+  level: "neutral" | "caution";
+  message: string;
+} {
+  const fixedWidth = hasFiniteLayoutNumber(node, "width");
+  const fixedHeight = hasFiniteLayoutNumber(node, "height");
+  if (!fixedWidth && !fixedHeight) {
+    return {
+      level: "neutral",
+      message:
+        "Prefer content-driven sizing (leave Width/Height empty) so layouts adapt better across viewports.",
+    };
+  }
+  if (fixedWidth && fixedHeight) {
+    return {
+      level: "caution",
+      message:
+        "Both Width and Height are fixed. This may reduce responsiveness on smaller screens.",
+    };
+  }
+  return {
+    level: "caution",
+    message:
+      "A fixed dimension is set. Use fixed sizing only when needed; prefer intrinsic sizing for responsive behavior.",
+  };
+}
+
 const controlClass =
   "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -439,6 +471,7 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
               const showDataHint = section === "data";
               const showVisibilityHint = section === "visibility";
               const helper = helperCopyForSection(section);
+              const layoutHelp = section === "layout" ? layoutGuidance(node) : null;
               const hasContent =
                 sectionFields.length > 0 ||
                 (showActions && canShowActionsSection) ||
@@ -473,6 +506,23 @@ export function PropertiesInspector(props: PropertiesInspectorProps) {
                         />
                       ))}
                     </div>
+                  ) : null}
+
+                  {section === "layout" ? (
+                    <p
+                      className="mt-3 rounded-md border px-2 py-1.5 text-xs leading-snug"
+                      data-aiui-hardcode-guidance
+                    >
+                      <span
+                        className={
+                          layoutHelp?.level === "caution"
+                            ? "text-amber-700"
+                            : "text-muted-foreground"
+                        }
+                      >
+                        {layoutHelp?.message}
+                      </span>
+                    </p>
                   ) : null}
 
                   {showActions && canShowActionsSection ? (
