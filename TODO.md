@@ -25,7 +25,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Expand layout schema for responsive stack/grid constraints and wrapping.
 - [x] Add anti-hardcode guidance in properties editor.
 - [x] Add desktop/tablet/mobile viewport presets in preview mode.
-- [ ] Add overflow/constraint conflict warnings.
+- [x] Add overflow/constraint conflict warnings.
 - [ ] Validate runtime/editor consistency across viewport presets.
 
 ### Phase 3 - Universal properties and data binding
@@ -79,6 +79,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 
 ## Done
 
+- **2026-03-31** - Phase 2 overflow/constraint warnings added:
+  - Added layout warning analysis for conflicting min/max bounds and fixed-size constraint violations.
+  - Added row-stack overflow detection across desktop/tablet/mobile preset widths when wrapping is disabled.
+  - Surfaced warnings in Diagnostics panel with concise actionable guidance.
 - **2026-03-31** - Phase 2 preview viewport presets added:
   - Added shared desktop/tablet/mobile viewport preset definitions for responsive simulation.
   - Added preview-mode viewport switcher controls and preset descriptions.

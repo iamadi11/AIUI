@@ -2,6 +2,7 @@
 
 import type { AiuiDocument, UiNode } from "@aiui/dsl-schema";
 import { safeParseDocument } from "@aiui/dsl-schema";
+import { collectLayoutWarnings } from "@/lib/builder/layout-warnings";
 
 function countTree(root: UiNode): {
   nodeCount: number;
@@ -41,6 +42,7 @@ export function DiagnosticsPanel(props: {
   const { document, selectedCount, undoDepth, redoDepth } = props;
   const parse = safeParseDocument(document);
   const tree = countTree(document.root);
+  const layoutWarnings = collectLayoutWarnings(document.root);
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
@@ -88,6 +90,31 @@ export function DiagnosticsPanel(props: {
           {parse.error.issues[0]?.message ?? "Document validation failed."}
         </p>
       ) : null}
+      {layoutWarnings.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-amber-300/60 bg-amber-50/60 p-2">
+          <p className="text-[0.7rem] font-medium uppercase tracking-wide text-amber-800">
+            Layout warnings ({layoutWarnings.length})
+          </p>
+          <ul className="mt-1 space-y-1">
+            {layoutWarnings.slice(0, 6).map((warning) => (
+              <li key={`${warning.code}-${warning.nodeId}-${warning.viewport ?? "base"}`}>
+                <p className="text-[0.68rem] leading-snug text-amber-900">
+                  {warning.message}
+                </p>
+              </li>
+            ))}
+          </ul>
+          {layoutWarnings.length > 6 ? (
+            <p className="mt-1 text-[0.65rem] text-amber-800/90">
+              +{layoutWarnings.length - 6} more warnings
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <p className="mt-2 text-[0.65rem] text-muted-foreground">
+          No overflow/constraint conflicts detected for current viewport presets.
+        </p>
+      )}
     </div>
   );
 }
