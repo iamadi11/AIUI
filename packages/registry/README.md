@@ -47,7 +47,8 @@ Each `ComponentDefinition` must provide `ux` metadata:
 
 Helpers:
 
-- `listPaletteDefinitions()` — Primitives sorted by category, then display name.
+- `listPaletteDefinitions()` — All primitives sorted by category, then display name (includes layout helpers Box/Stack).
+- `listShadcnPaletteDefinitions()` — Same order, but **excludes** Box/Stack so the builder palette lists only shadcn-named primitives (Button, Input, Card, Table, Badge).
 - `matchesPaletteSearch(def, query)` — Whitespace-separated tokens; all must match substrings in name, type, keywords, or description.
 - `getPaletteMeta(type)` — Read standardized palette metadata for a primitive.
 

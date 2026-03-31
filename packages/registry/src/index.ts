@@ -716,6 +716,22 @@ export function listPaletteDefinitions(): ComponentDefinition[] {
   });
 }
 
+/** Generic layout helpers (not shadcn component names) — hidden from the shadcn-only palette. */
+export const SHADCN_PALETTE_EXCLUDED_TYPES: ReadonlySet<string> = new Set([
+  BOX_TYPE,
+  STACK_TYPE,
+]);
+
+/**
+ * Palette entries for shadcn/ui-backed primitives only (Button, Input, Card, Table, Badge).
+ * Box/Stack remain in the registry for templates and programmatic trees but are not offered in the palette.
+ */
+export function listShadcnPaletteDefinitions(): ComponentDefinition[] {
+  return listPaletteDefinitions().filter(
+    (d) => !SHADCN_PALETTE_EXCLUDED_TYPES.has(d.type),
+  );
+}
+
 /**
  * Whether `def` matches a palette search string. Tokens (whitespace-separated)
  * must all appear somewhere in display name, type, or keywords.

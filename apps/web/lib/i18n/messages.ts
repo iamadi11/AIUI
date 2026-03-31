@@ -105,6 +105,7 @@ const EN_MESSAGES = {
   "events.modalPickPlaceholder": "— Choose —",
   "events.modalTargetId": "Modal id",
   "palette.components": "Components",
+  "palette.shadcnComponents": "shadcn/ui",
   "palette.searchPlaceholder": "Search…",
   "palette.searchAriaLabel": "Search components",
   "palette.noSearchMatch":

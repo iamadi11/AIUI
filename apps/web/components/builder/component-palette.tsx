@@ -21,7 +21,7 @@ import {
   STACK_TYPE,
   TABLE_TYPE,
   BADGE_TYPE,
-  listPaletteDefinitions,
+  listShadcnPaletteDefinitions,
   matchesPaletteSearch,
   type PaletteCategory,
 } from "@aiui/registry";
@@ -113,11 +113,19 @@ export function ComponentPalette() {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
-    const all = listPaletteDefinitions();
+    const all = listShadcnPaletteDefinitions();
     return all.filter((d) => matchesPaletteSearch(d, query));
   }, [query]);
 
   const grouped = useMemo(() => groupByCategory(filtered), [filtered]);
+
+  const categoriesWithItems = useMemo(
+    () =>
+      PALETTE_CATEGORY_ORDER.filter(
+        (cat) => (grouped.get(cat) ?? []).length > 0,
+      ),
+    [grouped],
+  );
 
   const hasAnyMatch = filtered.length > 0;
   const queryActive = query.trim().length > 0;
@@ -132,7 +140,7 @@ export function ComponentPalette() {
           id="component-palette-heading"
           className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
         >
-          {msg("palette.components")}
+          {msg("palette.shadcnComponents")}
         </p>
         <div className="relative">
           <Search
@@ -159,24 +167,8 @@ export function ComponentPalette() {
               : msg("palette.noComponentsRegistered")}
           </p>
         ) : (
-          PALETTE_CATEGORY_ORDER.map((category) => {
+          categoriesWithItems.map((category) => {
             const items = grouped.get(category) ?? [];
-            if (items.length === 0) {
-              if (queryActive) return null;
-              return (
-                <section key={category} aria-labelledby={`palette-cat-${category}`}>
-                  <h3
-                    id={`palette-cat-${category}`}
-                    className="mb-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"
-                  >
-                    {PALETTE_CATEGORY_LABELS[category]}
-                  </h3>
-                  <p className="rounded-md border border-border/60 bg-muted/15 px-2 py-2 text-[0.65rem] leading-snug text-muted-foreground">
-                    {msg("palette.emptyCategory")}
-                  </p>
-                </section>
-              );
-            }
             return (
               <section key={category} aria-labelledby={`palette-cat-${category}`}>
                 <h3

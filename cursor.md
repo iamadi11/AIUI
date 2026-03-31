@@ -44,6 +44,7 @@ After each phase or sub-milestone:
 
 ## Learnings
 
+- **2026-03-31 - shadcn-only palette:** The builder palette uses `listShadcnPaletteDefinitions()` (Button, Input, Card, Table, Badge). **Box** and **Stack** stay in the registry for templates, screen builders, and navbar quick-adds, but are not listed as palette drags so the sidebar reads as shadcn/ui primitives only.
 - **2026-03-31 - Flow-first builder + Sheet inspector:** Use exclusive selection between **prototype edges** and **canvas nodes** (`selectedEdgeId` vs `selection-store`); closing the Sheet clears via one helper (`clearSelectionEx`). **`react-resizable-panels` v4** uses **`orientation`** on `Group`, not `direction`. Edge trigger changes use **`reassignPrototypeEdgeTrigger`** to strip the old navigate/modal action from the previous trigger before **`applyPrototypeEdgeToDocument`** on the new trigger.
 - **2026-03-31 - shadcn MCP + pnpm workspaces:** `shadcn mcp init` runs `pnpm add -D shadcn@latest` at the repo root without `-w`, which pnpm blocks by default; set `ignore-workspace-root-check=true` in root `.npmrc` (or pass `-w` manually only works for your own installs, not the CLI’s internal step).
 - **2026-03-31 - Screen templates:** Keep composed multi-layer roots next to `createNodeFromType` in the app (`screen-template-builders.ts`) while `SCREEN_TEMPLATE_LABELS` stays in `@aiui/registry` for a single list of ids + human labels shared by the store title and the builder select.
