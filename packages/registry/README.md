@@ -27,6 +27,12 @@ Validation catches:
 - unsupported `supportedLayoutModes` values
 - inconsistent capability combinations (e.g. `supportsRowActions: true` while `supportsActions: false`)
 
+## Certification gate
+
+Before exposing adapter components to end users, run the certification checklist:
+
+- `docs/adapters/component-certification-checklist.md`
+
 ## UX metadata standard
 
 Each `ComponentDefinition` must provide `ux` metadata:

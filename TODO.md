@@ -58,7 +58,7 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
 - [x] Keep shadcn as production default library.
 - [x] Define adapter interface for future UI libraries.
 - [x] Define component capability schema and validator.
-- [ ] Create component certification checklist before user exposure.
+- [x] Create component certification checklist before user exposure.
 - [ ] Publish adapter onboarding guide for future component integrations.
 
 ### Phase 7 - Diagnostics and Cursor MCP
@@ -95,6 +95,10 @@ This backlog tracks the non-technical dashboard roadmap in `PLAN.md`.
   - Added `COMPONENT_CAPABILITY_SCHEMA` in `@aiui/registry` as the canonical capability contract.
   - Added `validateComponentCapabilities()` and `validateCapabilitiesForType()` to enforce capability metadata shape and consistency.
   - Validation now catches invalid boolean fields, unsupported layout modes, and contradictory action capability combinations.
+- **2026-03-31** - Phase 6 component certification checklist added:
+  - Added `docs/adapters/component-certification-checklist.md` as a pre-exposure gate for new adapter components.
+  - Checklist covers metadata contract, runtime parity, UX safety, and required verification steps.
+  - Linked checklist from registry docs so adapter work has one visible certification path.
 - **2026-03-31** - Phase 5 single renderer path enforced:
   - Added shared `RuntimeSurface` component used by both builder canvas and preview surfaces.
   - Replaced direct `AiuiRuntime` usage in app-level surfaces with the shared runtime host wrapper.
